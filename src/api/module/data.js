@@ -72,6 +72,14 @@ export function parsePackets(params, config = {
     .then(res => res.data)
     .catch(e => console.log(e));
 }
+//解析数据包
+export function parsePacketSleep(params, config = {
+  showLoading: false
+}) {
+  return ax.post('/qxiao-mp/action/mod-xiaojiao/device/parsePacketSleep.do', params, config)
+    .then(res => res.data)
+    .catch(e => console.log(e));
+}
 
 
 // 接收活跃度数据包
