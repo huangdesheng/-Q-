@@ -18,13 +18,13 @@
             <span style="margin-left:5px;">{{ info.name }}</span>
           </div>
           <div class="article-cell">
-            <van-icon name="contact" size="16px" />
-            <span>刘家明园长</span>
-            <time style="margin-left:5px;">{{ info.postTime }}</time>
+            <van-icon class="infoPhoto" name="contact" size="16px" />
+            <span>{{ info.teacherName }}</span>
+            <time style="margin-left:8px;">{{ info.postTime }}</time>
           </div>
           <div class="article-cell">
             <van-icon name="eye-o" size="16px"></van-icon>
-            <b>{{ info.classReadCount }}</b>
+            <span class="readNum">{{ info.classReadCount }}</span>
           </div>
         </div>
         <div size-16 class="article-bd">
@@ -45,22 +45,27 @@
           </section>
         </template>
         <template v-if="roleType == 2">
-          <section class="mamba">
-            <p
-              @click="handleReaders(info)"
-            >班级已读{{ info.classReadCount }}人，共{{ info.totalCount }}人，查看详情</p>
+          <section class="mamba infoFooter">
+            <p @click="handleReaders(info)">查看阅读详情</p>
           </section>
         </template>
         <template v-if="roleType == 3">
           <template v-if="needConfirm">
             <template v-if="experience != 1">
-              <van-button
+              <!-- <van-button
                 type="info"
                 size="large"
                 class="no-radius"
                 :disabled="info.confirmFlag == 1"
                 @click="handleConfirmFlag"
-              >{{ info.confirmFlag ? '已确认':'确认' }}</van-button>
+                >{{ info.confirmFlag ? "已确认" : "确认" }}</van-button
+              > -->
+              <div v-if="!info.confirmFlag" class="clickRead"  @click="handleConfirmFlag">
+                <p>点击确认阅读</p>
+              </div>
+               <div v-else class="clickRead2">
+                <p>已确认阅读</p>
+              </div>
             </template>
           </template>
         </template>
@@ -171,13 +176,20 @@ export default {
       }
     }
   },
-  activated() {
+ created() {
     if (this.roleType == 1 || this.roleType == 4) {
       this.querySchoolNoticeDefaul(this.query);
     } else {
       this.noticeDetail(this.query);
     }
-  }
+  },
+  // activated() {
+  //   if (this.roleType == 1 || this.roleType == 4) {
+  //     this.querySchoolNoticeDefaul(this.query);
+  //   } else {
+  //     this.noticeDetail(this.query);
+  //   }
+  // }
 };
 </script>
 <style lang="less" scoped>
@@ -194,7 +206,54 @@ export default {
   box-shadow: 0 0 15px 2px rgba(88, 88, 88, 0.1);
   background-color: #fff;
 }
-.title2{
-  margin-top:30px;
+.title2 {
+  margin-top: 30px;
+}
+.infoPhoto {
+  margin-right: 10px;
+}
+.readNum {
+  margin-left: 15px;
+}
+.infoFooter,
+.clickRead,
+.clickRead2 {
+  display: flex;
+  justify-content: center;
+  p {
+    width: 500px;
+    height: 80px;
+    line-height: 80px;
+    text-align: center;
+    background: linear-gradient(
+      -10deg,
+      rgba(170, 221, 90, 1),
+      rgba(146, 205, 54, 1)
+    );
+    box-shadow: 0px 6px 10px 0px rgba(128, 199, 17, 0.3);
+    border-radius: 40px;
+    font-size: 36px;
+    color: rgba(255, 255, 255, 1);
+  }
+}
+.clickRead {
+  height: 120px;
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0px 0px 5px 0px rgba(21, 21, 21, 0.1);
+  align-items: center;
+}
+.clickRead2 {
+  height: 120px;
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0px 0px 5px 0px rgba(21, 21, 21, 0.1);
+  align-items: center;
+  p {
+    background: linear-gradient(
+      -10deg,
+      rgba(204, 204, 204, 1),
+      rgba(204, 204, 204, 1)
+    );
+    box-shadow:0px 6px 10px 0px rgba(204,204,204,0.58);
+  }
 }
 </style>

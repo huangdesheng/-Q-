@@ -43,7 +43,7 @@
             <p @click="handleReaders(info)">查看年级阅读详情</p>
           </section>
         </template>
-        <template v-if="roleType == 2">
+        <!-- <template v-if="roleType == 1||roleType == 4">
           <section class="mamba">
             <p @click="handleReaders(info)">
               班级已读{{ info.readCount }}人，共{{
@@ -51,7 +51,7 @@
               }}人，查看详情
             </p>
           </section>
-        </template>
+        </template> -->
         <template v-if="roleType == 3">
           <template v-if="needConfirm">
             <template v-if="experience != 1">
@@ -81,6 +81,11 @@ export default {
       studentId: this.$route.query.studentId,
       query: {
         recipeId: this.$route.query.recipeId
+      },
+      query2: {
+        recipeId: this.$route.query.recipeId,
+        openId: this.$store.state.user.info.openId || this.$route.query.openId,
+        studentId:this.$store.state.user.info.studentId
       },
       openId: this.$store.state.user.info.openId || this.$route.query.openId, //用户openid
       roleType:
@@ -136,8 +141,8 @@ export default {
       }
     },
     //营养食谱详情
-    async noticeDetail(params = {}) {
-      let res = await service.noticeDetail(params);
+    async recipeDetail(params = {}) {
+      let res = await service.recipeDetail(params);
       if (res.errorCode === 0) {
         this.info = res.data;
       }
@@ -171,10 +176,11 @@ export default {
     }
   },
   activated() {
+    console.log(this.roleType)
     if (this.roleType == 1 || this.roleType == 4) {
       this.recipeInfo(this.query);
     } else {
-      this.noticeDetail(this.query);
+      this.recipeDetail(this.query2);
     }
   }
 };
@@ -186,11 +192,29 @@ export default {
   border-radius: 50%;
 }
 .mamba {
-  font-size: 32px;
-  color: #92cd36;
-  padding: 30px 0;
-  text-align: center;
-  box-shadow: 0 0 15px 2px rgba(88, 88, 88, 0.1);
-  background-color: #fff;
+  height: 120px;
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0px 0px 5px 0px rgba(21, 21, 21, 0.1);
+  position:fixed;
+  bottom:0;
+  width: 100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  p {
+    font-size: 36px;
+    color: rgba(255, 255, 255, 1);
+    width: 500px;
+    height: 80px;
+    line-height:80px;
+    text-align:center;
+    background: linear-gradient(
+      -10deg,
+      rgba(170, 221, 90, 1),
+      rgba(146, 205, 54, 1)
+    );
+    box-shadow: 0px 6px 10px 0px rgba(128, 199, 17, 0.3);
+    border-radius: 40px;
+  }
 }
 </style>
