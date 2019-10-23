@@ -1,0 +1,142 @@
+.figure {
+  position: relative;
+  margin-bottom: 20px;
+  background-color: #fff;
+
+  &:active {
+    background-color: #f2f2f2;
+  }
+
+  &-bd {
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  &-ft {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    height: 80px;
+    color: #92cd36;
+    font-size: 28px;
+    position: relative;
+    padding: 0 30px;
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      height: 1px;
+      border-top: 1px solid #e5e5e5;
+      color: #e5e5e5;
+      -webkit-transform-origin: 0 0;
+      transform-origin: 0 0;
+      -webkit-transform: scaleY(0.5);
+      transform: scaleY(0.5);
+      z-index: 2;
+    }
+  }
+
+  .figure-total {
+    flex: 1;
+    text-align: center;
+  }
+
+  .figure-info {
+    // flex: 1;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  &-thumb-small {
+    min-width: 200px;
+    height: 200px;
+    border-radius: 8px;
+    margin-right: 30px;
+    position: relative;
+    overflow: hidden;
+    background-position: center center;
+    background-size: cover;
+    background-repeat: no-repeat;
+  }
+
+  &-thumb-medium {
+    height: 298px;
+    margin: 20px 0;
+    background-size: 100%;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+  }
+
+  .metedata {
+    font-size: 24px;
+    color: #8d8d8d;
+
+    span {
+      margin-right: 10px;
+    }
+  }
+
+  figcaption {
+    line-height: 1.4;
+
+    i {
+      vertical-align: top;
+      border-radius: 50%;
+      display: inline-block;
+      background-color: red;
+      margin: 8px 0 0 0;
+    }
+  }
+}
+
+.figure-skin-one {
+  .figure-bd {
+    padding: 30px;
+  }
+
+  p {
+    margin-top: 10px;
+    margin-bottom: 30px;
+  }
+}
+
+.figure-skin-two {
+  .figure-bd {
+    padding: 0 30px;
+  }
+
+  .metedata {
+    margin: 0 0 20px 0;
+  }
+
+  figcaption {
+    position: relative;
+    padding: 30px 0 0 0;
+  }
+
+  p {
+    font-size: 30px;
+    margin: 10px 0 20px 0;
+    line-height: 1.5;
+  }
+
+  .figure-icon {
+    color: #8d8d8d;
+    margin-right: 40px;
+    display: flex;
+    align-items: center;
+
+    b {
+      font-size: 28px;
+      margin-left: 8px;
+    }
+
+    i {
+      font-size: 34px;
+    }
+  }
+}

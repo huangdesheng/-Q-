@@ -1,0 +1,175 @@
+@charset "UTF-8";
+
+* {
+  box-sizing: border-box;
+}
+
+*::after,
+*::before {
+  box-sizing: inherit;
+}
+
+
+html,
+body {
+  min-height: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+body {
+  font-size: 30px;
+  margin: 0;
+  font-family: @font-family;
+  color: @base-color;
+  line-height: 1.15;
+  position: relative;
+  background-color: @body-bg;
+  overflow-x: hidden;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+article,
+aside,
+footer,
+header,
+section,
+nav,
+figure,
+figcaption,
+hgroup,
+details,
+menu {
+  display: block;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+ul,
+ol,
+figure {
+  margin: 0;
+  padding: 0;
+}
+
+p {
+  line-height: 1.15;
+  word-wrap: break-word;
+  word-break: break-all;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+b,
+strong {
+  // font-weight: normal;
+  // font-size: 100%;
+}
+
+
+a {
+  color: inherit;
+  text-decoration: none;
+  background-color: transparent;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+img {
+  border: none;
+  max-width: 100%;
+  vertical-align: top;
+
+  &[radius="50"] {
+    border-radius: 50%;
+  }
+}
+
+
+video {
+  max-width: 100%;
+}
+
+select[dir="rtl"] {
+  direction: rtl;
+}
+
+select[dir="ltl"] {
+  direction: ltl;
+}
+
+[contenteditable] {
+  outline: none;
+}
+
+
+table {
+  width: auto;
+  margin: 0;
+  border-spacing: 0;
+  // border-collapse: collapse;
+
+  th {
+    text-align: left;
+    font-style: normal;
+    // font-weight: normal;
+  }
+}
+
+
+// 20191007
+.select {
+  justify-content: space-between;
+  background: #F8F8F8;
+
+  .van-cell__title {
+    font-size: 28px;
+    color: #666;
+
+  }
+
+  .van-cell__value {
+    display: flex;
+    flex: 0.1 !important;
+    justify-content: flex-end;
+  }
+}
+
+
+.repeatName {
+  .van-dialog__content {
+    padding: 4vh 0;
+    text-align: center;
+
+    >p {
+      color: #333;
+      font-size: 32px;
+      margin-top: 5px;
+    }
+
+    .message {
+      padding: 2vh 0vw 2vh 5vw;
+      width: 90%;
+      background: #F8F8F8;
+      color: #666;
+      margin: 0 auto;
+      text-align: left;
+
+      &:nth-of-type(1) {
+        margin-top: 2vh
+      }
+    }
+  }
+}
