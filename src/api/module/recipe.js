@@ -40,11 +40,20 @@ export function recipeInfo(params, config = {
     .then(res => res.data)
     .catch(e => console.log(e));
 }
-//食谱阅读详情
+//食谱阅读详情 园长、管理员端
 export function queryRecipeLeader(params, config = {
   showLoading: true
 }) {
   return ax.post('/qxiao-mp/action/mod-xiaojiao/recipe/queryRecipeLeader.do', params, config)
+    .then(res => res.data)
+    .catch(e => console.log(e));
+}
+
+//食谱阅读详情 老师、家长端
+export function recipeQuery(params, config = {
+  showLoading: true
+}) {
+  return ax.post('/qxiao-mp/action/mod-xiaojiao/recipe/recipeQuery.do', params, config)
     .then(res => res.data)
     .catch(e => console.log(e));
 }

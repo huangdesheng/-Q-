@@ -12,22 +12,28 @@
           </div>
         </div>
         <div class="cells">
-          <div class="cell min-h100" v-for="(item, index) in gradeList" :key="index">
+          <div
+            class="cell min-h100"
+            v-for="(item, index) in gradeList"
+            :key="index"
+          >
             <div class="cell-bd">
               <div class="text-center">{{ item.gradeName }}</div>
             </div>
             <div class="cell-bd">
-              <div class="text-center" style="color:#9cd248" @click="jump(1)">{{ item.read }}</div>
+              <div class="text-center" style="color:#9cd248" @click="jump(1)">
+                {{ item.read }}
+              </div>
             </div>
             <div class="cell-bd">
-              <div class="text-center" style="color:#9cd248" @click="jump(2)">{{ item.unRead }}</div>
+              <div class="text-center" style="color:#9cd248" @click="jump(2)">
+                {{ item.unRead }}
+              </div>
             </div>
             <div class="cell-bd">
-              <div
-                class="text-center"
-                style="color:#9cd248"
-                @click="jump(3)"
-              >{{ item.unConfirmFlag }}</div>
+              <div class="text-center" style="color:#9cd248" @click="jump(3)">
+                {{ item.unConfirmFlag }}
+              </div>
             </div>
           </div>
         </div>
@@ -36,9 +42,21 @@
       <template v-if="roleType == 2">
         <van-tabs v-model="active" :line-height="2" @click="handleTabClick">
           <van-tab title="已读">
-            <div class="cell min-h120 read-cell" v-for="(read, index) in readList" :key="index">
+            <div class="readTitle">已阅读公告通知({{ readCount2 }})</div>
+            <div
+              class="cell min-h120 read-cell"
+              v-for="(read, index) in readList"
+              :key="index"
+            >
               <div class="cell-hd">
-                <img v-if="read.photo" :src="read.photo" :alt="read.studentName" />
+                <div class="serial">
+                  {{ index > 10 ? index : `0${index + 1}` }}
+                </div>
+                <img
+                  v-if="read.photo"
+                  :src="read.photo"
+                  :alt="read.studentName"
+                />
                 <img src="@/assets/child-default@2x.png" v-else />
               </div>
               <div class="cell-bd pl-20">
@@ -46,16 +64,35 @@
               </div>
               <div class="cell-ft">
                 <template v-if="needConfirm">
-                  <span v-if="read.confirmFlag === 0" style="color:#ff87b7">未确认通知</span>
-                  <span v-else style="color:#92cd36">已确认通知</span>
+                  <span v-if="read.confirmFlag === 0" style="color:#FEBF56"
+                    >未确认通知</span
+                  >
+                  <div class="readTime" v-else>
+                    <p>{{ read.postTime }}</p>
+                    <span style="color:#92cd36">已确认通知</span>
+                  </div>
                 </template>
               </div>
             </div>
           </van-tab>
           <van-tab title="未读">
-            <div class="cell min-h120 read-cell" v-for="(unread, index) in unreadList" :key="index">
+            <div class="readTitle">
+              当前还未阅读公告通知({{ unReadCount2 }})
+            </div>
+            <div
+              class="cell min-h120 read-cell"
+              v-for="(unread, index) in unreadList"
+              :key="index"
+            >
               <div class="cell-hd">
-                <img v-if="unread.photo" :src="unread.photo" :alt="unread.studentName" />
+                <div class="serial">
+                  {{ index > 10 ? index + 1 : `0${index + 1}` }}
+                </div>
+                <img
+                  v-if="unread.photo"
+                  :src="unread.photo"
+                  :alt="unread.studentName"
+                />
                 <img src="@/assets/child-default@2x.png" v-else />
               </div>
               <div class="cell-bd pl-20">
@@ -63,8 +100,13 @@
               </div>
               <div class="cell-ft">
                 <template v-if="needConfirm">
-                  <span v-if="unread.confirmFlag === 0" style="color:#ff87b7">未确认通知</span>
-                  <span v-else style="color:#92cd36">已确认通知</span>
+                  <span v-if="unread.confirmFlag === 0" style="color:#FEBF56"
+                    >未确认通知</span
+                  >
+                  <div class="readTime" v-else>
+                    <p>{{ unread.postTime }}</p>
+                    <span style="color:#92cd36">已确认通知</span>
+                  </div>
                 </template>
               </div>
             </div>
@@ -80,6 +122,8 @@ export default {
   name: "noticeRead",
   data() {
     return {
+      readCount2: "",
+      unReadCount2: "",
       active: 0,
       needConfirm: parseInt(this.$route.query.needConfirm), //0 不用确认
       roleType: this.$store.state.user.info.roleType,
@@ -124,8 +168,10 @@ export default {
       if (res.errorCode === 0) {
         if (readFlag) {
           this.unreadList = res.data.readers || []; //后端有可能返回null
+          this.unReadCount2 = res.data.unReadCount;
         } else {
           this.readList = res.data.readers || []; //后端有可能返回null
+          this.readCount2 = res.data.readCount;
         }
       } else {
         this.$toast(`${res.errorMsg}`);
@@ -159,5 +205,31 @@ export default {
     height: 100px;
     border-radius: 50%;
   }
+}
+.readTitle {
+  font-size: 36px;
+  color: rgba(153, 153, 153, 1);
+  line-height: 72px;
+  margin: 10px 0 10px 33px;
+}
+.serial {
+  font-size: 30px;
+  margin-right: 40px;
+  color: rgba(51, 51, 51, 1);
+}
+.readTime {
+  p {
+    font-size: 26px;
+    color: rgba(153, 153, 153, 1);
+  }
+  span {
+    width: 100%;
+    display: inline-block;
+    text-align: right;
+    margin-top: 15px;
+  }
+}
+.min-h120{
+  height: 140px;
 }
 </style>

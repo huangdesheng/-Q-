@@ -106,6 +106,13 @@ export default {
         page: 1,
         pageSize: 10
       },
+      query2: {
+        openId:this.$store.state.user.info.openId,
+        classId:this.$store.state.user.info.classId,
+        studentId: this.$store.state.user.info.studentId,
+        page: 1,
+        pageSize: 10
+      },
       roleType: this.$store.state.user.info.roleType,
       list: []
     };
@@ -163,7 +170,7 @@ export default {
       };
     },
     go(recipe) {
-      console.log(recipe)
+      console.log(recipe);
       let { studentId, recipeId } = recipe;
       this.$router.push({
         path: "/recipe/show",
@@ -179,23 +186,25 @@ export default {
       this.finished = false;
       this.recipeQuery(this.query);
     },
-    //食谱列表查询
-    // async recipeQuery(params = {}) {
-    //   let res = await service.recipeQuery(params);
-    //   if (res.errorCode === 0) {
-    //     this.popupShow = false;
-    //     this.list = res.data.data || [];
-    //     this.query.page = res.data.page;
-    //     this.totalPage = res.data.totalPage;
-    //     if (this.list.length) {
-    //       this.empty = false;
-    //     } else {
-    //       this.empty = true;
-    //     }
-    //   } else {
-    //     this.$toast(`${res.errorMsg}`);
-    //   }
-    // }
+    //食谱列表查询 家长端、老师端
+    async recipeQuery(params = {}) {
+      let res = await service.recipeQuery(params);
+      if (res.errorCode === 0) {
+        this.popupShow = false;
+        this.list = res.data.data || [];
+        this.query.page = res.data.page;
+        this.totalPage = res.data.totalPage;
+        if (this.list.length) {
+          this.empty = false;
+        } else {
+          this.empty = true;
+        }
+      } else {
+        this.$toast(`${res.errorMsg}`);
+      }
+    },
+
+    //园长端
     async querySchoolRecipeList(params = {}) {
       let res = await service.querySchoolRecipeList(params);
       if (res.errorCode === 0) {
@@ -214,7 +223,14 @@ export default {
     }
   },
   mounted() {
-    this.querySchoolRecipeList(this.query);
+    console.log(this.roleType);
+    if (this.roleType == "1" || this.roletype == "4") {
+      this.querySchoolRecipeList(this.query);
+      console.log(111);
+    } else {
+      this.recipeQuery(this.query2);
+      console.log(222);
+    }
   }
 };
 </script>

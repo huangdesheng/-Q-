@@ -88,7 +88,8 @@
                   <div class="figure-icon">
                     <div class="user">
                       <div class="userImg">
-                        <img src="@/assets/child-default@2x.png" alt="" />
+                        <img v-if="notice.photo" :src="notice.photo" alt="">
+                        <img v-else src="@/assets/child-default@2x.png" alt="" />
                       </div>
                       <span class="name">{{ notice.name }}</span>
                     </div>
