@@ -24,7 +24,7 @@
             <button class="connectStatus" v-else-if="state == 'connecting'">连接中</button>
           </div>
           <div class="myAttr">
-            <van-cell
+            <!-- <van-cell
               class="a-i-c"
               size="large"
               title="活跃度"
@@ -34,7 +34,7 @@
               <template slot="icon">
                 <img src="@/assets/user-icon-5@2x.png" class="user-icon" />
               </template>
-            </van-cell>
+            </van-cell>-->
             <van-cell
               class="a-i-c"
               size="large"
@@ -94,7 +94,7 @@
           <van-cell title="版本" value="V1.0" size="large" />
           <van-cell title="品牌" value="小Q手环学校版" size="large" />
         </div>
-        <!-- <button @click="run">发送数据</button> -->
+        <button @click="run">发送数据</button>
       </template>
     </div>
     <!-- <div class="page-ft">
@@ -128,10 +128,10 @@ export default {
   data() {
     return {
       dataValue: {
-        activeValue: "超越全国 80%",
+        activeValue: "超越全国0%",
         step: "0",
-        nightTime: "6小时05分",
-        lunchTime: "2小时10分",
+        nightTime: "0小时0分",
+        lunchTime: "0小时0分",
         setStep: 0,
         electricPercent: ""
       },
@@ -205,7 +205,8 @@ export default {
       sleepList: [],
       sleepIndex: 0,
       sleepUTC: [],
-      sleepUTCIndex: 0
+      sleepUTCIndex: 0,
+      utcSleep: 1
     };
   },
   computed: {
@@ -221,11 +222,10 @@ export default {
     })
   },
   mounted() {
-    // console.log(parseInt(111110, 2).toString(16));
-    console.log(this.studentId);
     this.getElectric();
     this.getStepNumber();
     this.getAlarmClockCount();
+    this.getSleepTime();
     this.init();
   },
   methods: {
@@ -243,94 +243,106 @@ export default {
     },
     // 初始化设备库
     openWXDeviceLib() {
-      WeixinJSBridge.invoke("openWXDeviceLib", { connType: "blue" }, res => {
-        if (res.err_msg === "openWXDeviceLib:ok") {
-          //使用前请先打开手机蓝牙
-          if (res.bluetoothState === "off") {
-            this.bluetooth = false;
-            this.$dialog({ message: "使用前请先打开手机蓝牙" });
+      wx.ready(() => {
+        WeixinJSBridge.invoke("openWXDeviceLib", { connType: "blue" }, res => {
+          console.log(11111);
+          console.log(res);
+          if (res.err_msg === "openWXDeviceLib:ok") {
+            //使用前请先打开手机蓝牙
+            if (res.bluetoothState === "off") {
+              this.bluetooth = false;
+              this.$dialog({ message: "使用前请先打开手机蓝牙" });
+            }
+            //用户没有授权微信使用蓝牙功能
+            if (res.bluetoothState === "unauthorized") {
+              this.bluetooth = false;
+              this.$dialog({ message: "请授权微信蓝牙功能并打开蓝牙" });
+            }
+            //蓝牙已打开
+            if (res.bluetoothState === "on") {
+              this.bluetooth = true;
+            }
+          } else {
+            this.bluetooth = false; //微信蓝牙打开失败
+            this.$dialog({ message: "微信蓝牙打开失败" });
           }
-          //用户没有授权微信使用蓝牙功能
-          if (res.bluetoothState === "unauthorized") {
-            this.bluetooth = false;
-            this.$dialog({ message: "请授权微信蓝牙功能并打开蓝牙" });
-          }
-          //蓝牙已打开
-          if (res.bluetoothState === "on") {
-            this.bluetooth = true;
-          }
-        } else {
-          this.bluetooth = false; //微信蓝牙打开失败
-          this.$dialog({ message: "微信蓝牙打开失败" });
-        }
+        });
       });
     },
 
     //设备连接状态变化
     onWXDeviceStateChange() {
-      WeixinJSBridge.on("onWXDeviceStateChange", res => {
-        console.log(res);
-        console.log("设备连接状态变化");
-        let { state } = res;
-        if (state === "connecting") {
-          console.log("已连接");
-          this.$dialog.close();
-        } else if (state === "connected") {
-          console.log("连接断开");
-        } else {
-          console.log("连接断开");
-        }
-        this.getWXDeviceInfos();
+      wx.ready(() => {
+        WeixinJSBridge.on("onWXDeviceStateChange", res => {
+          console.log(res);
+          console.log("设备连接状态变化");
+          let { state } = res;
+          if (state === "connecting") {
+            console.log("已连接");
+            this.$dialog.close();
+          } else if (state === "connected") {
+            console.log("连接断开");
+          } else {
+            console.log("连接断开");
+          }
+          this.getWXDeviceInfos();
+        });
       });
     },
 
     // 获取设备信息
     getWXDeviceInfos() {
-      WeixinJSBridge.invoke("getWXDeviceInfos", {}, res => {
-        if (res.err_msg === "getWXDeviceInfos:ok") {
-          this.state = res.deviceInfos[0].state;
-          //绑定设备总数量
-          if (
-            res.deviceInfos.length &&
-            res.deviceInfos[0].state === "connected"
-          ) {
+      wx.ready(() => {
+        WeixinJSBridge.invoke("getWXDeviceInfos", {}, res => {
+          if (res.err_msg === "getWXDeviceInfos:ok") {
             this.state = res.deviceInfos[0].state;
-            this.deviceId = res.deviceInfos[0].deviceId;
-            console.log(this.deviceId);
-          } else {
-            this.list = [];
-            this.deviceId = "";
+            //绑定设备总数量
+            if (
+              res.deviceInfos.length &&
+              res.deviceInfos[0].state === "connected"
+            ) {
+              this.state = res.deviceInfos[0].state;
+              this.deviceId = res.deviceInfos[0].deviceId;
+              console.log(this.deviceId);
+            } else {
+              this.list = [];
+              this.deviceId = "";
+            }
           }
-        }
+        });
       });
     },
 
     //断开设备连接
     disconnectWXDevice() {
-      WeixinJSBridge.invoke(
-        "disconnectWXDevice",
-        { deviceId: this.deviceId, connType: "blue" },
-        res => {
-          if (res.err_msg === "disConnectWXDevice:ok") {
-            this.deviceId = "";
-            this.$dialog({ message: "使用前请先打开手机蓝牙" });
+      wx.ready(() => {
+        WeixinJSBridge.invoke(
+          "disconnectWXDevice",
+          { deviceId: this.deviceId, connType: "blue" },
+          res => {
+            if (res.err_msg === "disConnectWXDevice:ok") {
+              this.deviceId = "";
+              this.$dialog({ message: "使用前请先打开手机蓝牙" });
+            }
           }
-        }
-      );
+        );
+      });
     },
 
     //手机蓝牙状态改变事件
     onWXDeviceBluetoothStateChange() {
-      WeixinJSBridge.on("onWXDeviceBluetoothStateChange", res => {
-        let { state } = res;
-        if (state === "on") {
-          this.$toast(`蓝牙打开`);
-          this.bluetooth = true;
-        } else {
-          this.$toast(`蓝牙已关闭`);
-          this.bluetooth = false;
-          this.disconnectWXDevice();
-        }
+      wx.ready(() => {
+        WeixinJSBridge.on("onWXDeviceBluetoothStateChange", res => {
+          let { state } = res;
+          if (state === "on") {
+            this.$toast(`蓝牙打开`);
+            this.bluetooth = true;
+          } else {
+            this.$toast(`蓝牙已关闭`);
+            this.bluetooth = false;
+            this.disconnectWXDevice();
+          }
+        });
       });
     },
 
@@ -396,6 +408,21 @@ export default {
         parseInt(`0x${week}`),
         0x00
       ];
+
+      // let getAcquisitionActivity = [
+      //   0x23,
+      //   0x05,
+      //   0x02,
+      //   0xf1,
+      //   0x01,
+      //   0x00,
+      //   0x03,
+      //   0x00
+      // ];
+      // this.sendDataToWXDevice(
+      //   deviceId,
+      //   bytesArrayToBase64(getAcquisitionActivity)
+      // );
       // 获取本地时间
       // let getLocalTime = [0x23, 0x02, 0x02, 0x02, 0x25];
       // 获取设备电量
@@ -424,6 +451,12 @@ export default {
       // setTimeout(function() {
       //   _this.sendDataToWXDevice(deviceId, bytesArrayToBase64(getStartValue));
       // }, 4000);
+
+      let getMostRecentSleepEntry = [0x23, 0x03, 0x02, 0xf0, 0x01, 0x00];
+      this.sendDataToWXDevice(
+        deviceId,
+        bytesArrayToBase64(getMostRecentSleepEntry)
+      );
     },
 
     // 发送数据给设备
@@ -446,316 +479,437 @@ export default {
       );
     },
     onReceiveDataFromWXDevice() {
-      WeixinJSBridge.on("onReceiveDataFromWXDevice", res => {
-        console.log("接收数据onReceiveDataFromWXDevice");
-        //设备id
-        //base64编码过的设备发到H5的数据
-        let { deviceId, base64Data } = res;
-        //调用后台接口进行base64解码
-        service.decoder({ content: base64Data }).then(res => {
-          if (res.errorCode === 0) {
-            let obj = res.data[0];
-            console.log(obj);
-            let len = parseInt(obj[5]);
-            // let data = {
-            //   deviceId,
-            //   content: base64Data,
-            //   studentId: "227"
-            // };
-            if (obj[1] === "08" && obj[2] === "04" && obj[3] === "02") {
-              // 获取本地时间日期结束，开始电量信息
-              console.log("获取本地时间日期结束，开始电量信息");
-              let getDeviceSoc = [0x23, 0x02, 0x02, 0x03, 0x00];
-              this.sendDataToWXDevice(
-                deviceId,
-                bytesArrayToBase64(getDeviceSoc)
-              );
-              this.parsePackets({
-                deviceId,
-                content: base64Data,
-                studentId: this.studentId
-              });
-            } else if (obj[1] === "04" && obj[2] === "04" && obj[3] === "03") {
-              // 获取电量信息结束，开始获取当前步数
-              console.log("获取电量信息结束，开始获取当前步数");
-              let getCurrentNumberOfSteps = [0x23, 0x02, 0x02, 0x05, 0x00];
-              this.sendDataToWXDevice(
-                deviceId,
-                bytesArrayToBase64(getCurrentNumberOfSteps)
-              );
-              this.parsePackets({
-                deviceId,
-                content: base64Data,
-                studentId: this.studentId
-              });
-            } else if (obj[1] === "04" && obj[2] === "04" && obj[3] === "05") {
-              // 获取当前步数结束，开始获取获取最近睡眠
-              console.log("获取当前步数结束，开始获取获取最近睡眠");
-              let getMostRecentSleepEntry = [
-                0x23,
-                0x03,
-                0x02,
-                0xf0,
-                0x01,
-                0x00
-              ];
-              this.sendDataToWXDevice(
-                deviceId,
-                bytesArrayToBase64(getMostRecentSleepEntry)
-              );
-              this.parsePackets({
-                deviceId,
-                content: base64Data,
-                studentId: this.studentId
-              });
-            } else if (obj[2] === "04" && obj[3] === "F0" && obj[1] === "04") {
-              // 获取最近睡眠记录条目
-              console.log("获取最近睡眠记录条目");
+      wx.ready(() => {
+        WeixinJSBridge.on("onReceiveDataFromWXDevice", res => {
+          console.log("接收数据onReceiveDataFromWXDevice");
+          //设备id
+          //base64编码过的设备发到H5的数据
+          let { deviceId, base64Data } = res;
+          //调用后台接口进行base64解码
+          service.decoder({ content: base64Data }).then(res => {
+            if (res.errorCode === 0) {
+              let obj = res.data[0];
+              console.log(obj);
               let len = parseInt(obj[5]);
-              let sleepArr = [];
-              console.log(len);
-              if (len === 0) {
-                // 获取已存的睡眠历史记录条数为0,开始获取活跃度目录条数
-                console.log(
-                  "获取已存的睡眠历史记录条数为0,开始获取活跃度目录条数"
-                );
-                // let getAcquisitionActivity = [
-                //   0x23,
-                //   0x05,
-                //   0x02,
-                //   0xf1,
-                //   0x01,
-                //   0x00,
-                //   0x03,
-                //   0x00
-                // ];
-                // this.sendDataToWXDevice(
-                //   deviceId,
-                //   bytesArrayToBase64(getAcquisitionActivity)
-                // );
-                this.parsePackets({
-                  deviceId,
-                  content: base64Data,
-                  studentId: "227"
-                });
-              } else {
-                let xiao;
-                let lenXiao;
-                console.log(len);
-                for (let i = 0; i < len; i++) {
-                  var n = parseInt(`0x0${i}`);
-                  xiao =
-                    0x23 ^
-                    (0 + 0x04) ^
-                    (1 + 0x02) ^
-                    (2 + 0xf0) ^
-                    (3 + 0x02) ^
-                    (4 + n) ^
-                    5;
-                  lenXiao = [0x23, 0x04, 0x02, 0xf0, 0x02, n, xiao];
-                  sleepArr.push(bytesArrayToBase64(lenXiao));
-                }
-                console.log(sleepArr);
-                this.sleepList = sleepArr;
+              // let data = {
+              //   deviceId,
+              //   content: base64Data,
+              //   studentId: "227"
+              // };
+              if (obj[1] === "08" && obj[2] === "04" && obj[3] === "02") {
+                // 获取本地时间日期结束，开始电量信息
+                console.log("获取本地时间日期结束，开始电量信息");
+                let getDeviceSoc = [0x23, 0x02, 0x02, 0x03, 0x00];
                 this.sendDataToWXDevice(
-                  this.deviceId,
-                  this.sleepList[this.sleepIndex]
+                  deviceId,
+                  bytesArrayToBase64(getDeviceSoc)
                 );
                 this.parsePackets({
                   deviceId,
                   content: base64Data,
                   studentId: this.studentId
                 });
-              }
-            } else if (obj[2] === "04" && obj[3] === "F0" && obj[1] === "0E") {
-              // 获取目录的睡眠信息记录
-              console.log("获取目录的睡眠信息记录");
-              this.sleepUTC.push({
-                n5: `0x${obj[5]}`,
-                n6: `0x${obj[6]}`,
-                n7: `0x${obj[7]}`,
-                n8: `0x${obj[8]}`
-              });
-              if (obj[0] === "FF" && obj[1] === "FF") {
-                this.sleepIndex++;
-                if (this.sleepList.length > this.sleepIndex) {
+              } else if (
+                obj[1] === "04" &&
+                obj[2] === "04" &&
+                obj[3] === "03"
+              ) {
+                // 获取电量信息结束，开始获取当前步数
+                console.log("获取电量信息结束，开始获取当前步数");
+                let getCurrentNumberOfSteps = [0x23, 0x02, 0x02, 0x05, 0x00];
+                this.sendDataToWXDevice(
+                  deviceId,
+                  bytesArrayToBase64(getCurrentNumberOfSteps)
+                );
+                this.parsePackets({
+                  deviceId,
+                  content: base64Data,
+                  studentId: this.studentId
+                });
+              } else if (
+                obj[1] === "04" &&
+                obj[2] === "04" &&
+                obj[3] === "05"
+              ) {
+                // 获取当前步数结束，开始获取获取最近睡眠
+                console.log("获取当前步数结束，开始获取获取最近睡眠");
+                let getMostRecentSleepEntry = [
+                  0x23,
+                  0x03,
+                  0x02,
+                  0xf0,
+                  0x01,
+                  0x00
+                ];
+                this.sendDataToWXDevice(
+                  deviceId,
+                  bytesArrayToBase64(getMostRecentSleepEntry)
+                );
+                this.parsePackets({
+                  deviceId,
+                  content: base64Data,
+                  studentId: this.studentId
+                });
+              } else if (
+                obj[2] === "04" &&
+                obj[3] === "F0" &&
+                obj[1] === "04"
+              ) {
+                // 获取最近睡眠记录条目
+                console.log("获取最近睡眠记录条目");
+                let len = parseInt(obj[5]);
+                let sleepArr = [];
+
+                if (len === 0) {
+                  // 获取已存的睡眠历史记录条数为0,开始获取活跃度目录条数
+                  console.log(
+                    "获取已存的睡眠历史记录条数为0,开始获取活跃度目录条数"
+                  );
+                  // let getAcquisitionActivity = [
+                  //   0x23,
+                  //   0x05,
+                  //   0x02,
+                  //   0xf1,
+                  //   0x01,
+                  //   0x00,
+                  //   0x03,
+                  //   0x00
+                  // ];
+                  // this.sendDataToWXDevice(
+                  //   deviceId,
+                  //   bytesArrayToBase64(getAcquisitionActivity)
+                  // );
+                  // this.parsePackets({
+                  //   deviceId,
+                  //   content: base64Data,
+                  //   studentId: "227"
+                  // });
+                } else {
+                  let xiao;
+                  let lenXiao;
+                  console.log(len);
+                  for (let i = 0; i < len; i++) {
+                    var n = parseInt(`0x0${i}`);
+                    xiao =
+                      0x23 ^
+                      (0 + 0x04) ^
+                      (1 + 0x02) ^
+                      (2 + 0xf0) ^
+                      (3 + 0x02) ^
+                      (4 + n) ^
+                      5;
+                    lenXiao = [0x23, 0x04, 0x02, 0xf0, 0x02, n, xiao];
+                    sleepArr.push(bytesArrayToBase64(lenXiao));
+                  }
+                  console.log(sleepArr);
+                  this.sleepList = sleepArr;
                   this.sendDataToWXDevice(
                     this.deviceId,
                     this.sleepList[this.sleepIndex]
                   );
+                  this.parsePackets({
+                    deviceId,
+                    content: base64Data,
+                    studentId: this.studentId
+                  });
+                }
+              } else if (
+                obj[2] === "04" &&
+                obj[3] === "F0" &&
+                obj[1] === "0E"
+              ) {
+                // 获取目录的睡眠信息记录
+                console.log("获取目录的睡眠信息记录");
+                this.sleepUTC.push({
+                  n5: `0x${obj[5]}`,
+                  n6: `0x${obj[6]}`,
+                  n7: `0x${obj[7]}`,
+                  n8: `0x${obj[8]}`
+                });
+                this.utcSleep = `${obj[5]}${obj[6]}${obj[7]}${obj[8]}`;
+
+                this.parsePackets({
+                  deviceId,
+                  content: base64Data,
+                  studentId: this.studentId
+                });
+              } else if (obj[2] === "01" && obj[3] === "00") {
+                // 睡眠片段
+                console.log("睡眠片段");
+                this.parsePacketSleep({
+                  deviceId,
+                  content: base64Data,
+                  studentId: this.studentId,
+                  utc: this.utcSleep
+                });
+                if (obj[0] === "FF" && obj[1] === "FF") {
+                  this.sleepIndex++;
+                  console.log(this.sleepIndex);
+                  if (this.sleepList.length > this.sleepIndex) {
+                    this.sendDataToWXDevice(
+                      this.deviceId,
+                      this.sleepList[this.sleepIndex]
+                    );
+                  } else {
+                    console.log(this.sleepUTC);
+                    console.log("请求数据包第一个目录包结束,开始删除睡眠数据");
+                    //   let xiao =
+                    //     0x23 ^
+                    //     (0 + 0x09) ^
+                    //     (1 + 0x08) ^
+                    //     (2 + 0xf1) ^
+                    //     (3 + 0x04) ^
+                    //     (4 + 0x00) ^
+                    //     (5 + 0x03) ^
+                    //     (6 + this.sleepUTC[0].n5) ^
+                    //     (7 + this.sleepUTC[0].n6) ^
+                    //     (8 + this.sleepUTC[0].n7) ^
+                    //     (9 + this.sleepUTC[0].n8) ^
+                    //     10;
+
+                    //   let lenXiao = [
+                    //     0x23,
+                    //     0x09,
+                    //     0x08,
+                    //     0xf1,
+                    //     0x04,
+                    //     0x00,
+                    //     0x03,
+                    //     this.sleepUTC[0].n5,
+                    //     this.sleepUTC[0].n6,
+                    //     this.sleepUTC[0].n7,
+                    //     this.sleepUTC[0].n8,
+                    //     xiao
+                    //   ];
+
+                    //   console.log("删除条目的睡眠记录信息开始0");
+                    //   this.sendActiveBagDataToWXDevice(
+                    //     this.deviceId,
+                    //     bytesArrayToBase64(lenXiao)
+                    //   );
+                    //   this.parsePackets(data);
+                  }
+                }
+                //   let xiao =
+                //     0x23 ^
+                //     (0 + 0x09) ^
+                //     (1 + 0x08) ^
+                //     (2 + 0xf1) ^
+                //     (3 + 0x04) ^
+                //     (4 + 0x00) ^
+                //     (5 + 0x03) ^
+                //     (6 + this.sleepUTC[0].n5) ^
+                //     (7 + this.sleepUTC[0].n6) ^
+                //     (8 + this.sleepUTC[0].n7) ^
+                //     (9 + this.sleepUTC[0].n8) ^
+                //     10;
+
+                //   let lenXiao = [
+                //     0x23,
+                //     0x09,
+                //     0x08,
+                //     0xf1,
+                //     0x04,
+                //     0x00,
+                //     0x03,
+                //     this.sleepUTC[0].n5,
+                //     this.sleepUTC[0].n6,
+                //     this.sleepUTC[0].n7,
+                //     this.sleepUTC[0].n8,
+                //     xiao
+                //   ];
+
+                //   console.log("删除条目的睡眠记录信息开始0");
+                //   this.sendActiveBagDataToWXDevice(
+                //     this.deviceId,
+                //     bytesArrayToBase64(lenXiao)
+                //   );
+                //   this.parsePackets(data);
+                // }
+              } else if (
+                obj[2] === "10" &&
+                obj[3] === "F0" &&
+                obj[1] === "08"
+              ) {
+              } else if (
+                obj[2] === "04" &&
+                obj[3] === "F1" &&
+                obj[1] === "0B"
+              ) {
+                //获取活跃度分包目录数
+                console.log("获取活跃度分包目录数");
+                let arr = [];
+                let len = parseInt(obj[7] + obj[8]);
+                if (len === 0) {
+                  console.log("获取活跃度分包目录数调用结束");
                 } else {
-                  console.log("结束啦");
+                  let xiao;
+                  let lenXiao;
+                  for (let i = 0; i < len; i++) {
+                    var n = parseInt(`0x0${i}`);
+                    xiao =
+                      0x23 ^
+                      (0 + 0x07) ^
+                      (1 + 0x02) ^
+                      (2 + 0xf1) ^
+                      (3 + 0x02) ^
+                      (4 + 0x00) ^
+                      (5 + 0x03) ^
+                      (6 + 0x00) ^
+                      (7 + n) ^
+                      8;
+                    lenXiao = [
+                      0x23,
+                      0x07,
+                      0x02,
+                      0xf1,
+                      0x02,
+                      0x00,
+                      0x03,
+                      0x00,
+                      n,
+                      xiao
+                    ];
+                    arr.push(bytesArrayToBase64(lenXiao));
+                  }
+                  console.log(arr);
+                  this.deviceArr = arr;
+                  this.sendDataToWXDevice(
+                    this.deviceId,
+                    this.deviceArr[this.deviceIndex]
+                  );
+                  this.parsePackets({
+                    deviceId,
+                    content: base64Data,
+                    studentId: this.studentId
+                  });
                 }
-              }
-              this.parsePackets({
-                deviceId,
-                content: base64Data,
-                studentId: this.studentId
-              });
-            } else if (obj[2] === "01" && obj[3] === "00") {
-              // 睡眠片段
-              console.log("睡眠片段");
-              // if (obj[0] === "FF" && obj[1] === "FF") {
-              //   let xiao =
-              //     0x23 ^
-              //     (0 + 0x09) ^
-              //     (1 + 0x08) ^
-              //     (2 + 0xf1) ^
-              //     (3 + 0x04) ^
-              //     (4 + 0x00) ^
-              //     (5 + 0x03) ^
-              //     (6 + this.sleepUTC[0].n5) ^
-              //     (7 + this.sleepUTC[0].n6) ^
-              //     (8 + this.sleepUTC[0].n7) ^
-              //     (9 + this.sleepUTC[0].n8) ^
-              //     10;
-
-              //   let lenXiao = [
-              //     0x23,
-              //     0x09,
-              //     0x08,
-              //     0xf1,
-              //     0x04,
-              //     0x00,
-              //     0x03,
-              //     this.sleepUTC[0].n5,
-              //     this.sleepUTC[0].n6,
-              //     this.sleepUTC[0].n7,
-              //     this.sleepUTC[0].n8,
-              //     xiao
-              //   ];
-
-              //   console.log("删除条目的睡眠记录信息开始0");
-              //   this.sendActiveBagDataToWXDevice(
-              //     this.deviceId,
-              //     bytesArrayToBase64(lenXiao)
-              //   );
-              //   this.parsePackets(data);
-              // }
-            } else if (obj[2] === "10" && obj[3] === "F0" && obj[1] === "08") {
-            } else if (obj[2] === "04" && obj[3] === "F1" && obj[1] === "0B") {
-              //获取活跃度分包目录数
-              console.log("获取活跃度分包目录数");
-              let arr = [];
-              let len = parseInt(obj[7] + obj[8]);
-              if (len === 0) {
-                console.log("获取活跃度分包目录数调用结束");
-              } else {
-                let xiao;
-                let lenXiao;
-                for (let i = 0; i < len; i++) {
-                  var n = parseInt(`0x0${i}`);
-                  xiao =
-                    0x23 ^
-                    (0 + 0x07) ^
-                    (1 + 0x02) ^
-                    (2 + 0xf1) ^
-                    (3 + 0x02) ^
-                    (4 + 0x00) ^
-                    (5 + 0x03) ^
-                    (6 + 0x00) ^
-                    (7 + n) ^
-                    8;
-                  lenXiao = [
-                    0x23,
-                    0x07,
-                    0x02,
-                    0xf1,
-                    0x02,
-                    0x00,
-                    0x03,
-                    0x00,
-                    n,
-                    xiao
-                  ];
-                  arr.push(bytesArrayToBase64(lenXiao));
-                }
-                console.log(arr);
-                this.deviceArr = arr;
+              } else if (
+                obj[2] === "04" &&
+                obj[3] === "F1" &&
+                obj[1] === "0C"
+              ) {
+                //获取活跃度目录内容
+                console.log("获取活跃度目录内容");
+                let n5 = parseInt(`0x${obj[5]}`);
+                let n6 = parseInt(`0x${obj[6]}`);
+                let n7 = parseInt(`0x${obj[7]}`);
+                let n8 = parseInt(`0x${obj[8]}`);
+                this.delBag.push({
+                  n5: `0x${obj[5]}`,
+                  n6: `0x${obj[6]}`,
+                  n7: `0x${obj[7]}`,
+                  n8: `0x${obj[8]}`
+                });
+                this.utcValue = `${obj[5]}${obj[6]}${obj[7]}${obj[8]}`;
+                let xiao =
+                  0x23 ^
+                  (0 + 0x0b) ^
+                  (1 + 0x02) ^
+                  (2 + 0xf1) ^
+                  (3 + 0x03) ^
+                  (4 + 0x00) ^
+                  (5 + 0x03) ^
+                  (6 + n5) ^
+                  (7 + n6) ^
+                  (8 + n7) ^
+                  (9 + n8) ^
+                  (10 + 0x00) ^
+                  (11 + 0x00) ^
+                  12;
+                let lenXiao = [
+                  0x23,
+                  0x0b,
+                  0x02,
+                  0xf1,
+                  0x03,
+                  0x00,
+                  0x03,
+                  n5,
+                  n6,
+                  n7,
+                  n8,
+                  0x00,
+                  0x00,
+                  xiao
+                ];
                 this.sendDataToWXDevice(
                   this.deviceId,
-                  this.deviceArr[this.deviceIndex]
+                  bytesArrayToBase64(lenXiao)
                 );
                 this.parsePackets({
                   deviceId,
                   content: base64Data,
                   studentId: this.studentId
                 });
-              }
-            } else if (obj[2] === "04" && obj[3] === "F1" && obj[1] === "0C") {
-              //获取活跃度目录内容
-              console.log("获取活跃度目录内容");
-              let n5 = parseInt(`0x${obj[5]}`);
-              let n6 = parseInt(`0x${obj[6]}`);
-              let n7 = parseInt(`0x${obj[7]}`);
-              let n8 = parseInt(`0x${obj[8]}`);
-              this.delBag.push({
-                n5: `0x${obj[5]}`,
-                n6: `0x${obj[6]}`,
-                n7: `0x${obj[7]}`,
-                n8: `0x${obj[8]}`
-              });
-              this.utcValue = `${obj[5]}${obj[6]}${obj[7]}${obj[8]}`;
-              let xiao =
-                0x23 ^
-                (0 + 0x0b) ^
-                (1 + 0x02) ^
-                (2 + 0xf1) ^
-                (3 + 0x03) ^
-                (4 + 0x00) ^
-                (5 + 0x03) ^
-                (6 + n5) ^
-                (7 + n6) ^
-                (8 + n7) ^
-                (9 + n8) ^
-                (10 + 0x00) ^
-                (11 + 0x00) ^
-                12;
-              let lenXiao = [
-                0x23,
-                0x0b,
-                0x02,
-                0xf1,
-                0x03,
-                0x00,
-                0x03,
-                n5,
-                n6,
-                n7,
-                n8,
-                0x00,
-                0x00,
-                xiao
-              ];
-              this.sendDataToWXDevice(
-                this.deviceId,
-                bytesArrayToBase64(lenXiao)
-              );
-              this.parsePackets({
-                deviceId,
-                content: base64Data,
-                studentId: this.studentId
-              });
-            } else if (obj[2] === "00" && obj[3] === "03") {
-              // 请求数据包
-              console.log("请求数据包");
-              this.utc = this.utcValue;
-              this.parsePacketActive({
-                deviceId,
-                content: base64Data,
-                utc: this.utcValue,
-                studentId: this.studentId
-              });
-              if (obj[0] === "FF" && obj[1] === "FF") {
-                this.deviceIndex++;
-                // 多次发送数据，知道目录包数等于当前索引
-                if (this.deviceArr.length > this.deviceIndex) {
-                  this.sendDataToWXDevice(
-                    this.deviceId,
-                    this.deviceArr[this.deviceIndex]
-                  );
-                } else {
-                  // 请求数据包第一个目录包结束,开始按UTC删除数据
+              } else if (obj[2] === "00" && obj[3] === "03") {
+                // 请求数据包
+                console.log("请求数据包");
+                this.utc = this.utcValue;
+                this.parsePacketActive({
+                  deviceId,
+                  content: base64Data,
+                  utc: this.utcValue,
+                  studentId: this.studentId
+                });
+                if (obj[0] === "FF" && obj[1] === "FF") {
+                  this.deviceIndex++;
+                  // 多次发送数据，知道目录包数等于当前索引
+                  if (this.deviceArr.length > this.deviceIndex) {
+                    this.sendDataToWXDevice(
+                      this.deviceId,
+                      this.deviceArr[this.deviceIndex]
+                    );
+                  } else {
+                    // 请求数据包第一个目录包结束,开始按UTC删除数据
+                    console.log("请求数据包第一个目录包结束,开始按UTC删除数据");
+                    // return false;
+                    let xiao =
+                      0x23 ^
+                      (0 + 0x09) ^
+                      (1 + 0x08) ^
+                      (2 + 0xf1) ^
+                      (3 + 0x04) ^
+                      (4 + 0x00) ^
+                      (5 + 0x03) ^
+                      (6 + this.delBag[0].n5) ^
+                      (7 + this.delBag[0].n6) ^
+                      (8 + this.delBag[0].n7) ^
+                      (9 + this.delBag[0].n8) ^
+                      10;
+                    let lenXiao = [
+                      0x23,
+                      0x09,
+                      0x08,
+                      0xf1,
+                      0x04,
+                      0x00,
+                      0x03,
+                      this.delBag[0].n5,
+                      this.delBag[0].n6,
+                      this.delBag[0].n7,
+                      this.delBag[0].n8,
+                      xiao
+                    ];
+                    console.log("开始按UTC删除数据0");
+                    this.sendDataToWXDevice(
+                      this.deviceId,
+                      bytesArrayToBase64(lenXiao)
+                    );
+                  }
+                  this.parsePackets({
+                    deviceId,
+                    content: base64Data,
+                    studentId: "227"
+                  });
+                }
+              } else if (
+                obj[2] === "04" &&
+                obj[3] === "F1" &&
+                obj[1] === "04"
+              ) {
+                if (obj[5] === "02") {
+                  // 请求数据包请求失败，无效记录序号,开始按UTC删除数据
                   console.log("请求数据包第一个目录包结束,开始按UTC删除数据");
                   // return false;
                   let xiao =
@@ -790,121 +944,78 @@ export default {
                     this.deviceId,
                     bytesArrayToBase64(lenXiao)
                   );
+                  this.parsePackets({
+                    deviceId,
+                    content: base64Data,
+                    studentId: "227"
+                  });
                 }
-                this.parsePackets({
-                  deviceId,
-                  content: base64Data,
-                  studentId: "227"
-                });
-              }
-            } else if (obj[2] === "04" && obj[3] === "F1" && obj[1] === "04") {
-              if (obj[5] === "02") {
-                // 请求数据包请求失败，无效记录序号,开始按UTC删除数据
-                console.log("请求数据包第一个目录包结束,开始按UTC删除数据");
+              } else if (obj[2] === "10" && obj[3] === "F1") {
                 // return false;
-                let xiao =
-                  0x23 ^
-                  (0 + 0x09) ^
-                  (1 + 0x08) ^
-                  (2 + 0xf1) ^
-                  (3 + 0x04) ^
-                  (4 + 0x00) ^
-                  (5 + 0x03) ^
-                  (6 + this.delBag[0].n5) ^
-                  (7 + this.delBag[0].n6) ^
-                  (8 + this.delBag[0].n7) ^
-                  (9 + this.delBag[0].n8) ^
-                  10;
-                let lenXiao = [
-                  0x23,
-                  0x09,
-                  0x08,
-                  0xf1,
-                  0x04,
-                  0x00,
-                  0x03,
-                  this.delBag[0].n5,
-                  this.delBag[0].n6,
-                  this.delBag[0].n7,
-                  this.delBag[0].n8,
-                  xiao
-                ];
-                console.log("开始按UTC删除数据0");
-                this.sendDataToWXDevice(
-                  this.deviceId,
-                  bytesArrayToBase64(lenXiao)
-                );
-                this.parsePackets({
-                  deviceId,
-                  content: base64Data,
-                  studentId: "227"
-                });
+                let index = this.delBagIndex;
+                index++;
+                if (this.delBag.length > index) {
+                  this.delBagIndex = index;
+                  let xiao =
+                    0x23 ^
+                    (0 + 0x09) ^
+                    (1 + 0x08) ^
+                    (2 + 0xf1) ^
+                    (3 + 0x04) ^
+                    (4 + 0x00) ^
+                    (5 + 0x03) ^
+                    (6 + this.delBag[index].n5) ^
+                    (7 + this.delBag[index].n6) ^
+                    (8 + this.delBag[index].n7) ^
+                    (9 + this.delBag[index].n8) ^
+                    10;
+                  let lenXiao = [
+                    0x23,
+                    0x09,
+                    0x08,
+                    0xf1,
+                    0x04,
+                    0x00,
+                    0x03,
+                    this.delBag[index].n5,
+                    this.delBag[index].n6,
+                    this.delBag[index].n7,
+                    this.delBag[index].n8,
+                    xiao
+                  ];
+                  console.log("开始按UTC删除数据" + index);
+                  this.sendDataToWXDevice(
+                    this.deviceId,
+                    bytesArrayToBase64(lenXiao)
+                  );
+                  this.parsePackets(data);
+                } else {
+                  this.delBagIndex = 0;
+                  this.deviceIndex = 0;
+                  let getAcquisitionActivity = [
+                    0x23,
+                    0x05,
+                    0x02,
+                    0xf1,
+                    0x01,
+                    0x00,
+                    0x03,
+                    0xd8
+                  ];
+                  this.sendDataToWXDevice(
+                    deviceId,
+                    bytesArrayToBase64(getAcquisitionActivity)
+                  );
+                  this.parsePackets({
+                    deviceId,
+                    content: base64Data,
+                    studentId: "227"
+                  });
+                }
               }
-            } else if (obj[2] === "10" && obj[3] === "F1") {
-              // return false;
-              let index = this.delBagIndex;
-              index++;
-              if (this.delBag.length > index) {
-                this.delBagIndex = index;
-                let xiao =
-                  0x23 ^
-                  (0 + 0x09) ^
-                  (1 + 0x08) ^
-                  (2 + 0xf1) ^
-                  (3 + 0x04) ^
-                  (4 + 0x00) ^
-                  (5 + 0x03) ^
-                  (6 + this.delBag[index].n5) ^
-                  (7 + this.delBag[index].n6) ^
-                  (8 + this.delBag[index].n7) ^
-                  (9 + this.delBag[index].n8) ^
-                  10;
-                let lenXiao = [
-                  0x23,
-                  0x09,
-                  0x08,
-                  0xf1,
-                  0x04,
-                  0x00,
-                  0x03,
-                  this.delBag[index].n5,
-                  this.delBag[index].n6,
-                  this.delBag[index].n7,
-                  this.delBag[index].n8,
-                  xiao
-                ];
-                console.log("开始按UTC删除数据" + index);
-                this.sendDataToWXDevice(
-                  this.deviceId,
-                  bytesArrayToBase64(lenXiao)
-                );
-                this.parsePackets(data);
-              } else {
-                this.delBagIndex = 0;
-                this.deviceIndex = 0;
-                let getAcquisitionActivity = [
-                  0x23,
-                  0x05,
-                  0x02,
-                  0xf1,
-                  0x01,
-                  0x00,
-                  0x03,
-                  0xd8
-                ];
-                this.sendDataToWXDevice(
-                  deviceId,
-                  bytesArrayToBase64(getAcquisitionActivity)
-                );
-                this.parsePackets({
-                  deviceId,
-                  content: base64Data,
-                  studentId: "227"
-                });
-              }
+              // this.parsePackets(data);
             }
-            // this.parsePackets(data);
-          }
+          });
         });
       });
     },
@@ -921,7 +1032,12 @@ export default {
         console.log("解析数据包");
       }
     },
-
+    async parsePacketSleep(params = {}) {
+      let res = await service.parsePacketSleep(params);
+      if (res.errorCode === 0) {
+        console.log("睡眠解析数据包");
+      }
+    },
     // 获取电量
     async getElectric() {
       let res = await service.getElectric({
@@ -953,6 +1069,27 @@ export default {
         this.dataValue.step = res.data.stepNumber;
         // console.log(res);
         // this.dataValue.electricPercent = res.data.electricPercent;
+      }
+    },
+    async getSleepTime() {
+      let res = await service.getSleepTime({
+        studentId: this.studentId
+      });
+      if (res.errorCode === 0) {
+        this.dataValue.nightTime = res.data[0].sleepDuration;
+        this.dataValue.lunchTime = res.data[0].sleepDuration;
+        // this.setStep = res.data.stepTarget;
+        // this.step = res.data.stepNumber;
+        // console.log(res);
+        // this.dataValue.electricPercent = res.data.electricPercent;
+        // this.obj = res.data;
+      } else {
+        // this.obj = {
+        this.dataValue.nightTime = "0小时0分钟";
+        this.dataValue.lunchTime = "0小时0分钟";
+        //   wakingHours: "0分钟",
+        //   sleepDuration: "0小时0分钟"
+        // // };
       }
     }
   }
@@ -999,7 +1136,7 @@ export default {
 }
 
 .myhand {
-  height: 640px;
+  height: 550px;
   position: relative;
   width: 100%;
   .myAttr {

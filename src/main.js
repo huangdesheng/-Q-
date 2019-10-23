@@ -10,6 +10,8 @@ import './filters'; //全局注册过滤器
 import '@/vantUI'; //vant UI
 
 import './permission'; //路由控制
+// import './config/sdk';
+
 
 // 根据路由设置标题
 // router.beforeEach((to, from, next) => {
