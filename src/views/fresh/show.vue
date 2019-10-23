@@ -12,13 +12,17 @@
       </div>
       <article class="article" v-if="!parseInt(info.isDel)">
         <h1 size-24>{{ info.title }}</h1>
-        <div class="article-hd">
+        <div class="article-hd articleTwo">
           <div class="article-cell">
-            <van-icon name="user-o" size="16px"></van-icon>
-            <span>{{ info.schoolName }}</span>
+            <van-icon class="teacherPhoto" name="user-o" size="16px"></van-icon>
+            <span>{{ info.teacherName }}</span>
           </div>
           <div class="article-cell">
             <time>{{ info.postTime }}</time>
+          </div>
+          <div class="article-cell">
+            <van-icon name="eye-o" size="16px"></van-icon>
+            <span class="classReadCount">{{ info.classReadCount }}</span>
           </div>
         </div>
         <section size-16 class="article-bd">
@@ -36,13 +40,16 @@
           <!-- 只有家长能够评论 -->
           <template v-if="roleType == 3">
             <template v-if="isOpen == 'true'">
-              <a href="javascript:void(0);" @click="dialogVisible = true"
-                >写留言</a
-              >
+              <div class="write">
+                <van-icon name="edit" size="16px" />
+                <a href="javascript:void(0);" @click="dialogVisible = true"
+                  >留言</a
+                >
+              </div>
             </template>
           </template>
         </div>
-        <div class="comment-bd">
+        <!-- <div class="comment-bd">
           <div class="cells">
             <div
               class="cell"
@@ -74,8 +81,32 @@
               </template>
             </div>
           </div>
+        </div> -->
+      </div>
+
+      <div
+        class="leaveWord"
+        v-for="(comment, index) in info.commentList"
+        :key="index"
+      >
+        <div class="commentPhoto">
+          <img v-if="comment.photo" :src="comment.photo" alt="" />
+          <img v-else src="@/assets/child-default@2x.png" alt="" />
+        </div>
+        <div class="commentMain">
+          <div class="name">{{ comment.name }}</div>
+          <div class="content">{{ comment.textContent }}</div>
+        </div>
+        <div
+          class="commentDelete"
+          v-if="roleType == 1 || roleType == 2 || roleType == 4"
+          @click="handleDelComment(comment.commentId, index)"
+        >
+          <van-icon name="delete" size="16px" color="#FC7878" />
+          <span>删除</span>
         </div>
       </div>
+
       <!-- 评论 -->
       <van-dialog
         title="评论"
@@ -230,20 +261,60 @@ export default {
 };
 </script>
 <style lang="less" scoped>
+.leaveWord {
+  background: #fff;
+  display: flex;
+  padding: 0 30px 0 32px;
+  border-bottom: 1px solid #f9f9f9;
+  .commentPhoto {
+    margin: 30px 30px 0 0;
+    img {
+      width: 58px;
+      height: 60px;
+    }
+  }
+  .commentMain {
+    .name {
+      font-size: 30px;
+      font-family: PingFang SC;
+      font-weight: bold;
+      color: rgba(68, 100, 159, 1);
+      margin: 46px 0 27px 0;
+    }
+    .content {
+      font-size: 26px;
+      font-family: PingFang SC;
+      color: rgba(37, 37, 37, 1);
+      width: 467px;
+      margin-bottom: 32px;
+    }
+  }
+  .commentDelete {
+    margin: 30px 0 0 40px;
+    display: flex;
+    align-items: center;
+    height: 30px;
+    span {
+      font-size: 26px;
+      color: rgba(252, 120, 120, 1);
+    }
+  }
+}
 .comment {
   font-size: 30px;
-  margin-top: 20px;
+  margin-top: 30px;
   margin-bottom: 20px;
-  background-color: #fff;
+  // background-color: #fff;
   &-hd {
     padding: 0 30px;
-    height: 80px;
+    // height: 80px;
     align-items: center;
     justify-content: space-between;
-    a {
+    .write {
       color: #fff;
       border-radius: 30px;
-      display: inline-block;
+      display: flex;
+      align-items: center;
       padding: 14px;
       box-shadow: 0 2px 20px 0 rgba(128, 199, 17, 0.3);
       background-image: linear-gradient(
@@ -273,5 +344,14 @@ export default {
       border-radius: 50%;
     }
   }
+}
+.classReadCount {
+  margin-left: 21px;
+}
+.teacherPhoto {
+  margin-right: 21px;
+}
+.articleTwo {
+  margin-top: 20px;
 }
 </style>
