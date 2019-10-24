@@ -74,14 +74,15 @@
         <template v-if="roleType == 3">
           <template v-if="needConfirm">
             <template v-if="experience != 1">
+              <div v-if="info.confirmFlag === -1"></div>
               <div
-                v-if="!info.confirmFlag"
+                 v-if="info.confirmFlag === 0"
                 class="clickRead"
                 @click="handleConfirmFlag"
               >
                 <p>点击确认阅读</p>
               </div>
-              <div v-else class="clickRead2">
+              <div v-if="info.confirmFlag === 1" class="clickRead2">
                 <p>已确认阅读</p>
               </div>
             </template>
@@ -109,7 +110,9 @@ export default {
       roleType:
         this.$store.state.user.info.roleType || this.$route.query.roleType,
       needConfirm: parseInt(this.$route.query.needConfirm), //0 不用确认
-      info: {}
+      info: {
+         confirmFlag: -1
+      }
     };
   },
   computed: {
