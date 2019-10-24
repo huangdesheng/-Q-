@@ -107,8 +107,8 @@ export default {
         pageSize: 10
       },
       query2: {
-        openId:this.$store.state.user.info.openId,
-        classId:this.$store.state.user.info.classId,
+        openId: this.$store.state.user.info.openId,
+        classId: this.$store.state.user.info.classId,
         studentId: this.$store.state.user.info.studentId,
         page: 1,
         pageSize: 10
@@ -224,9 +224,9 @@ export default {
   },
   mounted() {
     console.log(this.roleType);
-    if (this.roleType == "1" || this.roletype == "4") {
-      this.querySchoolRecipeList(this.query);
+    if (this.roleType == 1 || this.roleType == 4) {
       console.log(111);
+      this.querySchoolRecipeList(this.query);
     } else {
       this.recipeQuery(this.query2);
       console.log(222);

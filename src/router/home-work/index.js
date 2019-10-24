@@ -15,7 +15,7 @@ export default [{
     meta: {
       keepAlive: true,
       isShare: false,
-      title: "作业详情查看",
+      title: "作业详情",
     }
   },
   {
@@ -35,7 +35,7 @@ export default [{
     meta: {
       keepAlive: false,
       isShare: false,
-      title: "作业阅读人数查询",
+      title: "阅读详情",
     }
   },
 ]

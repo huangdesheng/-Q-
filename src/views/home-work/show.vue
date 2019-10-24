@@ -13,18 +13,19 @@
       <!-- -->
       <article class="article" v-if="!parseInt(info.isDel)">
         <h1 size-24>{{ info.title }}</h1>
-        <div class="article-hd">
+        <div class="article-hd  title2">
           <div class="article-cell" v-if="info.name">
             <van-icon name="user-o" size="16px"></van-icon>
             <span style="margin-left:5px;">{{ info.name }}</span>
           </div>
           <div class="article-cell">
-            <van-icon name="clock-o" size="16px"></van-icon>
-            <time style="margin-left:5px;">{{ info.postTime }}</time>
+            <van-icon class="infoPhoto" name="contact" size="16px"></van-icon>
+            <span>{{ info.teacherName }}</span>
+            <time style="margin-left:8px;">{{ info.postTime }}</time>
           </div>
           <div class="article-cell">
             <van-icon name="eye-o" size="16px"></van-icon>
-            <b>{{ info.classReadCount }}</b>
+            <span class="readNum">{{ info.classReadCount }}</span>
           </div>
         </div>
         <section size-16 class="article-bd">
@@ -39,16 +40,16 @@
     </div>
     <div class="page-ft" v-if="!parseInt(info.isDel)">
       <div class="fixed-bottom" style="z-index: 100;">
-        <template v-if="roleType != 3">
+        <!-- <template v-if="roleType != 3">
           <section class="mamba">
             <p
               @click="handleReaders(info)"
             >班级已读{{ info.classReadCount }}人，共{{ info.totalCount }}人，查看详情</p>
           </section>
         </template>
-        <template v-if="roleType == 3">
-          <!-- 确认标志 0-无需确认 1-需要确认 -->
-          <template v-if="needConfirm">
+        <template v-if="roleType == 3"> -->
+        <!-- 确认标志 0-无需确认 1-需要确认 -->
+        <!-- <template v-if="needConfirm">
             <template v-if="experience != 1">
               <van-button
                 type="info"
@@ -57,6 +58,32 @@
                 :disabled="info.confirmFlag == 1"
                 @click="handleConfirmFlag"
               >{{ info.confirmFlag ? '已确认':'确认' }}</van-button>
+            </template>
+          </template>
+        </template> -->
+        <template v-if="roleType == 1 || roleType == 4">
+          <section class="mamba">
+            <p @click="handleReaders(info)">查看年级阅读详情</p>
+          </section>
+        </template>
+        <template v-if="roleType == 2">
+          <section class="mamba infoFooter">
+            <p @click="handleReaders(info)">查看阅读详情</p>
+          </section>
+        </template>
+        <template v-if="roleType == 3">
+          <template v-if="needConfirm">
+            <template v-if="experience != 1">
+              <div
+                v-if="!info.confirmFlag"
+                class="clickRead"
+                @click="handleConfirmFlag"
+              >
+                <p>点击确认阅读</p>
+              </div>
+              <div v-else class="clickRead2">
+                <p>已确认阅读</p>
+              </div>
             </template>
           </template>
         </template>
@@ -173,5 +200,60 @@ export default {
   text-align: center;
   box-shadow: 0 0 15px 2px rgba(88, 88, 88, 0.1);
   background-color: #fff;
+}
+.icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+}
+.title2 {
+  margin-top: 30px;
+}
+.infoPhoto {
+  margin-right: 10px;
+}
+.readNum {
+  margin-left: 15px;
+}
+.infoFooter,
+.clickRead,
+.clickRead2 {
+  display: flex;
+  justify-content: center;
+  p {
+    width: 500px;
+    height: 80px;
+    line-height: 80px;
+    text-align: center;
+    background: linear-gradient(
+      -10deg,
+      rgba(170, 221, 90, 1),
+      rgba(146, 205, 54, 1)
+    );
+    box-shadow: 0px 6px 10px 0px rgba(128, 199, 17, 0.3);
+    border-radius: 40px;
+    font-size: 36px;
+    color: rgba(255, 255, 255, 1);
+  }
+}
+.clickRead {
+  height: 120px;
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0px 0px 5px 0px rgba(21, 21, 21, 0.1);
+  align-items: center;
+}
+.clickRead2 {
+  height: 120px;
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0px 0px 5px 0px rgba(21, 21, 21, 0.1);
+  align-items: center;
+  p {
+    background: linear-gradient(
+      -10deg,
+      rgba(204, 204, 204, 1),
+      rgba(204, 204, 204, 1)
+    );
+    box-shadow: 0px 6px 10px 0px rgba(204, 204, 204, 0.58);
+  }
 }
 </style>

@@ -110,7 +110,12 @@
                     ></van-icon>
                     <span>{{ fresh.classReadCount }}</span>
 
-                    <van-icon class="vanIcon2" name="comment-o" size="16px" color="#999999" />
+                    <van-icon
+                      class="vanIcon2"
+                      name="comment-o"
+                      size="16px"
+                      color="#999999"
+                    />
                     <span>{{ fresh.classCommentCount }}</span>
                   </div>
                 </div>
@@ -296,9 +301,16 @@ export default {
       font-size: 26px;
       color: rgba(169, 169, 169, 1);
     }
-    .vanIcon2{
-      margin-left:40px;
+    .vanIcon2 {
+      margin-left: 40px;
     }
   }
+}
+.text-ellipsis {
+  font-size: 36px;
+  font-family: PingFang SC;
+  font-weight: bold;
+  color: rgba(37, 37, 37, 1);
+  margin-bottom:28px;
 }
 </style>
