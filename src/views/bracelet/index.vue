@@ -1,74 +1,134 @@
 <template>
-  <div class="page">
-    <div class="page-bd">
-      <!-- 用户 -->
-      <!-- <div class="flex a-i-c home-user gradient-two">
-        <div class="flex a-i-c">
-          <template v-if="name">
-            <div class="avatar-circle flex a-i-c j-c-c">
-              <img :src="photo" width="60" height="60" radius="50" v-if="photo" />
-              <img src="@/assets/child-default@2x.png" width="60" height="60" radius="50" v-else />
-            </div>
-            <div class="js-user-change">
-              <h3 class="mb-20" size-18>{{ name }}</h3>
-              <p size-12>运动需要坚持才能长存</p>
-            </div>
-          </template>
-        </div>
-      </div>-->
-      <!-- 用户 -->
-      <div class="empty" v-if="isBindBracelet == 0">
-        <img src="@/assets/kong.png" alt />
-        <p class="mt-30">小Q手环智能连接课堂动态...开发中,期待~~</p>
+  <div>
+    <!-- <div>
+      <div class="button-sp-area flex top" size-17>
+        <a href="javascript:void(0);" id="showDatePicker" @click="popupOne = true">
+          <span id="data1">{{ date }}</span>
+          <van-icon name="arrow-down" size="16px"></van-icon>
+        </a>
       </div>
     </div>
-    <!-- <div class="page-ft">
-      <div class="fixed-bottom" style="z-index: 100;">
-        <van-button
-          type="info"
-          size="large"
-          class="no-radius"
-          to="/device"
-          v-if="isBindBracelet == 0"
-        >去绑定</van-button>
-      </div>
-    </div>-->
+    <van-popup v-model="popupOne" position="bottom">
+      <van-datetime-picker
+        ref="datetime"
+        @cancel="popupOne = false"
+        v-model="currentDate"
+        @confirm="handleShowDatePicker"
+        type="date"
+        :formatter="formatter"
+      ></van-datetime-picker>
+    </van-popup>-->
+
+    <div id="myChart" :style="{width: '100vw', height: '350px'}"></div>
   </div>
 </template>
+
 <script>
-import service from "@/api";
-import { mapState } from "vuex";
+let echarts = require("echarts/lib/echarts");
+// 引入折线组件
+import "echarts/lib/chart/line";
+import "echarts/lib/chart/pie";
+// 引入提示框和title组件
+require("echarts/lib/component/tooltip");
+require("echarts/lib/component/title");
+import formatter from "@/mixins/date-formatter";
+import dayjs from "dayjs";
 export default {
-  name: "bracelet",
+  name: "hello",
+  mixins: [formatter],
   data() {
     return {
-      query: {
-        studentId: this.$store.state.user.info.studentId,
-        openId: this.$store.state.user.info.openId
-      }
+      msg: "Welcome to Your Vue.js App",
+      popupOne: false,
+      currentDate: new Date(),
+      date: dayjs().format("YYYY-MM-DD")
     };
   },
-  computed: {
-    ...mapState("user", {
-      name: state => state.info.name,
-      photo: state => state.info.photo,
-      isBindBracelet: state => state.info.isBindBracelet //0表示没有绑定手环 1表示有
-    })
+  mounted() {
+    this.drawLine();
   },
-  methods: {},
-  mounted() {}
+  methods: {
+    drawLine() {
+      // 基于准备好的dom，初始化echarts实例
+      let myChart = echarts.init(document.getElementById("myChart"));
+      // 绘制图表
+      myChart.setOption({
+        title: {
+          text: this.$route.query.title,
+          x: "center",
+          align: "right"
+        },
+        tooltip: {
+          trigger: "axis"
+        },
+        legend: {
+          data: ["专心度"]
+        },
+        grid: {
+          left: "3%",
+          right: "4%",
+          bottom: "3%",
+          containLabel: true
+        },
+        toolbox: {
+          feature: {
+            saveAsImage: {}
+          }
+        },
+        xAxis: {
+          type: "category",
+          boundaryGap: false,
+          name: "分钟",
+          data: [
+            "10:00",
+            "10:05",
+            "10:10",
+            "10:15",
+            "10:20",
+            "10:25",
+            "10:30",
+            "10:35",
+            "10:40",
+            "10:45"
+          ]
+        },
+        yAxis: {
+          type: "value",
+          name: "专心度",
+          interval: 50
+        },
+        series: [
+          {
+            name: "活跃度",
+            type: "line",
+            stack: "总量",
+            data: [20, 150, 100, 290, 175, 100, 280, 50, 175, 100]
+          }
+        ]
+      });
+    },
+    handleShowDatePicker(value) {
+      let now = dayjs(new Date(value).getTime()).format("YYYY-MM-DD");
+      this.date = now;
+      this.popupOne = false;
+      //   if (this.roleType == 2) {
+      //     this.clockStat(this.query);
+      //   } else {
+      //     this.clockStatWithSchool(this.query);
+      //   }
+    }
+  }
 };
 </script>
+
 <style lang="less" scoped>
-.home-user {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 180px;
-  padding: 0 30px;
-  color: #fff;
-  .js-user-change {
-    margin-left: 20px;
-  }
+.top,
+#myChart {
+  background: #fff;
+}
+
+.top {
+  padding: 60px 0px;
+  margin-bottom: 20px;
 }
 </style>

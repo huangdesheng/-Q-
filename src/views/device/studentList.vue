@@ -88,7 +88,7 @@
             to="/alarm-clock"
           ></van-cell>
           <van-cell class="a-i-c" size="large" title="佩戴方式" is-link value="左手-竖显" to="/setWear"></van-cell>
-          <van-cell class="a-i-c" size="large" title="剩余电量" :value="dataValue.electricPercent+'%'"></van-cell>
+          <van-cell class="a-i-c" size="large" title="剩余电量" :value="dataValue.electricPercent"></van-cell>
         </div>
         <div style="margin-top:10px" class="version">
           <van-cell title="版本" value="V1.0" size="large" />
@@ -133,7 +133,7 @@ export default {
         nightTime: "0小时0分",
         lunchTime: "0小时0分",
         setStep: 0,
-        electricPercent: ""
+        electricPercent: "0%"
       },
       getValueMenu: [
         {
@@ -409,22 +409,23 @@ export default {
         0x00
       ];
 
-      // let getAcquisitionActivity = [
-      //   0x23,
-      //   0x05,
-      //   0x02,
-      //   0xf1,
-      //   0x01,
-      //   0x00,
-      //   0x03,
-      //   0x00
-      // ];
+      let getAcquisitionActivity = [
+        0x23,
+        0x05,
+        0x02,
+        0xf1,
+        0x01,
+        0x00,
+        0x03,
+        0x00
+      ];
       // this.sendDataToWXDevice(
       //   deviceId,
       //   bytesArrayToBase64(getAcquisitionActivity)
       // );
       // 获取本地时间
-      // let getLocalTime = [0x23, 0x02, 0x02, 0x02, 0x25];
+      let getLocalTime = [0x23, 0x02, 0x02, 0x02, 0x25];
+      this.sendDataToWXDevice(deviceId, bytesArrayToBase64(getLocalTime));
       // 获取设备电量
       // let getDeviceSoc = [0x23, 0x02, 0x02, 0x03, 0x00];
       // 设置Q星值
@@ -452,11 +453,11 @@ export default {
       //   _this.sendDataToWXDevice(deviceId, bytesArrayToBase64(getStartValue));
       // }, 4000);
 
-      let getMostRecentSleepEntry = [0x23, 0x03, 0x02, 0xf0, 0x01, 0x00];
-      this.sendDataToWXDevice(
-        deviceId,
-        bytesArrayToBase64(getMostRecentSleepEntry)
-      );
+      // let getMostRecentSleepEntry = [0x23, 0x03, 0x02, 0xf0, 0x01, 0x00];
+      // this.sendDataToWXDevice(
+      //   deviceId,
+      //   bytesArrayToBase64(getMostRecentSleepEntry)
+      // );
     },
 
     // 发送数据给设备
@@ -478,6 +479,462 @@ export default {
         }
       );
     },
+
+    // onReceiveDataFromWXDevice() {
+    //   wx.ready(() => {
+    //     WeixinJSBridge.on("onReceiveDataFromWXDevice", res => {
+    //       console.log("接收数据onReceiveDataFromWXDevice");
+    //       //设备id
+    //       //base64编码过的设备发到H5的数据
+    //       let { deviceId, base64Data } = res;
+    //       //调用后台接口进行base64解码
+    //       service.decoder({ content: base64Data }).then(res => {
+    //         if (res.errorCode === 0) {
+    //           let obj = res.data[0];
+    //           console.log(obj);
+    //           if (obj[2] === "04" && obj[3] === "F0" && obj[1] === "04") {
+    //             let len = parseInt(obj[5]); //历史数据条数
+
+    //             // 获取目录的睡眠信息记录
+    //             console.log("获取目录的睡眠信息记录");
+    //             let sleepArr = [];
+    //             let xiao;
+    //             let lenXiao;
+    //             for (let i = 0; i < len; i++) {
+    //               var n = parseInt(`0x0${i}`);
+    //               xiao =
+    //                 0x23 ^
+    //                 (0 + 0x04) ^
+    //                 (1 + 0x02) ^
+    //                 (2 + 0xf0) ^
+    //                 (3 + 0x02) ^
+    //                 (4 + n) ^
+    //                 5;
+    //               lenXiao = [0x23, 0x04, 0x02, 0xf0, 0x02, n, xiao];
+    //               sleepArr.push(bytesArrayToBase64(lenXiao));
+    //             }
+    //             this.sleepList = sleepArr;
+    //             this.sendDataToWXDevice(
+    //               this.deviceId,
+    //               this.sleepList[this.sleepIndex]
+    //             );
+    //             this.parsePackets({
+    //               deviceId,
+    //               content: base64Data,
+    //               studentId: this.studentId
+    //             });
+    //           } else if (
+    //             obj[2] === "04" &&
+    //             obj[3] === "F0" &&
+    //             obj[1] === "0E"
+    //           ) {
+    //             // 获取目录的睡眠信息记录
+    //             console.log("获取目录的睡眠信息记录");
+    //             this.sleepUTC.push({
+    //               n5: `0x${obj[5]}`,
+    //               n6: `0x${obj[6]}`,
+    //               n7: `0x${obj[7]}`,
+    //               n8: `0x${obj[8]}`
+    //             });
+    //             this.utcSleep = `${obj[5]}${obj[6]}${obj[7]}${obj[8]}`;
+    //             this.parsePackets({
+    //               studentId: this.studentId,
+    //               deviceId,
+    //               content: base64Data
+    //             });
+    //           } else if (obj[2] === "01" && obj[3] === "00") {
+    //             // 睡眠片段
+    //             console.log("睡眠片段");
+    //             this.parsePacketSleep({
+    //               studentId: this.studentId,
+    //               utc: this.utcSleep,
+    //               deviceId,
+    //               content: base64Data
+    //             });
+    //             if (obj[0] === "FF" && obj[1] === "FF") {
+    //               this.sleepIndex++;
+    //               console.log(this.sleepIndex);
+    //               if (this.sleepList.length > this.sleepIndex) {
+    //                 this.sendDataToWXDevice(
+    //                   this.deviceId,
+    //                   this.sleepList[this.sleepIndex]
+    //                 );
+    //               } else {
+    //                 console.log(this.sleepUTC);
+    //                 console.log("开始删除睡眠数据");
+    //                 let xiao =
+    //                   0x23 ^
+    //                   (0 + 0x07) ^
+    //                   (1 + 0x08) ^
+    //                   (2 + 0xf0) ^
+    //                   (3 + 0x04) ^
+    //                   (4 + this.sleepUTC[0].n5) ^
+    //                   (5 + this.sleepUTC[0].n6) ^
+    //                   (6 + this.sleepUTC[0].n7) ^
+    //                   (7 + this.sleepUTC[0].n8) ^
+    //                   8;
+
+    //                 let lenXiao = [
+    //                   0x23,
+    //                   0x07,
+    //                   0x08,
+    //                   0xf0,
+    //                   0x04,
+    //                   this.sleepUTC[0].n5,
+    //                   this.sleepUTC[0].n6,
+    //                   this.sleepUTC[0].n7,
+    //                   this.sleepUTC[0].n8,
+    //                   xiao
+    //                 ];
+    //                 console.log("删除条目的睡眠记录信息开始0");
+    //                 this.sendDataToWXDevice(
+    //                   this.deviceId,
+    //                   bytesArrayToBase64(lenXiao)
+    //                 );
+    //                 this.parsePackets({
+    //                   studentId: this.studentId,
+    //                   deviceId,
+    //                   content: base64Data
+    //                 });
+    //               }
+    //             }
+    //           } else if (
+    //             obj[2] === "10" &&
+    //             obj[3] === "F0" &&
+    //             obj[1] === "08"
+    //           ) {
+    //             this.parsePackets({
+    //               studentId: this.studentId,
+    //               deviceId,
+    //               content: base64Data
+    //             });
+    //             this.sleepUTCIndex++;
+    //             if (this.sleepUTC.length > this.sleepUTCIndex) {
+    //               let xiao =
+    //                 0x23 ^
+    //                 (0 + 0x07) ^
+    //                 (1 + 0x08) ^
+    //                 (2 + 0xf0) ^
+    //                 (3 + 0x04) ^
+    //                 (4 + this.sleepUTC[this.sleepUTCIndex].n5) ^
+    //                 (5 + this.sleepUTC[this.sleepUTCIndex].n6) ^
+    //                 (6 + this.sleepUTC[this.sleepUTCIndex].n7) ^
+    //                 (7 + this.sleepUTC[this.sleepUTCIndex].n8) ^
+    //                 8;
+
+    //               let lenXiao = [
+    //                 0x23,
+    //                 0x07,
+    //                 0x08,
+    //                 0xf0,
+    //                 0x04,
+    //                 this.sleepUTC[this.sleepUTCIndex].n5,
+    //                 this.sleepUTC[this.sleepUTCIndex].n6,
+    //                 this.sleepUTC[this.sleepUTCIndex].n7,
+    //                 this.sleepUTC[this.sleepUTCIndex].n8,
+    //                 xiao
+    //               ];
+    //               console.log(
+    //                 `删除条目的睡眠记录信息开始${this.sleepUTCIndex}`
+    //               );
+    //               this.sendDataToWXDevice(
+    //                 this.deviceId,
+    //                 bytesArrayToBase64(lenXiao)
+    //               );
+    //             } else {
+    //               console.log(`删除条目完成${this.sleepUTCIndex}`);
+    //             }
+    //           } else if (
+    //             obj[2] === "04" &&
+    //             obj[3] === "F1" &&
+    //             obj[1] === "0B"
+    //           ) {
+    //             //获取活跃度分包目录数
+    //             console.log("获取活跃度分包目录数");
+    //             let arr = [];
+    //             let len = parseInt(obj[7] + obj[8]);
+    //             if (len === 0) {
+    //               console.log("获取活跃度分包目录数调用结束");
+    //             } else {
+    //               let xiao;
+    //               let lenXiao;
+    //               for (let i = 0; i < len; i++) {
+    //                 var n = parseInt(`0x0${i}`);
+    //                 xiao =
+    //                   0x23 ^
+    //                   (0 + 0x07) ^
+    //                   (1 + 0x02) ^
+    //                   (2 + 0xf1) ^
+    //                   (3 + 0x02) ^
+    //                   (4 + 0x00) ^
+    //                   (5 + 0x03) ^
+    //                   (6 + 0x00) ^
+    //                   (7 + n) ^
+    //                   8;
+    //                 lenXiao = [
+    //                   0x23,
+    //                   0x07,
+    //                   0x02,
+    //                   0xf1,
+    //                   0x02,
+    //                   0x00,
+    //                   0x03,
+    //                   0x00,
+    //                   n,
+    //                   xiao
+    //                 ];
+    //                 arr.push(bytesArrayToBase64(lenXiao));
+    //               }
+    //               this.deviceArr = arr;
+    //               this.sendDataToWXDevice(
+    //                 this.deviceId,
+    //                 this.deviceArr[this.deviceIndex]
+    //               );
+    //               this.parsePackets({
+    //                 studentId: this.studentId,
+    //                 deviceId,
+    //                 content: base64Data
+    //               });
+    //             }
+    //           } else if (
+    //             obj[2] === "04" &&
+    //             obj[3] === "F1" &&
+    //             obj[1] === "0C"
+    //           ) {
+    //             //获取活跃度目录内容
+    //             console.log("获取活跃度目录内容");
+    //             let n5 = parseInt(`0x${obj[5]}`);
+    //             let n6 = parseInt(`0x${obj[6]}`);
+    //             let n7 = parseInt(`0x${obj[7]}`);
+    //             let n8 = parseInt(`0x${obj[8]}`);
+    //             this.delBag.push({
+    //               n5: `0x${obj[5]}`,
+    //               n6: `0x${obj[6]}`,
+    //               n7: `0x${obj[7]}`,
+    //               n8: `0x${obj[8]}`
+    //             });
+    //             this.utcValue = `${obj[5]}${obj[6]}${obj[7]}${obj[8]}`;
+    //             let xiao =
+    //               0x23 ^
+    //               (0 + 0x0b) ^
+    //               (1 + 0x02) ^
+    //               (2 + 0xf1) ^
+    //               (3 + 0x03) ^
+    //               (4 + 0x00) ^
+    //               (5 + 0x03) ^
+    //               (6 + n5) ^
+    //               (7 + n6) ^
+    //               (8 + n7) ^
+    //               (9 + n8) ^
+    //               (10 + 0x00) ^
+    //               (11 + 0x00) ^
+    //               12;
+    //             let lenXiao = [
+    //               0x23,
+    //               0x0b,
+    //               0x02,
+    //               0xf1,
+    //               0x03,
+    //               0x00,
+    //               0x03,
+    //               n5,
+    //               n6,
+    //               n7,
+    //               n8,
+    //               0x00,
+    //               0x00,
+    //               xiao
+    //             ];
+    //             this.sendDataToWXDevice(
+    //               this.deviceId,
+    //               bytesArrayToBase64(lenXiao)
+    //             );
+    //             this.parsePackets({
+    //               deviceId,
+    //               content: base64Data,
+    //               studentId: this.studentId
+    //             });
+    //           } else if (obj[2] === "00" && obj[3] === "03") {
+    //             // 请求数据包
+    //             console.log("请求数据包");
+    //             this.utc = this.utcValue;
+    //             this.parsePacketActive({
+    //               deviceId,
+    //               content: base64Data,
+    //               utc: this.utcValue,
+    //               studentId: this.studentId
+    //             });
+    //             if (obj[0] === "FF" && obj[1] === "FF") {
+    //               this.deviceIndex++;
+    //               console.log(this.deviceIndex);
+    //               // 多次发送数据，知道目录包数等于当前索引
+    //               if (this.deviceArr.length > this.deviceIndex) {
+    //                 this.sendDataToWXDevice(
+    //                   this.deviceId,
+    //                   this.deviceArr[this.deviceIndex]
+    //                 );
+    //               } else {
+    //                 // 请求数据包第一个目录包结束,开始按UTC删除数据
+    //                 console.log("请求数据包第一个目录包结束,开始按UTC删除数据");
+    //                 // // return false;
+    //                 let xiao =
+    //                   0x23 ^
+    //                   (0 + 0x09) ^
+    //                   (1 + 0x08) ^
+    //                   (2 + 0xf1) ^
+    //                   (3 + 0x04) ^
+    //                   (4 + 0x00) ^
+    //                   (5 + 0x03) ^
+    //                   (6 + this.delBag[0].n5) ^
+    //                   (7 + this.delBag[0].n6) ^
+    //                   (8 + this.delBag[0].n7) ^
+    //                   (9 + this.delBag[0].n8) ^
+    //                   10;
+    //                 let lenXiao = [
+    //                   0x23,
+    //                   0x09,
+    //                   0x08,
+    //                   0xf1,
+    //                   0x04,
+    //                   0x00,
+    //                   0x03,
+    //                   this.delBag[0].n5,
+    //                   this.delBag[0].n6,
+    //                   this.delBag[0].n7,
+    //                   this.delBag[0].n8,
+    //                   xiao
+    //                 ];
+    //                 console.log("开始按UTC删除数据0");
+    //                 this.sendDataToWXDevice(
+    //                   this.deviceId,
+    //                   bytesArrayToBase64(lenXiao)
+    //                 );
+    //                 this.parsePackets({
+    //                   studentId: this.studentId,
+    //                   deviceId,
+    //                   content: base64Data
+    //                 });
+    //               }
+    //             }
+    //           } else if (
+    //             obj[2] === "04" &&
+    //             obj[3] === "F1" &&
+    //             obj[1] === "04"
+    //           ) {
+    //             if (obj[5] === "02") {
+    //               // 请求数据包请求失败，无效记录序号,开始按UTC删除数据
+    //               console.log("请求数据包第一个目录包结束,开始按UTC删除数据");
+    //               // return false;
+    //               let xiao =
+    //                 0x23 ^
+    //                 (0 + 0x09) ^
+    //                 (1 + 0x08) ^
+    //                 (2 + 0xf1) ^
+    //                 (3 + 0x04) ^
+    //                 (4 + 0x00) ^
+    //                 (5 + 0x03) ^
+    //                 (6 + this.delBag[0].n5) ^
+    //                 (7 + this.delBag[0].n6) ^
+    //                 (8 + this.delBag[0].n7) ^
+    //                 (9 + this.delBag[0].n8) ^
+    //                 10;
+    //               let lenXiao = [
+    //                 0x23,
+    //                 0x09,
+    //                 0x08,
+    //                 0xf1,
+    //                 0x04,
+    //                 0x00,
+    //                 0x03,
+    //                 this.delBag[0].n5,
+    //                 this.delBag[0].n6,
+    //                 this.delBag[0].n7,
+    //                 this.delBag[0].n8,
+    //                 xiao
+    //               ];
+    //               console.log("开始按UTC删除数据0");
+    //               this.sendDataToWXDevice(
+    //                 this.deviceId,
+    //                 bytesArrayToBase64(lenXiao)
+    //               );
+    //               this.parsePackets({
+    //                 studentId: this.studentId,
+    //                 deviceId,
+    //                 content: base64Data
+    //               });
+    //             }
+    //           } else if (obj[2] === "10" && obj[3] === "F1") {
+    //             // return false;
+    //             let index = this.delBagIndex;
+    //             index++;
+    //             if (this.delBag.length > index) {
+    //               this.delBagIndex = index;
+    //               let xiao =
+    //                 0x23 ^
+    //                 (0 + 0x09) ^
+    //                 (1 + 0x08) ^
+    //                 (2 + 0xf1) ^
+    //                 (3 + 0x04) ^
+    //                 (4 + 0x00) ^
+    //                 (5 + 0x03) ^
+    //                 (6 + this.delBag[index].n5) ^
+    //                 (7 + this.delBag[index].n6) ^
+    //                 (8 + this.delBag[index].n7) ^
+    //                 (9 + this.delBag[index].n8) ^
+    //                 10;
+    //               let lenXiao = [
+    //                 0x23,
+    //                 0x09,
+    //                 0x08,
+    //                 0xf1,
+    //                 0x04,
+    //                 0x00,
+    //                 0x03,
+    //                 this.delBag[index].n5,
+    //                 this.delBag[index].n6,
+    //                 this.delBag[index].n7,
+    //                 this.delBag[index].n8,
+    //                 xiao
+    //               ];
+    //               console.log("开始按UTC删除数据" + index);
+    //               this.sendDataToWXDevice(
+    //                 this.deviceId,
+    //                 bytesArrayToBase64(lenXiao)
+    //               );
+    //               this.parsePackets({
+    //                 studentId: this.studentId,
+    //                 deviceId,
+    //                 content: base64Data
+    //               });
+    //             } else {
+    //               this.delBagIndex = 0;
+    //               this.deviceIndex = 0;
+    //               let getAcquisitionActivity = [
+    //                 0x23,
+    //                 0x05,
+    //                 0x02,
+    //                 0xf1,
+    //                 0x01,
+    //                 0x00,
+    //                 0x03,
+    //                 0xd8
+    //               ];
+    //               this.sendDataToWXDevice(
+    //                 deviceId,
+    //                 bytesArrayToBase64(getAcquisitionActivity)
+    //               );
+    //               this.parsePackets({
+    //                 studentId: this.studentId,
+    //                 deviceId,
+    //                 content: base64Data
+    //               });
+    //             }
+    //           }
+    //         }
+    //       });
+    //     });
+    //   });
+    // },
     onReceiveDataFromWXDevice() {
       wx.ready(() => {
         WeixinJSBridge.on("onReceiveDataFromWXDevice", res => {
@@ -489,13 +946,7 @@ export default {
           service.decoder({ content: base64Data }).then(res => {
             if (res.errorCode === 0) {
               let obj = res.data[0];
-              console.log(obj);
               let len = parseInt(obj[5]);
-              // let data = {
-              //   deviceId,
-              //   content: base64Data,
-              //   studentId: "227"
-              // };
               if (obj[1] === "08" && obj[2] === "04" && obj[3] === "02") {
                 // 获取本地时间日期结束，开始电量信息
                 console.log("获取本地时间日期结束，开始电量信息");
@@ -565,29 +1016,28 @@ export default {
                   console.log(
                     "获取已存的睡眠历史记录条数为0,开始获取活跃度目录条数"
                   );
-                  // let getAcquisitionActivity = [
-                  //   0x23,
-                  //   0x05,
-                  //   0x02,
-                  //   0xf1,
-                  //   0x01,
-                  //   0x00,
-                  //   0x03,
-                  //   0x00
-                  // ];
-                  // this.sendDataToWXDevice(
-                  //   deviceId,
-                  //   bytesArrayToBase64(getAcquisitionActivity)
-                  // );
-                  // this.parsePackets({
-                  //   deviceId,
-                  //   content: base64Data,
-                  //   studentId: "227"
-                  // });
+                  let getAcquisitionActivity = [
+                    0x23,
+                    0x05,
+                    0x02,
+                    0xf1,
+                    0x01,
+                    0x00,
+                    0x03,
+                    0x00
+                  ];
+                  this.sendDataToWXDevice(
+                    deviceId,
+                    bytesArrayToBase64(getAcquisitionActivity)
+                  );
+                  this.parsePackets({
+                    deviceId,
+                    content: base64Data,
+                    studentId: this.studentId
+                  });
                 } else {
                   let xiao;
                   let lenXiao;
-                  console.log(len);
                   for (let i = 0; i < len; i++) {
                     var n = parseInt(`0x0${i}`);
                     xiao =
@@ -601,7 +1051,6 @@ export default {
                     lenXiao = [0x23, 0x04, 0x02, 0xf0, 0x02, n, xiao];
                     sleepArr.push(bytesArrayToBase64(lenXiao));
                   }
-                  console.log(sleepArr);
                   this.sleepList = sleepArr;
                   this.sendDataToWXDevice(
                     this.deviceId,
@@ -627,7 +1076,6 @@ export default {
                   n8: `0x${obj[8]}`
                 });
                 this.utcSleep = `${obj[5]}${obj[6]}${obj[7]}${obj[8]}`;
-
                 this.parsePackets({
                   deviceId,
                   content: base64Data,
@@ -637,9 +1085,9 @@ export default {
                 // 睡眠片段
                 console.log("睡眠片段");
                 this.parsePacketSleep({
+                  studentId: this.studentId,
                   deviceId,
                   content: base64Data,
-                  studentId: this.studentId,
                   utc: this.utcSleep
                 });
                 if (obj[0] === "FF" && obj[1] === "FF") {
@@ -651,86 +1099,126 @@ export default {
                       this.sleepList[this.sleepIndex]
                     );
                   } else {
-                    console.log(this.sleepUTC);
-                    console.log("请求数据包第一个目录包结束,开始删除睡眠数据");
-                    //   let xiao =
-                    //     0x23 ^
-                    //     (0 + 0x09) ^
-                    //     (1 + 0x08) ^
-                    //     (2 + 0xf1) ^
-                    //     (3 + 0x04) ^
-                    //     (4 + 0x00) ^
-                    //     (5 + 0x03) ^
-                    //     (6 + this.sleepUTC[0].n5) ^
-                    //     (7 + this.sleepUTC[0].n6) ^
-                    //     (8 + this.sleepUTC[0].n7) ^
-                    //     (9 + this.sleepUTC[0].n8) ^
-                    //     10;
+                    // console.log(this.sleepUTC);
+                    // console.log("请求数据包第一个目录包结束,开始删除睡眠数据");
+                    console.log("开始获取活跃度");
+                    let getAcquisitionActivity = [
+                      0x23,
+                      0x05,
+                      0x02,
+                      0xf1,
+                      0x01,
+                      0x00,
+                      0x03,
+                      0x00
+                    ];
+                    this.sendDataToWXDevice(
+                      deviceId,
+                      bytesArrayToBase64(getAcquisitionActivity)
+                    );
+                    this.parsePackets({
+                      deviceId,
+                      content: base64Data,
+                      studentId: this.studentId
+                    });
+                    // let xiao =
+                    //   0x23 ^
+                    //   (0 + 0x07) ^
+                    //   (1 + 0x08) ^
+                    //   (2 + 0xf0) ^
+                    //   (3 + 0x04) ^
+                    //   (4 + this.sleepUTC[0].n5) ^
+                    //   (5 + this.sleepUTC[0].n6) ^
+                    //   (6 + this.sleepUTC[0].n7) ^
+                    //   (7 + this.sleepUTC[0].n8) ^
+                    //   8;
 
-                    //   let lenXiao = [
-                    //     0x23,
-                    //     0x09,
-                    //     0x08,
-                    //     0xf1,
-                    //     0x04,
-                    //     0x00,
-                    //     0x03,
-                    //     this.sleepUTC[0].n5,
-                    //     this.sleepUTC[0].n6,
-                    //     this.sleepUTC[0].n7,
-                    //     this.sleepUTC[0].n8,
-                    //     xiao
-                    //   ];
-
-                    //   console.log("删除条目的睡眠记录信息开始0");
-                    //   this.sendActiveBagDataToWXDevice(
-                    //     this.deviceId,
-                    //     bytesArrayToBase64(lenXiao)
-                    //   );
-                    //   this.parsePackets(data);
+                    // let lenXiao = [
+                    //   0x23,
+                    //   0x07,
+                    //   0x08,
+                    //   0xf0,
+                    //   0x04,
+                    //   this.sleepUTC[0].n5,
+                    //   this.sleepUTC[0].n6,
+                    //   this.sleepUTC[0].n7,
+                    //   this.sleepUTC[0].n8,
+                    //   xiao
+                    // ];
+                    // console.log("删除条目的睡眠记录信息开始0");
+                    // this.sendDataToWXDevice(
+                    //   this.deviceId,
+                    //   bytesArrayToBase64(lenXiao)
+                    // );
+                    // this.parsePackets({
+                    //   studentId: this.studentId,
+                    //   deviceId,
+                    //   content: base64Data
+                    // });
                   }
                 }
-                //   let xiao =
-                //     0x23 ^
-                //     (0 + 0x09) ^
-                //     (1 + 0x08) ^
-                //     (2 + 0xf1) ^
-                //     (3 + 0x04) ^
-                //     (4 + 0x00) ^
-                //     (5 + 0x03) ^
-                //     (6 + this.sleepUTC[0].n5) ^
-                //     (7 + this.sleepUTC[0].n6) ^
-                //     (8 + this.sleepUTC[0].n7) ^
-                //     (9 + this.sleepUTC[0].n8) ^
-                //     10;
-
-                //   let lenXiao = [
-                //     0x23,
-                //     0x09,
-                //     0x08,
-                //     0xf1,
-                //     0x04,
-                //     0x00,
-                //     0x03,
-                //     this.sleepUTC[0].n5,
-                //     this.sleepUTC[0].n6,
-                //     this.sleepUTC[0].n7,
-                //     this.sleepUTC[0].n8,
-                //     xiao
-                //   ];
-
-                //   console.log("删除条目的睡眠记录信息开始0");
-                //   this.sendActiveBagDataToWXDevice(
-                //     this.deviceId,
-                //     bytesArrayToBase64(lenXiao)
-                //   );
-                //   this.parsePackets(data);
-                // }
               } else if (
                 obj[2] === "10" &&
                 obj[3] === "F0" &&
                 obj[1] === "08"
               ) {
+                // this.parsePackets({
+                //   studentId: this.studentId,
+                //   deviceId,
+                //   content: base64Data
+                // });
+                // this.sleepUTCIndex++;
+                // if (this.sleepUTC.length > this.sleepUTCIndex) {
+                //   let xiao =
+                //     0x23 ^
+                //     (0 + 0x07) ^
+                //     (1 + 0x08) ^
+                //     (2 + 0xf0) ^
+                //     (3 + 0x04) ^
+                //     (4 + this.sleepUTC[this.sleepUTCIndex].n5) ^
+                //     (5 + this.sleepUTC[this.sleepUTCIndex].n6) ^
+                //     (6 + this.sleepUTC[this.sleepUTCIndex].n7) ^
+                //     (7 + this.sleepUTC[this.sleepUTCIndex].n8) ^
+                //     8;
+                //   let lenXiao = [
+                //     0x23,
+                //     0x07,
+                //     0x08,
+                //     0xf0,
+                //     0x04,
+                //     this.sleepUTC[this.sleepUTCIndex].n5,
+                //     this.sleepUTC[this.sleepUTCIndex].n6,
+                //     this.sleepUTC[this.sleepUTCIndex].n7,
+                //     this.sleepUTC[this.sleepUTCIndex].n8,
+                //     xiao
+                //   ];
+                //   console.log(
+                //     `删除条目的睡眠记录信息开始${this.sleepUTCIndex}`
+                //   );
+                //   this.sendDataToWXDevice(
+                //     this.deviceId,
+                //     bytesArrayToBase64(lenXiao)
+                //   );
+                // } else {
+                //   console.log(`删除条目完成${this.sleepUTCIndex}`);
+                //   let getMostRecentSleepEntry = [
+                //     0x23,
+                //     0x03,
+                //     0x02,
+                //     0xf0,
+                //     0x01,
+                //     0x00
+                //   ];
+                //   this.sendDataToWXDevice(
+                //     deviceId,
+                //     bytesArrayToBase64(getMostRecentSleepEntry)
+                //   );
+                //   this.parsePackets({
+                //     deviceId,
+                //     content: base64Data,
+                //     studentId: this.studentId
+                //   });
+                // }
               } else if (
                 obj[2] === "04" &&
                 obj[3] === "F1" &&
@@ -863,45 +1351,44 @@ export default {
                   } else {
                     // 请求数据包第一个目录包结束,开始按UTC删除数据
                     console.log("请求数据包第一个目录包结束,开始按UTC删除数据");
-                    // return false;
-                    let xiao =
-                      0x23 ^
-                      (0 + 0x09) ^
-                      (1 + 0x08) ^
-                      (2 + 0xf1) ^
-                      (3 + 0x04) ^
-                      (4 + 0x00) ^
-                      (5 + 0x03) ^
-                      (6 + this.delBag[0].n5) ^
-                      (7 + this.delBag[0].n6) ^
-                      (8 + this.delBag[0].n7) ^
-                      (9 + this.delBag[0].n8) ^
-                      10;
-                    let lenXiao = [
-                      0x23,
-                      0x09,
-                      0x08,
-                      0xf1,
-                      0x04,
-                      0x00,
-                      0x03,
-                      this.delBag[0].n5,
-                      this.delBag[0].n6,
-                      this.delBag[0].n7,
-                      this.delBag[0].n8,
-                      xiao
-                    ];
-                    console.log("开始按UTC删除数据0");
-                    this.sendDataToWXDevice(
-                      this.deviceId,
-                      bytesArrayToBase64(lenXiao)
-                    );
+                    // let xiao =
+                    //   0x23 ^
+                    //   (0 + 0x09) ^
+                    //   (1 + 0x08) ^
+                    //   (2 + 0xf1) ^
+                    //   (3 + 0x04) ^
+                    //   (4 + 0x00) ^
+                    //   (5 + 0x03) ^
+                    //   (6 + this.delBag[0].n5) ^
+                    //   (7 + this.delBag[0].n6) ^
+                    //   (8 + this.delBag[0].n7) ^
+                    //   (9 + this.delBag[0].n8) ^
+                    //   10;
+                    // let lenXiao = [
+                    //   0x23,
+                    //   0x09,
+                    //   0x08,
+                    //   0xf1,
+                    //   0x04,
+                    //   0x00,
+                    //   0x03,
+                    //   this.delBag[0].n5,
+                    //   this.delBag[0].n6,
+                    //   this.delBag[0].n7,
+                    //   this.delBag[0].n8,
+                    //   xiao
+                    // ];
+                    // console.log("开始按UTC删除数据0");
+                    // this.sendDataToWXDevice(
+                    //   this.deviceId,
+                    //   bytesArrayToBase64(lenXiao)
+                    // );
+                    // this.parsePackets({
+                    //   deviceId,
+                    //   content: base64Data,
+                    //   studentId: this.studentId
+                    // });
                   }
-                  this.parsePackets({
-                    deviceId,
-                    content: base64Data,
-                    studentId: "227"
-                  });
                 }
               } else if (
                 obj[2] === "04" &&
@@ -911,109 +1398,106 @@ export default {
                 if (obj[5] === "02") {
                   // 请求数据包请求失败，无效记录序号,开始按UTC删除数据
                   console.log("请求数据包第一个目录包结束,开始按UTC删除数据");
-                  // return false;
-                  let xiao =
-                    0x23 ^
-                    (0 + 0x09) ^
-                    (1 + 0x08) ^
-                    (2 + 0xf1) ^
-                    (3 + 0x04) ^
-                    (4 + 0x00) ^
-                    (5 + 0x03) ^
-                    (6 + this.delBag[0].n5) ^
-                    (7 + this.delBag[0].n6) ^
-                    (8 + this.delBag[0].n7) ^
-                    (9 + this.delBag[0].n8) ^
-                    10;
-                  let lenXiao = [
-                    0x23,
-                    0x09,
-                    0x08,
-                    0xf1,
-                    0x04,
-                    0x00,
-                    0x03,
-                    this.delBag[0].n5,
-                    this.delBag[0].n6,
-                    this.delBag[0].n7,
-                    this.delBag[0].n8,
-                    xiao
-                  ];
-                  console.log("开始按UTC删除数据0");
-                  this.sendDataToWXDevice(
-                    this.deviceId,
-                    bytesArrayToBase64(lenXiao)
-                  );
-                  this.parsePackets({
-                    deviceId,
-                    content: base64Data,
-                    studentId: "227"
-                  });
+                  // let xiao =
+                  //   0x23 ^
+                  //   (0 + 0x09) ^
+                  //   (1 + 0x08) ^
+                  //   (2 + 0xf1) ^
+                  //   (3 + 0x04) ^
+                  //   (4 + 0x00) ^
+                  //   (5 + 0x03) ^
+                  //   (6 + this.delBag[0].n5) ^
+                  //   (7 + this.delBag[0].n6) ^
+                  //   (8 + this.delBag[0].n7) ^
+                  //   (9 + this.delBag[0].n8) ^
+                  //   10;
+                  // let lenXiao = [
+                  //   0x23,
+                  //   0x09,
+                  //   0x08,
+                  //   0xf1,
+                  //   0x04,
+                  //   0x00,
+                  //   0x03,
+                  //   this.delBag[0].n5,
+                  //   this.delBag[0].n6,
+                  //   this.delBag[0].n7,
+                  //   this.delBag[0].n8,
+                  //   xiao
+                  // ];
+                  // console.log("开始按UTC删除数据0");
+                  // this.sendDataToWXDevice(
+                  //   this.deviceId,
+                  //   bytesArrayToBase64(lenXiao)
+                  // );
+                  // this.parsePackets({
+                  //   deviceId,
+                  //   content: base64Data,
+                  //   studentId: this.studentId
+                  // });
                 }
               } else if (obj[2] === "10" && obj[3] === "F1") {
-                // return false;
-                let index = this.delBagIndex;
-                index++;
-                if (this.delBag.length > index) {
-                  this.delBagIndex = index;
-                  let xiao =
-                    0x23 ^
-                    (0 + 0x09) ^
-                    (1 + 0x08) ^
-                    (2 + 0xf1) ^
-                    (3 + 0x04) ^
-                    (4 + 0x00) ^
-                    (5 + 0x03) ^
-                    (6 + this.delBag[index].n5) ^
-                    (7 + this.delBag[index].n6) ^
-                    (8 + this.delBag[index].n7) ^
-                    (9 + this.delBag[index].n8) ^
-                    10;
-                  let lenXiao = [
-                    0x23,
-                    0x09,
-                    0x08,
-                    0xf1,
-                    0x04,
-                    0x00,
-                    0x03,
-                    this.delBag[index].n5,
-                    this.delBag[index].n6,
-                    this.delBag[index].n7,
-                    this.delBag[index].n8,
-                    xiao
-                  ];
-                  console.log("开始按UTC删除数据" + index);
-                  this.sendDataToWXDevice(
-                    this.deviceId,
-                    bytesArrayToBase64(lenXiao)
-                  );
-                  this.parsePackets(data);
-                } else {
-                  this.delBagIndex = 0;
-                  this.deviceIndex = 0;
-                  let getAcquisitionActivity = [
-                    0x23,
-                    0x05,
-                    0x02,
-                    0xf1,
-                    0x01,
-                    0x00,
-                    0x03,
-                    0xd8
-                  ];
-                  this.sendDataToWXDevice(
-                    deviceId,
-                    bytesArrayToBase64(getAcquisitionActivity)
-                  );
-                  this.parsePackets({
-                    deviceId,
-                    content: base64Data,
-                    studentId: "227"
-                  });
-                }
+                // let index = this.delBagIndex;
+                // index++;
+                // if (this.delBag.length > index) {
+                //   this.delBagIndex = index;
+                //   let xiao =
+                //     0x23 ^
+                //     (0 + 0x09) ^
+                //     (1 + 0x08) ^
+                //     (2 + 0xf1) ^
+                //     (3 + 0x04) ^
+                //     (4 + 0x00) ^
+                //     (5 + 0x03) ^
+                //     (6 + this.delBag[index].n5) ^
+                //     (7 + this.delBag[index].n6) ^
+                //     (8 + this.delBag[index].n7) ^
+                //     (9 + this.delBag[index].n8) ^
+                //     10;
+                //   let lenXiao = [
+                //     0x23,
+                //     0x09,
+                //     0x08,
+                //     0xf1,
+                //     0x04,
+                //     0x00,
+                //     0x03,
+                //     this.delBag[index].n5,
+                //     this.delBag[index].n6,
+                //     this.delBag[index].n7,
+                //     this.delBag[index].n8,
+                //     xiao
+                //   ];
+                //   console.log("开始按UTC删除数据" + index);
+                //   this.sendDataToWXDevice(
+                //     this.deviceId,
+                //     bytesArrayToBase64(lenXiao)
+                //   );
+                //   this.parsePackets(data);
+                // } else {
+                //   this.delBagIndex = 0;
+                //   this.deviceIndex = 0;
+                //   let getAcquisitionActivity = [
+                //     0x23,
+                //     0x05,
+                //     0x02,
+                //     0xf1,
+                //     0x01,
+                //     0x00,
+                //     0x03,
+                //     0xd8
+                //   ];
+                //   this.sendDataToWXDevice(
+                //     deviceId,
+                //     bytesArrayToBase64(getAcquisitionActivity)
+                //   );
+                //   this.parsePackets({
+                //     deviceId,
+                //     content: base64Data,
+                //     studentId: this.studentId
+                //   });
+                // }
               }
-              // this.parsePackets(data);
             }
           });
         });
