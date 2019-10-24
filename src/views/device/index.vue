@@ -774,93 +774,93 @@ export default {
               //       this.sleepList[this.sleepIndex]
               //     );
               //   }
-              // }
-            } else if (obj[2] === "01" && obj[3] === "00") {
-              // 睡眠片段
-              console.log("睡眠片段");
-              if (obj[0] === "FF" && obj[1] === "FF") {
-                this.sleepIndex++;
-                console.log(this.sleepIndex);
-                if (this.sleepList.length > this.sleepIndex) {
-                  this.sendActiveDataToWXDevice(
-                    this.deviceId,
-                    this.sleepList[this.sleepIndex]
-                  );
-                } else {
-                  console.log(this.sleepUTC);
-                  console.log("请求数据包第一个目录包结束,开始删除睡眠数据");
-                  //   let xiao =
-                  //     0x23 ^
-                  //     (0 + 0x09) ^
-                  //     (1 + 0x08) ^
-                  //     (2 + 0xf1) ^
-                  //     (3 + 0x04) ^
-                  //     (4 + 0x00) ^
-                  //     (5 + 0x03) ^
-                  //     (6 + this.sleepUTC[0].n5) ^
-                  //     (7 + this.sleepUTC[0].n6) ^
-                  //     (8 + this.sleepUTC[0].n7) ^
-                  //     (9 + this.sleepUTC[0].n8) ^
-                  //     10;
+            }
+          } else if (obj[2] === "01" && obj[3] === "00") {
+            // 睡眠片段
+            console.log("睡眠片段");
+            if (obj[0] === "FF" && obj[1] === "FF") {
+              this.sleepIndex++;
+              console.log(this.sleepIndex);
+              if (this.sleepList.length > this.sleepIndex) {
+                this.sendActiveDataToWXDevice(
+                  this.deviceId,
+                  this.sleepList[this.sleepIndex]
+                );
+              } else {
+                console.log(this.sleepUTC);
+                console.log("请求数据包第一个目录包结束,开始删除睡眠数据");
+                //     //   let xiao =
+                //     //     0x23 ^
+                //     //     (0 + 0x09) ^
+                //     //     (1 + 0x08) ^
+                //     //     (2 + 0xf1) ^
+                //     //     (3 + 0x04) ^
+                //     //     (4 + 0x00) ^
+                //     //     (5 + 0x03) ^
+                //     //     (6 + this.sleepUTC[0].n5) ^
+                //     //     (7 + this.sleepUTC[0].n6) ^
+                //     //     (8 + this.sleepUTC[0].n7) ^
+                //     //     (9 + this.sleepUTC[0].n8) ^
+                //     //     10;
 
-                  //   let lenXiao = [
-                  //     0x23,
-                  //     0x09,
-                  //     0x08,
-                  //     0xf1,
-                  //     0x04,
-                  //     0x00,
-                  //     0x03,
-                  //     this.sleepUTC[0].n5,
-                  //     this.sleepUTC[0].n6,
-                  //     this.sleepUTC[0].n7,
-                  //     this.sleepUTC[0].n8,
-                  //     xiao
-                  //   ];
+                //     //   let lenXiao = [
+                //     //     0x23,
+                //     //     0x09,
+                //     //     0x08,
+                //     //     0xf1,
+                //     //     0x04,
+                //     //     0x00,
+                //     //     0x03,
+                //     //     this.sleepUTC[0].n5,
+                //     //     this.sleepUTC[0].n6,
+                //     //     this.sleepUTC[0].n7,
+                //     //     this.sleepUTC[0].n8,
+                //     //     xiao
+                //     //   ];
 
-                  //   console.log("删除条目的睡眠记录信息开始0");
-                  //   this.sendActiveBagDataToWXDevice(
-                  //     this.deviceId,
-                  //     bytesArrayToBase64(lenXiao)
-                  //   );
-                  //   this.parsePackets(data);
-                }
-                //   let xiao =
-                //     0x23 ^
-                //     (0 + 0x09) ^
-                //     (1 + 0x08) ^
-                //     (2 + 0xf1) ^
-                //     (3 + 0x04) ^
-                //     (4 + 0x00) ^
-                //     (5 + 0x03) ^
-                //     (6 + this.sleepUTC[0].n5) ^
-                //     (7 + this.sleepUTC[0].n6) ^
-                //     (8 + this.sleepUTC[0].n7) ^
-                //     (9 + this.sleepUTC[0].n8) ^
-                //     10;
-
-                //   let lenXiao = [
-                //     0x23,
-                //     0x09,
-                //     0x08,
-                //     0xf1,
-                //     0x04,
-                //     0x00,
-                //     0x03,
-                //     this.sleepUTC[0].n5,
-                //     this.sleepUTC[0].n6,
-                //     this.sleepUTC[0].n7,
-                //     this.sleepUTC[0].n8,
-                //     xiao
-                //   ];
-
-                //   console.log("删除条目的睡眠记录信息开始0");
-                //   this.sendActiveBagDataToWXDevice(
-                //     this.deviceId,
-                //     bytesArrayToBase64(lenXiao)
-                //   );
-                //   this.parsePackets(data);
+                //     //   console.log("删除条目的睡眠记录信息开始0");
+                //     //   this.sendActiveBagDataToWXDevice(
+                //     //     this.deviceId,
+                //     //     bytesArrayToBase64(lenXiao)
+                //     //   );
+                //     //   this.parsePackets(data);
               }
+              //   let xiao =
+              //     0x23 ^
+              //     (0 + 0x09) ^
+              //     (1 + 0x08) ^
+              //     (2 + 0xf1) ^
+              //     (3 + 0x04) ^
+              //     (4 + 0x00) ^
+              //     (5 + 0x03) ^
+              //     (6 + this.sleepUTC[0].n5) ^
+              //     (7 + this.sleepUTC[0].n6) ^
+              //     (8 + this.sleepUTC[0].n7) ^
+              //     (9 + this.sleepUTC[0].n8) ^
+              //     10;
+
+              //   let lenXiao = [
+              //     0x23,
+              //     0x09,
+              //     0x08,
+              //     0xf1,
+              //     0x04,
+              //     0x00,
+              //     0x03,
+              //     this.sleepUTC[0].n5,
+              //     this.sleepUTC[0].n6,
+              //     this.sleepUTC[0].n7,
+              //     this.sleepUTC[0].n8,
+              //     xiao
+              //   ];
+
+              //   console.log("删除条目的睡眠记录信息开始0");
+              //   this.sendActiveBagDataToWXDevice(
+              //     this.deviceId,
+              //     bytesArrayToBase64(lenXiao)
+              //   );
+              //   this.parsePackets(data);
+              // }
             } else if (obj[2] === "10" && obj[3] === "F0" && obj[1] === "08") {
               console.log("请求数据包第二个目录包结束,开始删除数据");
             }

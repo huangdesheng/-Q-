@@ -17,20 +17,8 @@
         <div class="cell min-h120">
           <div class="cell-hd">
             <label class="label">
-              <img
-                :src="imageUrl"
-                width="50"
-                height="50"
-                radius="50"
-                v-if="imageUrl"
-              />
-              <img
-                src="@/assets/child-default@2x.png"
-                width="50"
-                height="50"
-                radius="50"
-                v-else
-              />
+              <img :src="imageUrl" width="50" height="50" radius="50" v-if="imageUrl" />
+              <img src="@/assets/child-default@2x.png" width="50" height="50" radius="50" v-else />
             </label>
           </div>
           <div class="cell-bd text-right">
@@ -44,12 +32,7 @@
             <label class="label">姓名</label>
           </div>
           <div class="cell-bd">
-            <input
-              class="input"
-              placeholder="请输入姓名"
-              maxlength="5"
-              v-model.trim="form.studentName"
-            />
+            <input class="input" placeholder="请输入姓名" maxlength="5" v-model.trim="form.studentName" />
           </div>
         </div>
         <div class="cell cell-select cell-select-after min-h120">
@@ -62,8 +45,7 @@
                 :value="option.id"
                 v-for="(option, index) in sexList"
                 :key="index"
-                >{{ option.name }}</option
-              >
+              >{{ option.name }}</option>
             </select>
           </div>
         </div>
@@ -87,12 +69,7 @@
             <label class="label">地址</label>
           </div>
           <div class="cell-bd">
-            <input
-              class="input"
-              placeholder="请输入地址"
-              maxlength="100"
-              v-model.trim="form.address"
-            />
+            <input class="input" placeholder="请输入地址" maxlength="100" v-model.trim="form.address" />
           </div>
         </div>
 
@@ -108,8 +85,7 @@
                 :value="option.id"
                 v-for="(option, index) in relationList"
                 :key="index"
-                >{{ option.name }}</option
-              >
+              >{{ option.name }}</option>
             </select>
           </div>
         </div>
@@ -141,19 +117,12 @@
               v-model.trim="form.verifyCode"
             />
           </div>
-        </div> -->
-
+        </div>-->
       </div>
     </div>
     <div class="page-ft">
       <div class="fixed-bottom" style="z-index: 100;">
-        <van-button
-          type="info"
-          size="large"
-          class="no-radius"
-          @click="handleSubmit"
-          >添加</van-button
-        >
+        <van-button type="info" size="large" class="no-radius" @click="handleSubmit">添加</van-button>
       </div>
     </div>
   </div>
@@ -184,7 +153,7 @@ export default {
         address: "",
         sex: 1,
         tel: "",
-        relation: 1,
+        relation: 1
         // verifyCode: ""
       }
     };
@@ -274,14 +243,13 @@ export default {
       }
     },
     //点击获取验证码
-    acquireYZM(){
-       if (isPhone(this.form.tel)) {
-         console.log(1111)
+    acquireYZM() {
+      if (isPhone(this.form.tel)) {
         this.telVeriftCode(this.form.tel);
       } else {
         this.$toast("请正确填写手机号");
       }
-    },
+    }
     //获取验证码
     // async telVeriftCode(tel) {
     //   let res = await service.telVeriftCode({ tel, codeType: 0 });

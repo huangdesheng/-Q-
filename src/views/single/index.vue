@@ -376,7 +376,7 @@ export default {
     //备注打星
     handleNote(params) {
       let day = dayjs().format("YYYY-MM-DD");
-      console.log(params)
+      console.log(params);
       let { openId, title, starCount, ...args } = params;
       this.dialogNote = true;
       this.form = Object.assign({}, args, { day });
@@ -470,7 +470,10 @@ export default {
       //如果没有绑定手环
       if (this.isBindBracelet == 0) {
         this.$router.push({
-          path: "/bracelet"
+          path: "/bracelet",
+          query: {
+            title: params.title
+          }
         });
       } else {
         this.$router.push({
