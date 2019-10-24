@@ -44,26 +44,66 @@
           <van-cell-group>
             <figure class="figure figure-skin-two" @click="go(homework)">
               <div class="figure-bd">
+                <!-- :style="{
+                      backgroundImage:
+                        'url(' + require('@/assets/avatar-bg@2x.png') + ')'
+                    }" -->
+                <div
+                  class="figure-thumb-small"
+                  v-if="homework.topImage"
+                  :style="{ backgroundImage: `url(${homework.topImage})` }"
+                ></div>
                 <div class="figure-info">
-                  <figcaption size-18 class="text-ellipsis">
-                    <i v-if="!homework.status" style="width:6px;height:6px;"></i>
-                    <span>{{ homework.title }}</span>
+                  <figcaption
+                    style="marginBottom:12px"
+                    size-18
+                    class="text-ellipsis"
+                  >
+                    <i
+                      v-if="!homework.status"
+                      style="width:6px;height:6px;"
+                    ></i>
+                    <span size-18 style="font-weight:600">{{
+                      homework.title
+                    }}</span>
                   </figcaption>
+                  <p class="line-clamp">
+                    {{ homework.textContent | brReplace }}
+                  </p>
                   <div class="metedata flex">
                     <time class="time">{{ homework.postTime }}</time>
                   </div>
-                  <div
-                    class="figure-thumb-medium"
-                    v-if="homework.topImage"
-                    :style="{backgroundImage: `url(${homework.topImage})`}"
-                  ></div>
-                  <p class="line-clamp">{{ homework.textContent | brReplace }}</p>
                 </div>
               </div>
               <div class="figure-ft">
-                <div class="figure-icon">
-                  <van-icon name="eye-o" size="16px"></van-icon>
-                  <b>{{ homework.classReadCount }}</b>
+                <div class="figure-total">
+                  <div class="figure-icon">
+                    <!-- <van-icon name="eye-o" size="16px"></van-icon>
+                  <b>{{ homework.classReadCount }}</b> -->
+                    <div class="user">
+                      <div class="userImg">
+                        <img
+                          v-if="homework.photo"
+                          :src="homework.photo"
+                          alt=""
+                        />
+                        <img
+                          v-else
+                          src="@/assets/child-default@2x.png"
+                          alt=""
+                        />
+                      </div>
+                      <span class="name">{{ homework.teacherName }}</span>
+                    </div>
+                    <div class="readNum">
+                      <van-icon
+                        name="eye-o"
+                        size="16px"
+                        color="#999999"
+                      ></van-icon>
+                      <span>{{ homework.classReadCount }}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </figure>
@@ -207,4 +247,35 @@ export default {
 };
 </script>
 <style lang="less" scoped>
+.figure-icon {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  .user {
+    display: flex;
+    align-items: center;
+    .userImg {
+      display: inline-block;
+      margin-right: 14px;
+      img {
+        width: 40px;
+        height: 40px;
+      }
+    }
+    span {
+      font-size: 24px;
+      color: rgba(153, 153, 153, 1);
+    }
+  }
+  .readNum {
+    display: flex;
+    align-items: center;
+    span {
+      margin-left: 21px;
+      font-size: 26px;
+      color: rgba(169, 169, 169, 1);
+    }
+  }
+}
 </style>

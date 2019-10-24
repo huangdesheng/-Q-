@@ -15,11 +15,11 @@
         <div>个人中心</div>
       </router-link>
     </div>
-    <div class="item">
+    <!-- <div class="item">
       <router-link to="/device">
         <div>手环设备</div>
       </router-link>
-    </div>
+    </div> -->
 
     <!-- <div class="item">
       <router-link to="/device/studentList">

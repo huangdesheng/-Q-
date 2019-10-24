@@ -60,10 +60,15 @@
                 @click="handleConfirmFlag"
                 >{{ info.confirmFlag ? "已确认" : "确认" }}</van-button
               > -->
-              <div v-if="!info.confirmFlag" class="clickRead"  @click="handleConfirmFlag">
+              <div v-if="info.confirmFlag === -1"></div>
+              <div
+                v-if="info.confirmFlag === 0"
+                class="clickRead"
+                @click="handleConfirmFlag"
+              >
                 <p>点击确认阅读</p>
               </div>
-               <div v-else class="clickRead2">
+              <div v-if="info.confirmFlag === 1" v-cloak class="clickRead2">
                 <p>已确认阅读</p>
               </div>
             </template>
@@ -90,7 +95,9 @@ export default {
       roleType:
         this.$store.state.user.info.roleType || this.$route.query.roleType,
       needConfirm: parseInt(this.$route.query.needConfirm), //0 不用确认
-      info: {}
+      info: {
+        confirmFlag: -1
+      }
     };
   },
   computed: {
@@ -176,20 +183,20 @@ export default {
       }
     }
   },
- created() {
-    if (this.roleType == 1 || this.roleType == 4) {
-      this.querySchoolNoticeDefaul(this.query);
-    } else {
-      this.noticeDetail(this.query);
-    }
-  },
-  // activated() {
+  // created() {
   //   if (this.roleType == 1 || this.roleType == 4) {
   //     this.querySchoolNoticeDefaul(this.query);
   //   } else {
   //     this.noticeDetail(this.query);
   //   }
   // }
+  activated() {
+    if (this.roleType == 1 || this.roleType == 4) {
+      this.querySchoolNoticeDefaul(this.query);
+    } else {
+      this.noticeDetail(this.query);
+    }
+  }
 };
 </script>
 <style lang="less" scoped>
@@ -253,7 +260,7 @@ export default {
       rgba(204, 204, 204, 1),
       rgba(204, 204, 204, 1)
     );
-    box-shadow:0px 6px 10px 0px rgba(204,204,204,0.58);
+    box-shadow: 0px 6px 10px 0px rgba(204, 204, 204, 0.58);
   }
 }
 </style>

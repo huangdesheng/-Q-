@@ -72,6 +72,10 @@
                     <span style="color:#92cd36">已确认通知</span>
                   </div>
                 </template>
+
+                <template v-else>
+                  <p class="readPostTime">{{ read.postTime }}</p>
+                </template>
               </div>
             </div>
           </van-tab>
@@ -107,6 +111,10 @@
                     <p>{{ unread.postTime }}</p>
                     <span style="color:#92cd36">已确认通知</span>
                   </div>
+                </template>
+
+                <template v-else>
+                  {{ unread.postTime }}
                 </template>
               </div>
             </div>
@@ -229,7 +237,11 @@ export default {
     margin-top: 15px;
   }
 }
-.min-h120{
+.min-h120 {
   height: 140px;
+}
+.readPostTime {
+  font-size: 26px;
+  color: rgba(153, 153, 153, 1);
 }
 </style>

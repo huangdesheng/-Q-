@@ -25,7 +25,7 @@ export default [{
     meta: {
       keepAlive: true,
       isShare: false,
-      title: '班级速报详情',
+      title: '速报详情',
     }
   },
 ]

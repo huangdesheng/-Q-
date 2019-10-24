@@ -47,7 +47,7 @@ export default [{
     meta: {
       keepAlive: false,
       isShare: false,
-      title: '班级阅读情况',
+      title: '阅读详情',
     }
   },
   {

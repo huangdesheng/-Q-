@@ -17,10 +17,10 @@
               <div class="text-center">{{ item.gradeName }}</div>
             </div>
             <div class="cell-bd">
-              <div class="text-center" style="color:#9cd248" @click="jump(1)">{{ item.read }}</div>
+              <div class="text-center" style="color:#9cd248">{{ item.read }}</div>
             </div>
             <div class="cell-bd">
-              <div class="text-center" style="color:#9cd248" @click="jump(2)">{{ item.unRead }}</div>
+              <div class="text-center" style="color:#9cd248">{{ item.unRead }}</div>
             </div>
             <!-- <div class="cell-bd">
               <div
