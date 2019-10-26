@@ -12,18 +12,18 @@
       </div>
       <article class="article" v-if="!parseInt(info.isDel)">
         <h1 size-24>{{ info.title }}</h1>
-        <div class="article-hd">
-          <div class="article-cell" v-if="info.name">
-            <van-icon name="user-o" size="16px"></van-icon>
-            <span style="margin-left:5px;">{{ info.name }}</span>
+        <div class="article-hd articleTwo">
+          <div class="article-cell">
+            <van-icon class="teacherPhoto" name="user-o" size="16px"></van-icon>
+            <span>{{ info.tacherName }}</span>
           </div>
           <div class="article-cell">
-            <van-icon name="clock-o" size="16px"></van-icon>
+            <!-- <van-icon name="clock-o" size="16px"></van-icon> -->
             <time style="margin-left:5px;">{{ info.postTime }}</time>
           </div>
           <div class="article-cell">
             <van-icon name="eye-o" size="16px"></van-icon>
-            <b>{{ info.readCount }}</b>
+            <span class="classReadCount">{{ info.readCount }}</span>
           </div>
         </div>
         <div size-16 class="article-bd">
@@ -33,6 +33,12 @@
               <img :src="img.imageUrl" />
             </p>
           </template>
+        </div>
+        <div class="deadline">
+          <van-icon name="clock-o" size="16px"></van-icon>
+          <span class="startDate">{{ info.startDate }}</span>
+          <span>~</span>
+          <span class="endDate">{{ info.endDate }}</span>
         </div>
       </article>
     </div>
@@ -85,7 +91,7 @@ export default {
       query2: {
         recipeId: this.$route.query.recipeId,
         openId: this.$store.state.user.info.openId || this.$route.query.openId,
-        studentId:this.$store.state.user.info.studentId
+        studentId: this.$store.state.user.info.studentId
       },
       openId: this.$store.state.user.info.openId || this.$route.query.openId, //用户openid
       roleType:
@@ -176,7 +182,7 @@ export default {
     }
   },
   activated() {
-    console.log(this.roleType)
+    console.log(this.roleType);
     if (this.roleType == 1 || this.roleType == 4) {
       this.recipeInfo(this.query);
     } else {
@@ -186,6 +192,12 @@ export default {
 };
 </script>
 <style lang="less" scoped>
+.articleTwo {
+  margin-top: 20px;
+}
+.classReadCount {
+  margin-left: 21px;
+}
 .icon {
   width: 80px;
   height: 80px;
@@ -195,19 +207,19 @@ export default {
   height: 120px;
   background: rgba(255, 255, 255, 1);
   box-shadow: 0px 0px 5px 0px rgba(21, 21, 21, 0.1);
-  position:fixed;
-  bottom:0;
+  position: fixed;
+  bottom: 0;
   width: 100%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   p {
     font-size: 36px;
     color: rgba(255, 255, 255, 1);
     width: 500px;
     height: 80px;
-    line-height:80px;
-    text-align:center;
+    line-height: 80px;
+    text-align: center;
     background: linear-gradient(
       -10deg,
       rgba(170, 221, 90, 1),
@@ -216,5 +228,22 @@ export default {
     box-shadow: 0px 6px 10px 0px rgba(128, 199, 17, 0.3);
     border-radius: 40px;
   }
+}
+.deadline {
+  display: flex;
+  align-items: center;
+  font-size: 30px;
+  color: rgba(102, 102, 102, 1);
+  line-height: 30px;
+}
+.startDate {
+  margin-left: 21px;
+  margin-right: 10px;
+}
+.endDate {
+  margin-left: 10px;
+}
+.teacherPhoto {
+  margin-right: 21px;
 }
 </style>

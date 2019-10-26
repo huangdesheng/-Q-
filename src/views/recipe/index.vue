@@ -50,16 +50,20 @@
                   <figcaption size-18 class="text-ellipsis">
                     {{ recipe.title }}
                   </figcaption>
-                  <!-- <div
-                    class="figure-thumb-medium"
-                    v-if="recipe.topImage"
-                    :style="{ backgroundImage: `url(${recipe.topImage})` }"
-                  ></div> -->
-                  <p class="line-clamp">{{ recipe.textContent | brReplace }}</p>
                   <div class="metedata flex">
-                    <span class="name">{{ recipe.name }}</span>
+                    <!-- <span class="name">{{ recipe.name }}</span> -->
                     <time class="time">{{ recipe.postTime }}</time>
                   </div>
+                  <p class="line-clamp">{{ recipe.textContent | brReplace }}</p>
+                   <!-- :style="{
+                      backgroundImage:
+                        'url(' + require('@/assets/teacher@2x.png') + ')'
+                    }" -->
+                  <div
+                    class="figure-thumb-medium"
+                     v-if="recipe.topImage"
+                    :style="{ backgroundImage: `url(${recipe.topImage})` }"
+                  ></div>
                 </div>
               </div>
               <div class="figure-ft">
@@ -67,8 +71,33 @@
                   <van-icon name="eye-o" size="16px"></van-icon>
                   <b>{{ recipe.readCount }}</b>
                 </div> -->
-                <div class="figure-total">
+                <!-- <div class="figure-total">
                   <span>已读{{ recipe.readCount }}人</span>
+                </div> -->
+                 <div class="figure-icon">
+                  <div class="user">
+                    <div class="userImg">
+                      <img v-if="recipe.photo" :src="recipe.photo" alt="" />
+                      <img v-else src="@/assets/child-default@2x.png" alt="" />
+                    </div>
+                    <span class="name">{{ recipe.name }}</span>
+                  </div>
+                  <div class="readNum">
+                    <van-icon
+                      name="eye-o"
+                      size="16px"
+                      color="#999999"
+                    ></van-icon>
+                    <span>{{ recipe.readCount }}</span>
+
+                    <!-- <van-icon
+                      class="vanIcon2"
+                      name="comment-o"
+                      size="16px"
+                      color="#999999"
+                    />
+                    <span>{{ recipe.classCommentCount }}</span> -->
+                  </div>
                 </div>
               </div>
             </figure>
@@ -122,7 +151,7 @@ export default {
       if (this.query.page < this.totalPage) {
         //加载数据
         this.query.page += 1;
-        service.recipeQuery(this.query).then(res => {
+        service.recipeQuery(this.query2).then(res => {
           if (res.errorCode === 0) {
             let list = res.data.data;
             this.totalPage = res.data.totalPage;
@@ -184,7 +213,7 @@ export default {
       this.query.page = 1;
       //当切换班级时，重新设置为没有全部加载完成
       this.finished = false;
-      this.recipeQuery(this.query);
+      this.recipeQuery(this.query2);
     },
     //食谱列表查询 家长端、老师端
     async recipeQuery(params = {}) {
@@ -237,5 +266,49 @@ export default {
 <style lang="less" scoped>
 .line-clamp {
   font-size: 30px;
+}
+.text-ellipsis {
+  font-size: 36px;
+  font-family: PingFang SC;
+  font-weight: bold;
+  color: rgba(37, 37, 37, 1);
+  margin-bottom: 28px;
+}
+.figure-icon {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+  margin-right: 0;
+  .user {
+    display: flex;
+    align-items: center;
+    .userImg {
+      display: inline-block;
+      margin-right: 14px;
+      img {
+        width: 40px;
+        height: 40px;
+      }
+    }
+    span {
+      font-size: 24px;
+      color: rgba(153, 153, 153, 1);
+    }
+  }
+  .readNum {
+    display: flex;
+    align-items: center;
+    span {
+      margin-left: 21px;
+      font-size: 26px;
+      color: rgba(169, 169, 169, 1);
+    }
+    .vanIcon2 {
+      margin-left: 40px;
+    }
+  }
 }
 </style>

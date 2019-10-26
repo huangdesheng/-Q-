@@ -46,7 +46,7 @@
         <div class="pichi-body">
           <div class="flex a-i-c j-c-c mb-30" @click="handleMessage">
             <img src="@/assets/rate-icon@2x.png" width="30" height="30" />
-            <strong class="ml-20">{{ todayStarTotal }}</strong>
+            <strong class="ml-20">{{ totalStarCount }}</strong>
             <p size-12 style="align-self: flex-end;margin-bottom:8px">(可兑换Q星数量)</p>
           </div>
           <p>手指勾勾约定好，奖励兑现要做到！</p>
@@ -212,7 +212,7 @@ export default {
         this.$toast("请勾选你要兑换的奖项");
         return;
       }
-      if (this.total > this.todayStarTotal) {
+      if (this.total > this.totalStarCount) {
         this.$toast("你的Q星数量不够兑换的奖项哦");
         return;
       }
