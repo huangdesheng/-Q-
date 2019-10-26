@@ -306,15 +306,17 @@ export default {
           height: 100px;
         }
         span {
-          display: inline-block;
-          width: 24px;
-          height: 24px;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          width: 30px;
+          height: 30px;
+          line-height: 30px;
           background: #f02310;
           color: #fff;
           border-radius: 50%;
           text-align: center;
           font-size: 24px;
-          line-height: 24px;
           position: absolute;
           top: 0;
           right: 0;

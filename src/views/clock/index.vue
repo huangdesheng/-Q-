@@ -118,17 +118,32 @@
                 <div class="timeFrame">
                   <div class="Am">
                     <span>上午</span>
-                    <img src="@/assets/check.png" alt />
+                    <img
+                      v-if="month.morming === 0"
+                      src="@/assets/check.png"
+                      alt
+                    />
+                    <img v-else src="@/assets/NoCheck.png" alt="" />
                   </div>
 
                   <div class="Noon">
                     <span>中午</span>
-                    <img src="@/assets/check.png" alt />
+                    <img
+                      v-if="month.lunch === 0"
+                      src="@/assets/check.png"
+                      alt
+                    />
+                    <img v-else src="@/assets/NoCheck.png" alt="" />
                   </div>
 
                   <div class="Pm">
                     <span>下午</span>
-                    <img src="@/assets/check.png" alt />
+                    <img
+                      v-if="month.evening === 0"
+                      src="@/assets/check.png"
+                      alt
+                    />
+                    <img v-else src="@/assets/NoCheck.png" alt="" />
                   </div>
                 </div>
               </div>

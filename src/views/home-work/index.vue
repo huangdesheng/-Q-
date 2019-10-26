@@ -46,11 +46,11 @@
               <div class="figure-bd">
                 <!-- :style="{
                       backgroundImage:
-                        'url(' + require('@/assets/avatar-bg@2x.png') + ')'
+                        'url(' + require('@/assets/teacher@2x.png') + ')'
                     }" -->
                 <div
-                  class="figure-thumb-small"
-                  v-if="homework.topImage"
+                  class="figure-thumb-small homeWorkImage"
+                   v-if="homework.topImage"
                   :style="{ backgroundImage: `url(${homework.topImage})` }"
                 ></div>
                 <div class="figure-info">
@@ -277,5 +277,12 @@ export default {
       color: rgba(169, 169, 169, 1);
     }
   }
+}
+.figure-skin-two figcaption {
+  padding: 0;
+}
+.figure-bd {
+  padding-top: 20px;
+  padding-bottom:20px;
 }
 </style>
