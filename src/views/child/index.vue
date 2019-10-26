@@ -71,6 +71,7 @@ export default {
         let { sex, ...args } = params;
         let _cookie = Cookies.getJSON("info");
         let obj = Object.assign({}, _cookie, args);
+        console.log(obj);
         this.$store.dispatch("user/setInfo", obj).then(data => {
           if (data.success === "ok") {
             let param = {
@@ -100,6 +101,7 @@ export default {
     //最后登录状态记录
     async switchingState(params = {}) {
       let res = await service.switchingState(params);
+      console.log(res);
       if (res.errorCode === 0) {
       }
     }

@@ -25,6 +25,7 @@
 
 <script>
 let echarts = require("echarts/lib/echarts");
+import { mapState } from "vuex";
 // 引入折线组件
 import "echarts/lib/chart/line";
 import "echarts/lib/chart/pie";
@@ -43,6 +44,18 @@ export default {
       currentDate: new Date(),
       date: dayjs().format("YYYY-MM-DD")
     };
+  },
+  computed: {
+    ...mapState("user", {
+      openId: state => state.info.openId,
+      name: state => state.info.name,
+      photo: state => state.info.photo,
+      totalStarCount: state => state.info.totalStarCount,
+      id: state => state.info.id,
+      studentId: state => state.info.studentId,
+      roleType: state => state.info.roleType,
+      isOpen: state => state.info.isOpen
+    })
   },
   mounted() {
     this.drawLine();
@@ -116,6 +129,16 @@ export default {
       //   } else {
       //     this.clockStatWithSchool(this.query);
       //   }
+    },
+
+    async StudentLessonActive() {
+      console.log(this.date);
+      let data = {
+        studentId: this.studentId,
+        day: "2019-10-24",
+        startTime: "04:00",
+        endTime: "05:00"
+      };
     }
   }
 };

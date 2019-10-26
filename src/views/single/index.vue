@@ -467,6 +467,8 @@ export default {
       });
     },
     jumpCourseView(params) {
+      console.log(params);
+
       //如果没有绑定手环
       if (this.isBindBracelet == 0) {
         this.$router.push({
