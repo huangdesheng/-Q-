@@ -164,6 +164,15 @@ export function setMannerWear(params, config = {
     .catch(e => console.log(e));
 }
 
+// 返回佩戴习惯
+export function getMannerWear(params, config = {
+  showLoading: false
+}) {
+  return ax.post('/qxiao-mp/action/mod-xiaojiao/device/getMannerWear.do', params, config)
+    .then(res => res.data)
+    .catch(e => console.log(e));
+}
+
 // 查询定义闹钟
 export function getAlarmClock(params, config = {
   showLoading: false

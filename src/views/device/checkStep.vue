@@ -12,12 +12,12 @@
           </div>
         </div>
         <div class="content">
-          <div class="top" v-for="(item,index) in totalStep" :key="index">
-            <p>{{item.date}}</p>
+          <div class="top">
+            <p>{{totalStepName.date}}</p>
             <div class="flex j-c-s-b a-i-c">
-              <span>{{item.createTime}}</span>
-              <span>{{item.totalStep}}步</span>
-              <span>燃烧{{item.calorie}}卡路里</span>
+              <span>{{totalStepName.createTime}}</span>
+              <span>{{totalStepName.totalStep}}步</span>
+              <span>燃烧{{totalStepName.calorie}}卡路里</span>
             </div>
           </div>
           <div class="flex j-c-s-b a-i-c" v-for="(item,index) in list" :key="index">
@@ -41,43 +41,53 @@
 
 <script>
 import service from "@/api";
+import { bytesArrayToBase64 } from "@/utils/arrayToBase64";
+import { mapState } from "vuex";
+
 export default {
   data() {
     return {
       setStep: 0,
       step: "",
       list: [],
-      totalStep: []
+      totalStepName: {}
     };
   },
   mounted() {
     this.getStepNumber();
     this.getStepNumberHistory();
   },
+  computed: {
+    ...mapState("user", {
+      openId: state => state.info.openId,
+      name: state => state.info.name,
+      photo: state => state.info.photo,
+      totalStarCount: state => state.info.totalStarCount,
+      id: state => state.info.id,
+      studentId: state => state.info.studentId,
+      roleType: state => state.info.roleType,
+      isOpen: state => state.info.isOpen
+    })
+  },
   methods: {
     async getStepNumber() {
       let res = await service.getStepNumber({
-        studentId: "1"
+        studentId: this.studentId
       });
       if (res.errorCode === 0) {
         this.setStep = res.data.stepTarget;
         this.step = res.data.stepNumber;
-        console.log(res);
-        // this.dataValue.electricPercent = res.data.electricPercent;
       }
     },
     async getStepNumberHistory() {
       let res = await service.getStepNumberHistory({
-        studentId: "1"
+        studentId: this.studentId
       });
       if (res.errorCode === 0) {
         this.list = res.data.filter(item => item.createTime != "总步数");
-        this.totalStep = res.data.filter(item => item.createTime === "总步数");
-        console.log(this.totalStep);
-        // this.setStep = res.data.stepTarget;
-        // this.step = res.data.stepNumber;
-        console.log(res);
-        // this.dataValue.electricPercent = res.data.electricPercent;
+        this.totalStepName = res.data.filter(
+          item => item.createTime === "总步数"
+        )[0];
       }
     }
   }

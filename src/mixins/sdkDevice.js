@@ -5,6 +5,7 @@ export default {
       state: "connecting",
     }
   },
+
   methods: {
     init() {
       // 初始化蓝牙状态
@@ -24,8 +25,7 @@ export default {
         WeixinJSBridge.invoke("openWXDeviceLib", {
           connType: "blue"
         }, res => {
-          console.log(11111);
-          console.log(res);
+
           if (res.err_msg === "openWXDeviceLib:ok") {
             //使用前请先打开手机蓝牙
             if (res.bluetoothState === "off") {

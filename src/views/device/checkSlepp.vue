@@ -60,6 +60,7 @@
 
 <script>
 import service from "@/api";
+import { mapState } from "vuex";
 export default {
   data() {
     return {
@@ -74,17 +75,44 @@ export default {
     this.getSleepTime();
     this.getWeekSleep();
   },
+  computed: {
+    ...mapState("user", {
+      name: state => state.info.name,
+      photo: state => state.info.photo,
+      openId: state => state.info.openId,
+      roleType: state => state.info.roleType,
+      studentId: state => state.info.studentId,
+      id: state => state.info.id,
+      classId: state => state.info.classId,
+      gradeId: state => state.info.gradeId,
+      totalStarCount: state => state.info.totalStarCount,
+      isBindBracelet: state => state.info.isBindBracelet, // 0未绑定手环 1绑定
+      experience: state => state.info.experience,
+      tel: state => state.info.tel,
+      push: state => state.info.push
+    })
+  },
   methods: {
     async getSleepTime() {
       let res = await service.getSleepTime({
-        studentId: "1"
+        studentId: this.studentId
       });
       if (res.errorCode === 0) {
         // this.setStep = res.data.stepTarget;
         // this.step = res.data.stepNumber;
         console.log(res);
         // this.dataValue.electricPercent = res.data.electricPercent;
-        this.obj = res.data;
+
+        if (res.data.length === 0) {
+          this.obj = {
+            shallowSleepTime: "0小时0分钟",
+            deepSleepTime: "0小时0分钟",
+            wakingHours: "0分钟",
+            sleepDuration: "0小时0分钟"
+          };
+        } else {
+          this.obj = res.data;
+        }
       } else {
         this.obj = {
           shallowSleepTime: "0小时0分钟",

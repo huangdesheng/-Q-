@@ -26,14 +26,27 @@
 <script>
 import service from "@/api";
 import { bytesArrayToBase64 } from "@/utils/arrayToBase64";
+import { mapState } from "vuex";
 export default {
   name: "alarmClock",
   data() {
     return {
-      wear: "0",
-      screen: "0",
+      wear: `${this.$route.query.wear}`,
+      screen: `${this.$route.query.screen}`,
       deviceId: ""
     };
+  },
+  computed: {
+    ...mapState("user", {
+      openId: state => state.info.openId,
+      name: state => state.info.name,
+      photo: state => state.info.photo,
+      totalStarCount: state => state.info.totalStarCount,
+      id: state => state.info.id,
+      studentId: state => state.info.studentId,
+      roleType: state => state.info.roleType,
+      isOpen: state => state.info.isOpen
+    })
   },
   methods: {
     async setWear() {
@@ -47,7 +60,7 @@ export default {
         wear: this.wear,
         screen: this.screen,
         deviceId: this.deviceId,
-        studentId: 227
+        studentId: this.studentId
       });
       console.log(res);
       if (res.errorCode === 0) {
@@ -187,6 +200,8 @@ export default {
     }
   },
   mounted() {
+    console.log(this.$route.query.wear);
+    console.log(this.$route.query.screen);
     this.init();
   }
 };

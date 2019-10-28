@@ -94,11 +94,10 @@ export default {
     this.hh = hour;
     this.ff = minutes;
     this.init();
-    if (this.$route.query.id) {
-      this.clock_id = this.$route.query.id;
-      this.getAlarmId(this.$route.query.id);
+    if (this.$route.query.clockId) {
+      this.clock_id = this.$route.query.clockId;
+      this.getAlarmId(this.$route.query.clockId);
     }
-    // console.log(this.$route.query.len);
   },
   computed: {
     ...mapState("user", {
@@ -124,12 +123,17 @@ export default {
       console.log(this.result);
     },
     // 查询闹钟详细
-    async getAlarmId(id) {
-      let res = await service.getAlarmId({ id, studentId: this.studentId });
+    async getAlarmId(clockId) {
+      let res = await service.getAlarmId({
+        clockId,
+        studentId: this.studentId
+      });
       if (res.errorCode === 0) {
         this.obj = res.data;
         this.currentTime = res.data.time;
         this.value = res.data.remark;
+        this.hh = parseInt(this.currentTime.slice(0, 2));
+        this.ff = parseInt(this.currentTime.slice(3, 5));
         let bitMap = String(res.data.bitMap).split("");
         let arr = String(res.data.time).split("");
         bitMap.map((item, index) => {
@@ -147,10 +151,12 @@ export default {
         arr.push(this.result.indexOf(i) >= 0 ? 1 : 0);
       }
       this.weekArr = arr;
+      console.log(arr.join(""));
       let n = `0x${parseInt(parseInt(arr.join("")), 2).toString(16)}`;
       let hh = `0x${this.hh}`;
       let ff = `0x${this.ff}`;
-      let num = `0x${this.$route.query.len}`;
+      let num = `0x${this.$route.query.index}`;
+
       const setAlarmClock = [
         0x23,
         0x07,
@@ -163,38 +169,7 @@ export default {
         0x01,
         0x00
       ];
-
-      // let getAlarmClock = [0x23, 0x03, 0x02, 0x07, 0x01, 0x00];
       this.sendDataToWXDevice(this.deviceId, bytesArrayToBase64(setAlarmClock));
-      // // 关闭修改前的闹钟
-      // if (this.id > 0) {
-      //   var _this = this;
-      //   let num_n = `0x${parseInt(obj.bitMap).toString(16)}`;
-      //   let arr = String(res.data.time).split("");
-      //   let hh = parseInt(`${arr[0]}${arr[1]}`);
-      //   let ff = parseInt(`${arr[3]}${arr[4]}`);
-      //   let num_hh = `0x${hh}`;
-      //   let num_ff = `0x${ff}`;
-      //   const closeAlarmClock = [
-      //     0x23,
-      //     0x07,
-      //     0x01,
-      //     0x07,
-      //     0x01,
-      //     num_hh,
-      //     num_ff,
-      //     num_n,
-      //     0x00,
-      //     0x00
-      //   ];
-      //   setTimeout(function() {
-      //     _this.sendDataToWXDevice(
-      //       this.deviceId,
-      //       bytesArrayToBase64(closeAlarmClock)
-      //     );
-      //   }, 1000);
-      // }
-      // this.addOrUpdateAlarmClock();
     },
     init() {
       // 初始化蓝牙状态
@@ -331,7 +306,7 @@ export default {
       });
     },
     async addOrUpdateAlarmClock() {
-      let len = parseInt(this.$route.query.len + 1);
+      let len = parseInt(this.$route.query.index);
       let data = {
         id: len,
         studentId: this.studentId,
@@ -340,7 +315,6 @@ export default {
         time: `${this.hh}:${this.ff}`,
         bitMap: this.weekArr.join("")
       };
-
       if (this.clock_id) {
         data.clock_id = this.clock_id;
       }
