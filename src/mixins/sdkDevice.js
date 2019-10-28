@@ -81,6 +81,7 @@ export default {
     getWXDeviceInfos() {
       wx.ready(() => {
         WeixinJSBridge.invoke("getWXDeviceInfos", {}, res => {
+          console.log(res)
           if (res.err_msg === "getWXDeviceInfos:ok") {
             this.state = res.deviceInfos[0].state;
             //绑定设备总数量
