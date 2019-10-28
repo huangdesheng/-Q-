@@ -1,55 +1,224 @@
 <template>
   <div class="page">
-    <div class="page-bd">
+    <div class="page-bd myHand">
       <template>
-        <div class="cells mb-20">
-          <div class="cell min-h120" v-for="item in list" :key="item.deviceId">
-            <div class="cell-hd">
-              <img src="@/assets/avatar-bg@2x.png" width="40" height="40" />
+        <div class="myhand">
+          <div class="flex a-i-c home-user gradient-two" style="position:relative">
+            <div class="flex a-i-c">
+              <div class="avatar flex a-i-c">
+                <template>
+                  <img src="@/assets/child-default@2x.png" width="60" height="60" radius="50" />
+                  <!-- <img :src="photo" width="60" height="60" radius="50" /> -->
+                </template>
+              </div>
+              <div class="js-user-change">
+                <template>
+                  <h3 class="mb-20" size-18>{{name}}</h3>
+                  <p size-12>运动需要坚持才能长存</p>
+                </template>
+              </div>
             </div>
-            <div class="cell-bd text-right">
-              <span style="color:#07c160;" v-if="item.state == 'connected'">已连接</span>
-              <span style="color:#f44;" v-else-if="item.state == 'disconnected'">连接断开</span>
-              <span style="color:#1989fa;" v-else-if="item.state == 'connecting'">连接中...</span>
-            </div>
+            <!-- <button class="connectStatus">已连接</button> -->
+            <button class="connectStatus" v-if="state == 'connected'">已连接</button>
+            <button class="connectStatus" v-else-if="state == 'disconnected'">未连接</button>
+            <button class="connectStatus" v-else-if="state == 'connecting'">连接中</button>
+          </div>
+          <div class="myAttr">
+            <!-- <van-cell
+              class="a-i-c"
+              size="large"
+              title="活跃度"
+              :value="dataValue.activeValue"
+              to="/checkActive"
+            >
+              <template slot="icon">
+                <img src="@/assets/user-icon-5@2x.png" class="user-icon" />
+              </template>
+            </van-cell>-->
+            <van-cell
+              class="a-i-c"
+              size="large"
+              title="运动步数"
+              :value="dataValue.step+'步'"
+              to="/checkStep"
+            >
+              <template slot="icon">
+                <img src="@/assets/user-icon-8@2x.png" class="user-icon" />
+              </template>
+            </van-cell>
+            <van-cell
+              class="a-i-c"
+              size="large"
+              title="昨晚睡眠"
+              :value="dataValue.nightTime"
+              to="/checkSlepp"
+            >
+              <template slot="icon">
+                <img src="@/assets/user-icon-9@2x.png" class="user-icon" />
+              </template>
+            </van-cell>
+            <van-cell
+              class="a-i-c"
+              size="large"
+              title="午睡"
+              :value="dataValue.lunchTime"
+              to="/checkSlepp"
+            >
+              <template slot="icon">
+                <img src="@/assets/user-icon-9@2x.png" class="user-icon" />
+              </template>
+            </van-cell>
           </div>
         </div>
+        <div class="setAttr">
+          <van-cell
+            class="a-i-c"
+            size="large"
+            title="目标设定"
+            is-link
+            :value="`${dataValue.setStep}步`"
+            @click="stepTip"
+          ></van-cell>
+          <van-cell
+            class="a-i-c"
+            size="large"
+            title="手环闹钟"
+            is-link
+            :value="clockCount"
+            to="/alarm-clock"
+          ></van-cell>
+          <van-cell
+            class="a-i-c"
+            size="large"
+            title="佩戴方式"
+            is-link
+            :value="getWear"
+            @click="setWear"
+          ></van-cell>
+          <van-cell class="a-i-c" size="large" title="剩余电量" :value="dataValue.electricPercent"></van-cell>
+        </div>
+        <div style="margin-top:10px" class="version">
+          <van-cell title="版本" value="V1.0" size="large" />
+          <van-cell title="品牌" value="小Q手环学校版" size="large" />
+        </div>
+        <button @click="run">发送数据</button>
       </template>
     </div>
     <div class="page-ft">
       <div class="fixed-bottom" style="z-index: 100;">
-        <div class="flex">
-          <van-button type="danger" size="large" class="no-radius" @click="run">发送数据</van-button>
-        </div>
+        <van-button type="info" size="large" class="no-radius" @click="handleCancel">解除绑定</van-button>
       </div>
     </div>
+    <van-dialog v-model="stepStatus" title="标题" show-cancel-button :beforeClose="chargeBtn">
+      <van-field
+        v-model="stepValue"
+        placeholder="目标步数上限65535"
+        style="width: 90%;
+        margin: 10px auto;
+        background: rgba(46,46,46,0.1);"
+        type="number"
+      />
+    </van-dialog>
   </div>
 </template>
 <script>
-import { mapState } from "vuex";
+import Cookies from "js-cookie";
 import service from "@/api";
+import qxFooter from "@/components/Footer";
+import { mapState } from "vuex";
+import wxapi from "@/config/wxapi";
+import { API_ROOT } from "@/config/isdev";
 import { bytesArrayToBase64 } from "@/utils/arrayToBase64";
 export default {
-  name: "device",
+  name: "user",
+  components: {
+    qxFooter
+  },
   data() {
     return {
-      base64: "",
-      bluetooth: false, //是否打开蓝牙
-      deviceId: null, //设备ID
-      list: [], //设备列表
-      map: [],
-      // 活跃度部分
+      dataValue: {
+        activeValue: "超越全国0%",
+        step: "0",
+        nightTime: "0小时0分",
+        lunchTime: "0小时0分",
+        setStep: 0,
+        electricPercent: "0%"
+      },
+      getValueMenu: [
+        {
+          title: "活跃度",
+          to: "/works/teacher",
+          value: "超越全国 80%",
+          icon: require("../../assets/user-icon-5@2x.png")
+        },
+        {
+          title: "运动步数",
+          to: "/edu-recommend",
+          value: "2500步",
+          icon: require("../../assets/user-icon-8@2x.png")
+        },
+        {
+          title: "昨晚睡眠",
+          to: "/read-recommend",
+          value: "6小时05分",
+          icon: require("../../assets/user-icon-9@2x.png")
+        },
+
+        {
+          title: "午睡",
+          value: "2小时10分",
+          to: "/read-recommend",
+          icon: require("../../assets/user-icon-9@2x.png")
+        }
+      ],
+      teacherMenu: [
+        {
+          title: "目标设定",
+          to: "/works/teacher",
+          value: "8000步",
+          icon: require("../../assets/user-icon-5@2x.png")
+        },
+        {
+          title: "手环闹钟",
+          to: "/edu-recommend",
+          value: "开启了3个",
+          icon: require("../../assets/user-icon-8@2x.png")
+        },
+        {
+          title: "佩戴方式",
+          to: "/read-recommend",
+          value: "左手-竖显",
+          icon: require("../../assets/user-icon-9@2x.png")
+        },
+        {
+          title: "剩余电量",
+          value: "50%",
+          to: "/activity-recommend",
+          icon: require("../../assets/user-icon-10@2x.png")
+        }
+      ],
+      deviceId: "",
+      getClockIndex: 1,
+      stepStatus: false,
+      stepValue: "",
+      state: "",
+      clockCount: 0,
+      getWear: "",
+      wear: 0,
+      screen: 0,
+      // 获取活跃度目录条数
       deviceArr: [],
       deviceIndex: 0,
       delBag: [],
-      delBagIndex: 0,
-      utc: "1",
       utcValue: "",
+      utc: "1",
+      delBagIndex: 0,
       // 睡眠部分
       sleepList: [],
       sleepIndex: 0,
       sleepUTC: [],
-      sleepUTCIndex: 0
+      sleepUTCIndex: 0,
+      utcSleep: 1
     };
   },
   computed: {
@@ -64,8 +233,236 @@ export default {
       isOpen: state => state.info.isOpen
     })
   },
+  mounted() {
+    this.getElectric();
+    this.getStepNumber();
+    this.getAlarmClockCount();
+    this.getSleepTime();
+    this.getMannerWear();
+    this.init();
+  },
   methods: {
-    //循环调用
+    init() {
+      // 初始化蓝牙状态
+      this.openWXDeviceLib();
+      // 设备连接状态
+      this.getWXDeviceInfos();
+      // 手机蓝牙监听开启事件
+      this.onWXDeviceBluetoothStateChange();
+      // 设备连接状态
+      this.onWXDeviceStateChange();
+      // 接收到设备数据
+      this.onReceiveDataFromWXDevice();
+    },
+
+    handleCancel() {
+      // 获取操作凭证
+      this.getWXDeviceTicket();
+    },
+
+    async unBindDevice(ticket) {
+      let data = {
+        deviceId: this.deviceId,
+        openId: this.openId,
+        ticket: ticket
+      };
+      let res = await service.unBindDevice(data);
+    },
+    // 初始化设备库
+    openWXDeviceLib() {
+      wx.ready(() => {
+        WeixinJSBridge.invoke("openWXDeviceLib", { connType: "blue" }, res => {
+          if (res.err_msg === "openWXDeviceLib:ok") {
+            //使用前请先打开手机蓝牙
+            if (res.bluetoothState === "off") {
+              this.bluetooth = false;
+              this.$dialog({ message: "使用前请先打开手机蓝牙" });
+            }
+            //用户没有授权微信使用蓝牙功能
+            if (res.bluetoothState === "unauthorized") {
+              this.bluetooth = false;
+              this.$dialog({ message: "请授权微信蓝牙功能并打开蓝牙" });
+            }
+            //蓝牙已打开
+            if (res.bluetoothState === "on") {
+              this.bluetooth = true;
+            }
+          } else {
+            this.bluetooth = false; //微信蓝牙打开失败
+            this.$dialog({ message: "微信蓝牙打开失败" });
+          }
+        });
+      });
+    },
+
+    //设备连接状态变化
+    onWXDeviceStateChange() {
+      wx.ready(() => {
+        WeixinJSBridge.on("onWXDeviceStateChange", res => {
+          console.log(res);
+          console.log("设备连接状态变化");
+          let { state } = res;
+          if (state === "connecting") {
+            console.log("已连接");
+            this.$dialog.close();
+          } else if (state === "connected") {
+            console.log("连接断开");
+          } else {
+            console.log("连接断开");
+          }
+          this.getWXDeviceInfos();
+        });
+      });
+    },
+
+    getWXDeviceTicket() {
+      console.log(this.deviceId);
+      wx.ready(() => {
+        WeixinJSBridge.invoke(
+          "getWXDeviceTicket",
+          { deviceId: this.deviceId, type: "2", connType: "lan" },
+          res => {
+            if (res.err_msg === "getWXDeviceTicket:ok") {
+              this.unBindDevice(res.ticket);
+            } else {
+              this.$toast("获取凭证失败");
+            }
+          }
+        );
+      });
+    },
+
+    // 获取设备信息
+    getWXDeviceInfos() {
+      wx.ready(() => {
+        WeixinJSBridge.invoke("getWXDeviceInfos", {}, res => {
+          if (res.err_msg === "getWXDeviceInfos:ok") {
+            this.state = res.deviceInfos[0].state;
+            //绑定设备总数量
+            if (
+              res.deviceInfos.length &&
+              res.deviceInfos[0].state === "connected"
+            ) {
+              console.log(res);
+              this.state = res.deviceInfos[0].state;
+              this.deviceId = res.deviceInfos[0].deviceId;
+              console.log(this.deviceId);
+            } else {
+              this.list = [];
+              this.deviceId = "";
+            }
+          }
+        });
+      });
+    },
+
+    //断开设备连接
+    disconnectWXDevice() {
+      wx.ready(() => {
+        WeixinJSBridge.invoke(
+          "disconnectWXDevice",
+          { deviceId: this.deviceId, connType: "blue" },
+          res => {
+            if (res.err_msg === "disConnectWXDevice:ok") {
+              this.deviceId = "";
+              this.$dialog({ message: "使用前请先打开手机蓝牙" });
+            }
+          }
+        );
+      });
+    },
+
+    //手机蓝牙状态改变事件
+    onWXDeviceBluetoothStateChange() {
+      wx.ready(() => {
+        WeixinJSBridge.on("onWXDeviceBluetoothStateChange", res => {
+          let { state } = res;
+          if (state === "on") {
+            this.$toast(`蓝牙打开`);
+            this.bluetooth = true;
+          } else {
+            this.$toast(`蓝牙已关闭`);
+            this.bluetooth = false;
+            this.disconnectWXDevice();
+          }
+        });
+      });
+    },
+
+    setWear() {
+      this.$router.push({
+        path: "/setWear",
+        query: {
+          wear: this.wear,
+          screen: this.screen
+        }
+      });
+    },
+
+    // 设定运动目标
+    stepTip() {
+      this.stepStatus = true;
+    },
+
+    chargeBtn(action, done) {
+      let deviceId = this.deviceId;
+      this.dataValue.setStep = this.stepValue;
+      let number = parseInt(this.stepValue);
+
+      if (action === "confirm") {
+        if (number < 65535) {
+          let start = `0x${number.toString(16).slice(0, 2)}`;
+          let end = `0x${number.toString(16).slice(2, 4)}`;
+          let setMovingGoals = [0x23, 0x04, 0x01, 0x06, start, end, 0x00];
+          this.sendDataToWXDevice(
+            this.deviceId,
+            bytesArrayToBase64(setMovingGoals)
+          );
+          done();
+        } else {
+          this.$toast("上限为65535步");
+          done(false);
+          return false;
+        }
+      } else {
+        done();
+      }
+    },
+
+    sumbitStep() {
+      let deviceId = this.deviceId;
+      this.dataValue.setStep = this.stepValue;
+      let number = parseInt(this.stepValue);
+      if (number < 65535) {
+        let start = `0x${number.toString(16).slice(0, 2)}`;
+        let end = `0x${number.toString(16).slice(2, 4)}`;
+        let setMovingGoals = [0x23, 0x04, 0x01, 0x06, start, end, 0x00];
+        this.sendDataToWXDevice(
+          this.deviceId,
+          bytesArrayToBase64(setMovingGoals)
+        );
+      } else {
+        this.$toast("上限为65535步");
+        done(false);
+        return false;
+      }
+
+      // let n;
+      // if (this.stepValue > 10) {
+      //   n = `0x${this.stepValue}`;
+      // } else {
+      //   n = `0x0${this.stepValue}`;
+      // }
+      // 设置运动目标
+      // let setMovingGoals = [0x23, 0x04, 0x01, 0x06, 0x00, 0x80, 0x00];
+      // this.sendDataToWXDevice(deviceId, "IwQBBgAQPw==");
+      // let getMovingGoals = [0x23, 0x02, 0x02, 0x06, 0x29];
+      // var _this = this;
+      // setTimeout(function() {
+      //   _this.sendDataToWXDevice(deviceId, "IwICBik=");
+      // }, 1000);
+    },
+
     run() {
       let deviceId = this.deviceId;
       let getDate = new Date();
@@ -91,18 +488,6 @@ export default {
           ? getDate.getSeconds()
           : `0${getDate.getSeconds()}`;
       let week = `0${getDate.getDay()}`;
-      //获取活跃度分包目录数
-      let getAcquisitionActivity = [
-        0x23,
-        0x05,
-        0x02,
-        0xf1,
-        0x01,
-        0x00,
-        0x03,
-        0xd8
-      ];
-
       // 设置本地时间日期
       let setLocalTime = [
         0x23,
@@ -119,284 +504,92 @@ export default {
         0x00
       ];
 
-      // 获取本地时间
-      let getLocalTime = [0x23, 0x02, 0x02, 0x02, 0x25];
-
-      // 获取设备电量
-      let getDeviceSoc = [0x23, 0x02, 0x02, 0x03, 0x00];
-
-      //获取最近睡眠记录条目IwMC8AHR
-      let getMostRecentSleepEntry = [0x23, 0x03, 0x02, 0xf0, 0x01, 0xd1];
-
-      //设置运动目标
-      let setMovingGoals = [0x23, 0x04, 0x01, 0x06, 0x00, 0x200, 0x00];
-
-      //获取运动目标
-      let getMovingGoals = [0x23, 0x02, 0x02, 0x06, 0x29];
-
-      // 获取当前步数
-      let getCurrentNumberOfSteps = [0x23, 0x02, 0x02, 0x05, 0x26];
-
-      let xiao =
-        0x23 ^
-        (0 + 0x09) ^
-        (1 + 0x08) ^
-        (2 + 0xf1) ^
-        (3 + 0x04) ^
-        (4 + 0x00) ^
-        (5 + 0x03) ^
-        (6 + 0x5d) ^
-        (7 + 0x9d) ^
-        (8 + 0xfc) ^
-        (9 + 0x83);
-
-      let lenXiao = [
+      let getAcquisitionActivity = [
         0x23,
-        0x09,
-        0x08,
+        0x05,
+        0x02,
         0xf1,
-        0x04,
+        0x01,
         0x00,
         0x03,
-        0x5d,
-        0x9d,
-        0xfc,
-        0x81,
-        xiao
+        0x00
       ];
+      // this.sendDataToWXDevice(
+      //   deviceId,
+      //   bytesArrayToBase64(getAcquisitionActivity)
+      // );
+      // 获取本地时间
+      // let getLocalTime = [0x23, 0x02, 0x02, 0x02, 0x25];
+      // this.sendDataToWXDevice(deviceId, bytesArrayToBase64(getLocalTime));
+      // 获取设备电量
+      // let getDeviceSoc = [0x23, 0x02, 0x02, 0x03, 0x00];
+      // 设置Q星值
+      // let setStartVlue = [0x23, 0x04, 0x01, 0x04, 0x00, 0x50, 0x00];
+      // 设置Q星值
+      // let getStartValue = [0x23, 0x02, 0x02, 0x04, 0x00];
+      // 设置闹钟
+      // let timer = [0x23, 0x07, 0x01, 0x07, 0x02, 0x20, 0x58, 0x3e, 0x01, 0x00];
 
-      //       帧头	长度	接口	参数
-      // 23	07	08 F0	04 aa aa aa aa  5C  2B  2C  F4
+      // let getAlarmClock = [0x23, 0x03, 0x02, 0x07, 0x01, 0x00];
 
-      // let xiao =
-      //   0x23 ^
-      //   (0 + 0x07) ^
-      //   (1 + 0x08) ^
-      //   (2 + 0xf0) ^
-      //   (3 + 0x04) ^
-      //   (4 + 0x5c) ^
-      //   (5 + 0x2b) ^
-      //   (6 + 0x2c) ^
-      //   (7 + 0xf4);
-
-      // let lenXiao = [
-      //   0x23,
-      //   0x07,
-      //   0x08,
-      //   0xf0,
-      //   0x04,
-      //   0x5c,
-      //   0x2b,
-      //   0x2c,
-      //   0xf4,
-      //   xiao
-      // ];
-
-      let map = [
-        // bytesArrayToBase64(getAcquisitionActivity)
-        // bytesArrayToBase64(setLocalTime)
-        // bytesArrayToBase64(getLocalTime),
-        // bytesArrayToBase64(getDeviceSoc)
-        // bytesArrayToBase64(getMostRecentSleepEntry)
-        // bytesArrayToBase64(setMovingGoals)
-        // bytesArrayToBase64(getMovingGoals)
-      ];
-
-      this.sendDataToWXDevice(
-        deviceId,
-        bytesArrayToBase64(getMostRecentSleepEntry)
-      );
+      // this.sendDataToWXDevice(deviceId, bytesArrayToBase64(timer));
+      // this.sendDataToWXDevice(deviceId, bytesArrayToBase64(setLocalTime));
       // var _this = this;
       // setTimeout(function() {
-      //   _this.sendDataToWXDevice(deviceId, bytesArrayToBase64(getLocalTime));
+      // this.sendDataToWXDevice(deviceId, bytesArrayToBase64(getLocalTime));
+      // }, 500);
+      // setTimeout(function() {
+      //   _this.sendDataToWXDevice(deviceId, bytesArrayToBase64(timer));
       // }, 1000);
-      // // // setTimeout(function() {
-      // // //   _this.sendDataToWXDevice(deviceId, bytesArrayToBase64(setLocalTime));
-      // // // }, 2000);
       // setTimeout(function() {
-      //   _this.sendDataToWXDevice(
-      //     deviceId,
-      //     bytesArrayToBase64(getCurrentNumberOfSteps)
-      //   );
+      //   _this.sendDataToWXDevice(deviceId, bytesArrayToBase64(setStartVlue));
       // }, 3000);
-
       // setTimeout(function() {
-      //   _this.sendDataToWXDevice(
-      //     deviceId,
-      //     bytesArrayToBase64(getMostRecentSleepEntry)
-      //   );
-      // }, 5000);
-      // setTimeout(function() {
-      //   _this.sendDataToWXDevice(
-      //     deviceId,
-      //     bytesArrayToBase64(getAcquisitionActivity)
-      //   );
-      // }, 10000);
+      //   _this.sendDataToWXDevice(deviceId, bytesArrayToBase64(getStartValue));
+      // }, 4000);
 
-      // for (let i in map) {
-      //   console.log(i);
-      //   let base64Data = map[i]; //key
-      //   if (base64Data != "") {
-      //     this.sendDataToWXDevice(deviceId, base64Data);
-      //   } else {
-      //     this.$toast(`请输入base64转码后的字符串`);
-      //   }
-      // }
+      // let getMostRecentSleepEntry = [0x23, 0x03, 0x02, 0xf0, 0x01, 0x00];
+      // this.sendDataToWXDevice(
+      //   deviceId,
+      //   bytesArrayToBase64(getMostRecentSleepEntry)
+      // );
+
+      // this.sendDataToWXDevice(
+      //   deviceId,
+      //   bytesArrayToBase64(getMostRecentSleepEntry)
+      // );
+
+      // 获取多个活跃度目录内容
+      let getAcquisitionActivityOne = [
+        0x23,
+        0x05,
+        0x02,
+        0xf1,
+        0x05,
+        0x00,
+        0x03,
+        0x00
+      ];
+      // this.sendDataToWXDevice(
+      //   deviceId,
+      //   bytesArrayToBase64(getAcquisitionActivityOne)
+      // );
+
+      // 获取多个睡眠目录时间
+      // let getMostRecentSleepEntryOne = [0x23, 0x03, 0x02, 0xf0, 0x05, 0x00];
+      // this.sendDataToWXDevice(
+      //   deviceId,
+      //   bytesArrayToBase64(getAcquisitionActivityOne)
+      // );
+
+      //获取多种信息
+      let moreSendData = [0x23, 0x02, 0x02, 0x09, 0x00];
+      this.sendDataToWXDevice(deviceId, bytesArrayToBase64(moreSendData));
     },
 
-    //数字转十六进制字符串
-    numberToByt(num) {
-      for (let i = 0; i < num; i++) {
-        let n = `0x` + i.toString(16);
-        console.log(n);
-      }
-    },
-    handleAddDevice() {
-      //if (this.studentId == 0) {
-      //this.$toast("您尚未关注小孩，请先关注");
-      //} else {
-      this.$router.push({
-        path: "/device/search"
-      });
-      //}
-    },
-    //手环设备解绑
-    unBindDevice() {
-      this.$dialog
-        .confirm({
-          title: "提示",
-          message: "确定要解绑设备吗？"
-        })
-        .then(() => {
-          let obj = {
-            deviceId: this.deviceId,
-            type: 2, //2表示解除绑定
-            connType: "blue"
-          };
-          WeixinJSBridge.invoke("getWXDeviceTicket", obj, res => {
-            //操作凭证
-            let { ticket } = res;
-            if (res.err_msg === "getWXDeviceTicket:ok") {
-              console.log(res);
-              console.log("开始解绑");
-              //开始解绑
-              let params = {
-                deviceId: this.deviceId,
-                openId: this.openId,
-                ticket
-              };
-              service.unBindDevice(params).then(res => {
-                console.log(res);
-                if (res.errorCode === 0) {
-                  this.$dialog
-                    .alert({
-                      title: "提示",
-                      message: "解除绑定成功"
-                    })
-                    .then(() => {
-                      this.getWXDeviceInfos();
-                    });
-                } else {
-                  console.log("解除绑定失败");
-                }
-              });
-            }
-          });
-        });
-    },
-    connectWXDevice(params) {
-      let { state, deviceId } = params;
-      //如果连接设备断开，则重新连接
-      if (state === "disconnected") {
-        if (!this.bluetooth) {
-          this.$toast(`请先打开手机蓝牙再进行连接`);
-        } else {
-          //连接设备
-          WeixinJSBridge.invoke(
-            "connectWXDevice",
-            { deviceId, connType: "blue" },
-            res => {
-              if (res.err_msg === "connectWXDevice:ok") {
-                console.log("connectWXDevice");
-                console.log(deviceId);
-                this.getWXDeviceInfos();
-              }
-            }
-          );
-        }
-      }
-    },
-    //断开设备连接
-    disconnectWXDevice() {
-      WeixinJSBridge.invoke(
-        "disconnectWXDevice",
-        { deviceId: this.deviceId, connType: "blue" },
-        res => {
-          console.log(res);
-          console.log("断开设备连接1");
-          if (res.err_msg === "disConnectWXDevice:ok") {
-            console.log(this.deviceId);
-            console.log("断开设备连接2");
-          }
-        }
-      );
-    },
-    //初始化设备库（只支持蓝牙设备）
-    openWXDeviceLib() {
-      WeixinJSBridge.invoke("openWXDeviceLib", { connType: "blue" }, res => {
-        console.log("openWXDeviceLib");
-        console.log(res);
-        if (res.err_msg === "openWXDeviceLib:ok") {
-          //使用前请先打开手机蓝牙
-          if (res.bluetoothState === "off") {
-            this.bluetooth = false;
-            console.log("使用前请先打开手机蓝牙");
-          }
-          //用户没有授权微信使用蓝牙功能
-          if (res.bluetoothState === "unauthorized") {
-            this.bluetooth = false;
-            console.log("请授权微信蓝牙功能并打开蓝牙");
-          }
-          //蓝牙已打开
-          if (res.bluetoothState === "on") {
-            this.bluetooth = true;
-          }
-        } else {
-          this.bluetooth = false; //微信蓝牙打开失败
-          console.log("微信蓝牙打开失败");
-        }
-      });
-    },
-    //关闭设备库
-    closeWXDeviceLib() {
-      WeixinJSBridge.invoke("closeWXDeviceLib", { connType: "blue" }, res => {
-        if (res.err_msg === "closeWXDeviceLib:ok") {
-          console.log("关闭设备库成功");
-        } else {
-          console.log("关闭设备库失败");
-        }
-      });
-    },
-    //取得微信设备信息
-    //只有绑定成功后才有list列表数据返回
-    getWXDeviceInfos() {
-      WeixinJSBridge.invoke("getWXDeviceInfos", {}, res => {
-        console.log("res设备deviceId");
-        if (res.err_msg === "getWXDeviceInfos:ok") {
-          //绑定设备总数量
-          if (res.deviceInfos.length) {
-            this.list = res.deviceInfos;
-            this.deviceId = res.deviceInfos[0].deviceId;
-          } else {
-            this.list = [];
-          }
-        }
-      });
-    },
-    //发送数据给设备 发送的数据需要经过base64编码
+    // 发送数据给设备
     sendDataToWXDevice(deviceId, base64Data = "") {
       console.log("send data");
-      console.log(this.deviceId);
       WeixinJSBridge.invoke(
         "sendDataToWXDevice",
         {
@@ -405,223 +598,482 @@ export default {
           base64Data
         },
         res => {
-          if (res.err_msg === "sendDataToWXDevice:ok") {
-            this.$toast(`数据已发送`);
-          } else {
-            this.$toast(`数据发送失败`);
-          }
-        }
-      );
-    },
-
-    //发送活跃数据给设备 发送的数据需要经过base64编码
-    sendActiveDataToWXDevice(deviceId, base64Data = "") {
-      console.log("send active data");
-
-      WeixinJSBridge.invoke(
-        "sendDataToWXDevice",
-        {
-          deviceId,
-          connType: "blue",
-          base64Data
-        },
-        res => {
-          if (res.err_msg === "sendDataToWXDevice:ok") {
-            this.$toast(`数据已发送`);
-          } else {
-            this.$toast(`数据发送失败`);
-          }
           console.log(res);
-          console.log("活跃数据");
-        }
-      );
-    },
-
-    //发送活跃包数据给设备 发送的数据需要经过base64编码
-    sendActiveBagDataToWXDevice(deviceId, base64Data = "") {
-      console.log("send active bag data");
-
-      WeixinJSBridge.invoke(
-        "sendDataToWXDevice",
-        {
-          deviceId,
-          connType: "blue",
-          base64Data
-        },
-        res => {
           if (res.err_msg === "sendDataToWXDevice:ok") {
             this.$toast(`数据已发送`);
           } else {
             this.$toast(`数据发送失败`);
           }
-          console.log(res);
-          console.log("活跃数据");
         }
       );
     },
 
-    //接收到设备数据
     onReceiveDataFromWXDevice() {
-      WeixinJSBridge.on("onReceiveDataFromWXDevice", res => {
-        console.log("接收数据onReceiveDataFromWXDevice");
-        //设备id
-        //base64编码过的设备发到H5的数据
-        let { deviceId, base64Data } = res;
-        //调用后台接口进行base64解码
-        service.decoder({ content: base64Data }).then(res => {
-          if (res.errorCode === 0) {
+      wx.ready(() => {
+        WeixinJSBridge.on("onReceiveDataFromWXDevice", res => {
+          console.log("接收数据onReceiveDataFromWXDevice");
+          //设备id
+          //base64编码过的设备发到H5的数据
+          let { deviceId, base64Data } = res;
+          //调用后台接口进行base64解码
+          service.decoder({ content: base64Data }).then(res => {
             let obj = res.data[0];
             console.log(obj);
-            if (obj[2] === "04" && obj[3] === "F1" && obj[1] === "0B") {
-              this.utc = "1";
-              //获取活跃度分包目录数
-              console.log("获取活跃度分包目录数");
-              let arr = [];
-              let len = parseInt(obj[7] + obj[8]);
-              if (len === 0) {
-                console.log("获取活跃度分包目录数调用结束");
-              } else {
-                let xiao;
-                let lenXiao;
-                for (let i = 0; i < len; i++) {
-                  var n = parseInt(`0x0${i}`);
-                  xiao =
-                    0x23 ^
-                    (0 + 0x07) ^
-                    (1 + 0x02) ^
-                    (2 + 0xf1) ^
-                    (3 + 0x02) ^
-                    (4 + 0x00) ^
-                    (5 + 0x03) ^
-                    (6 + 0x00) ^
-                    (7 + n) ^
-                    8;
-                  lenXiao = [
+            this.parsePackets({
+              studentId: this.studentId,
+              deviceId,
+              content: base64Data
+            });
+            return false;
+            if (res.errorCode === 0) {
+              let obj = res.data[0];
+              console.log(obj);
+              // return false;
+              let len = parseInt(obj[5]);
+              if (obj[1] === "08" && obj[2] === "04" && obj[3] === "02") {
+                // 获取本地时间日期结束，开始电量信息
+                console.log("获取本地时间日期结束，开始电量信息");
+                let getDeviceSoc = [0x23, 0x02, 0x02, 0x03, 0x00];
+                this.sendDataToWXDevice(
+                  deviceId,
+                  bytesArrayToBase64(getDeviceSoc)
+                );
+                this.parsePackets({
+                  studentId: this.studentId,
+                  deviceId,
+                  content: base64Data
+                });
+              } else if (
+                obj[1] === "04" &&
+                obj[2] === "04" &&
+                obj[3] === "03"
+              ) {
+                // 获取电量信息结束，开始获取当前步数
+                console.log("获取电量信息结束，开始获取当前步数");
+                let getCurrentNumberOfSteps = [0x23, 0x02, 0x02, 0x05, 0x00];
+                this.sendDataToWXDevice(
+                  deviceId,
+                  bytesArrayToBase64(getCurrentNumberOfSteps)
+                );
+                this.parsePackets({
+                  studentId: this.studentId,
+                  deviceId,
+                  content: base64Data
+                });
+              } else if (
+                obj[1] === "04" &&
+                obj[2] === "04" &&
+                obj[3] === "05"
+              ) {
+                // 获取当前步数结束，开始获取获取最近睡眠
+                console.log("获取当前步数结束，开始获取获取最近睡眠");
+                let getMostRecentSleepEntry = [
+                  0x23,
+                  0x03,
+                  0x02,
+                  0xf0,
+                  0x01,
+                  0x00
+                ];
+                this.sendDataToWXDevice(
+                  deviceId,
+                  bytesArrayToBase64(getMostRecentSleepEntry)
+                );
+                this.parsePackets({
+                  studentId: this.studentId,
+                  deviceId,
+                  content: base64Data
+                });
+              } else if (
+                obj[2] === "04" &&
+                obj[3] === "F0" &&
+                obj[1] === "04"
+              ) {
+                // 获取最近睡眠记录条目
+                console.log("获取最近睡眠记录条目");
+                let len = parseInt(obj[5]);
+                let sleepArr = [];
+
+                if (len === 0) {
+                  // 获取已存的睡眠历史记录条数为0,开始获取活跃度目录条数
+                  console.log(
+                    "获取已存的睡眠历史记录条数为0,开始获取活跃度目录条数"
+                  );
+                  let getAcquisitionActivity = [
                     0x23,
-                    0x07,
+                    0x05,
                     0x02,
                     0xf1,
-                    0x02,
+                    0x01,
                     0x00,
                     0x03,
-                    0x00,
-                    n,
-                    xiao
+                    0x00
                   ];
-                  arr.push(bytesArrayToBase64(lenXiao));
-                }
-                this.deviceArr = arr;
-                this.sendActiveDataToWXDevice(
-                  this.deviceId,
-                  this.deviceArr[this.deviceIndex]
-                );
-              }
-            } else if (obj[2] === "04" && obj[3] === "F1" && obj[1] === "0C") {
-              this.utc = "1";
-              //获取活跃度目录内容
-              console.log("获取活跃度目录内容");
-              let n5 = parseInt(`0x${obj[5]}`);
-              let n6 = parseInt(`0x${obj[6]}`);
-              let n7 = parseInt(`0x${obj[7]}`);
-              let n8 = parseInt(`0x${obj[8]}`);
-              this.delBag.push({
-                n5: `0x${obj[5]}`,
-                n6: `0x${obj[6]}`,
-                n7: `0x${obj[7]}`,
-                n8: `0x${obj[8]}`
-              });
-              this.utcValue = `${obj[5]}${obj[6]}${obj[7]}${obj[8]}`;
-              let xiao =
-                0x23 ^
-                (0 + 0x0b) ^
-                (1 + 0x02) ^
-                (2 + 0xf1) ^
-                (3 + 0x03) ^
-                (4 + 0x00) ^
-                (5 + 0x03) ^
-                (6 + n5) ^
-                (7 + n6) ^
-                (8 + n7) ^
-                (9 + n8) ^
-                (10 + 0x00) ^
-                (11 + 0x00) ^
-                12;
-              let lenXiao = [
-                0x23,
-                0x0b,
-                0x02,
-                0xf1,
-                0x03,
-                0x00,
-                0x03,
-                n5,
-                n6,
-                n7,
-                n8,
-                0x00,
-                0x00,
-                xiao
-              ];
-              this.sendActiveBagDataToWXDevice(
-                this.deviceId,
-                bytesArrayToBase64(lenXiao)
-              );
-            } else if (obj[2] === "00" && obj[3] === "03") {
-              // 请求数据包
-              console.log("请求数据包");
-              this.utc = this.utcValue;
-              this.parsePacketActive({
-                deviceId,
-                content: base64Data,
-                utc: this.utcValue
-              });
-              if (obj[0] === "FF" && obj[1] === "FF") {
-                this.deviceIndex++;
-                // 多次发送数据，知道目录包数等于当前索引
-                if (this.deviceArr.length > this.deviceIndex) {
-                  this.sendActiveDataToWXDevice(
-                    this.deviceId,
-                    this.deviceArr[this.deviceIndex]
+                  this.sendDataToWXDevice(
+                    deviceId,
+                    bytesArrayToBase64(getAcquisitionActivity)
                   );
+                  this.parsePackets({
+                    studentId: this.studentId,
+                    deviceId,
+                    content: base64Data
+                  });
                 } else {
-                  // 请求数据包第一个目录包结束,开始按UTC删除数据
-                  console.log("请求数据包第一个目录包结束,开始按UTC删除数据");
-                  // return false;
+                  let xiao;
+                  let lenXiao;
+                  for (let i = 0; i < len; i++) {
+                    var n = parseInt(`0x0${i}`);
+                    xiao =
+                      0x23 ^
+                      (0 + 0x04) ^
+                      (1 + 0x02) ^
+                      (2 + 0xf0) ^
+                      (3 + 0x02) ^
+                      (4 + n) ^
+                      5;
+                    lenXiao = [0x23, 0x04, 0x02, 0xf0, 0x02, n, xiao];
+                    sleepArr.push(bytesArrayToBase64(lenXiao));
+                  }
+                  this.sleepList = sleepArr;
+                  this.sendDataToWXDevice(
+                    this.deviceId,
+                    this.sleepList[this.sleepIndex]
+                  );
+                  this.parsePackets({
+                    deviceId,
+                    content: base64Data,
+                    studentId: this.studentId
+                  });
+                }
+              } else if (
+                obj[2] === "04" &&
+                obj[3] === "F0" &&
+                obj[1] === "0E"
+              ) {
+                // 获取目录的睡眠信息记录
+                console.log("获取目录的睡眠信息记录");
+                this.sleepUTC.push({
+                  n5: `0x${obj[5]}`,
+                  n6: `0x${obj[6]}`,
+                  n7: `0x${obj[7]}`,
+                  n8: `0x${obj[8]}`
+                });
+                this.utcSleep = `${obj[5]}${obj[6]}${obj[7]}${obj[8]}`;
+                this.parsePackets({
+                  deviceId,
+                  content: base64Data,
+                  studentId: this.studentId
+                });
+              } else if (obj[2] === "01" && obj[3] === "00") {
+                // 睡眠片段
+                console.log("睡眠片段");
+                this.parsePacketSleep({
+                  studentId: this.studentId,
+                  deviceId,
+                  content: base64Data,
+                  utc: this.utcSleep
+                });
+                if (obj[0] === "FF" && obj[1] === "FF") {
+                  this.sleepIndex++;
+                  console.log(this.sleepIndex);
+                  if (this.sleepList.length > this.sleepIndex) {
+                    this.sendDataToWXDevice(
+                      this.deviceId,
+                      this.sleepList[this.sleepIndex]
+                    );
+                  } else {
+                    console.log(this.sleepUTC);
+                    console.log("请求数据包第一个目录包结束,开始删除睡眠数据");
+                    return false;
+                    console.log("开始获取活跃度");
+                    let getAcquisitionActivity = [
+                      0x23,
+                      0x05,
+                      0x02,
+                      0xf1,
+                      0x01,
+                      0x00,
+                      0x03,
+                      0x00
+                    ];
+                    this.sendDataToWXDevice(
+                      deviceId,
+                      bytesArrayToBase64(getAcquisitionActivity)
+                    );
+                    this.parsePackets({
+                      studentId: this.studentId,
+                      deviceId,
+                      content: base64Data
+                    });
+                    // let xiao =
+                    //   0x23 ^
+                    //   (0 + 0x07) ^
+                    //   (1 + 0x08) ^
+                    //   (2 + 0xf0) ^
+                    //   (3 + 0x04) ^
+                    //   (4 + this.sleepUTC[0].n5) ^
+                    //   (5 + this.sleepUTC[0].n6) ^
+                    //   (6 + this.sleepUTC[0].n7) ^
+                    //   (7 + this.sleepUTC[0].n8) ^
+                    //   8;
+
+                    // let lenXiao = [
+                    //   0x23,
+                    //   0x07,
+                    //   0x08,
+                    //   0xf0,
+                    //   0x04,
+                    //   this.sleepUTC[0].n5,
+                    //   this.sleepUTC[0].n6,
+                    //   this.sleepUTC[0].n7,
+                    //   this.sleepUTC[0].n8,
+                    //   xiao
+                    // ];
+                    // console.log("删除条目的睡眠记录信息开始0");
+                    // this.sendDataToWXDevice(
+                    //   this.deviceId,
+                    //   bytesArrayToBase64(lenXiao)
+                    // );
+                    // this.parsePackets({
+                    //   studentId: this.studentId,
+                    //   deviceId,
+                    //   content: base64Data
+                    // });
+                  }
+                }
+              } else if (
+                obj[2] === "10" &&
+                obj[3] === "F0" &&
+                obj[1] === "08"
+              ) {
+                this.parsePackets({
+                  studentId: this.studentId,
+                  deviceId,
+                  content: base64Data
+                });
+                this.sleepUTCIndex++;
+                if (this.sleepUTC.length > this.sleepUTCIndex) {
                   // let xiao =
                   //   0x23 ^
-                  //   (0 + 0x09) ^
+                  //   (0 + 0x07) ^
                   //   (1 + 0x08) ^
-                  //   (2 + 0xf1) ^
+                  //   (2 + 0xf0) ^
                   //   (3 + 0x04) ^
-                  //   (4 + 0x00) ^
-                  //   (5 + 0x03) ^
-                  //   (6 + this.delBag[0].n5) ^
-                  //   (7 + this.delBag[0].n6) ^
-                  //   (8 + this.delBag[0].n7) ^
-                  //   (9 + this.delBag[0].n8) ^
-                  //   10;
-
+                  //   (4 + this.sleepUTC[this.sleepUTCIndex].n5) ^
+                  //   (5 + this.sleepUTC[this.sleepUTCIndex].n6) ^
+                  //   (6 + this.sleepUTC[this.sleepUTCIndex].n7) ^
+                  //   (7 + this.sleepUTC[this.sleepUTCIndex].n8) ^
+                  //   8;
                   // let lenXiao = [
                   //   0x23,
-                  //   0x09,
+                  //   0x07,
                   //   0x08,
-                  //   0xf1,
+                  //   0xf0,
                   //   0x04,
-                  //   0x00,
-                  //   0x03,
-                  //   this.delBag[0].n5,
-                  //   this.delBag[0].n6,
-                  //   this.delBag[0].n7,
-                  //   this.delBag[0].n8,
+                  //   this.sleepUTC[this.sleepUTCIndex].n5,
+                  //   this.sleepUTC[this.sleepUTCIndex].n6,
+                  //   this.sleepUTC[this.sleepUTCIndex].n7,
+                  //   this.sleepUTC[this.sleepUTCIndex].n8,
                   //   xiao
                   // ];
-                  // console.log("开始按UTC删除数据0");
-                  // this.sendActiveBagDataToWXDevice(
+                  // console.log(
+                  //   `删除条目的睡眠记录信息开始${this.sleepUTCIndex}`
+                  // );
+                  // this.sendDataToWXDevice(
                   //   this.deviceId,
                   //   bytesArrayToBase64(lenXiao)
                   // );
-                  // this.parsePackets(data);
-                  // }
+                } else {
+                  console.log(`删除条目完成${this.sleepUTCIndex}`);
+                  let getMostRecentSleepEntry = [
+                    0x23,
+                    0x03,
+                    0x02,
+                    0xf0,
+                    0x01,
+                    0x00
+                  ];
+                  this.sendDataToWXDevice(
+                    deviceId,
+                    bytesArrayToBase64(getMostRecentSleepEntry)
+                  );
+                  this.parsePackets({
+                    studentId: this.studentId,
+                    deviceId,
+                    content: base64Data
+                  });
+                }
+              } else if (
+                obj[2] === "04" &&
+                obj[3] === "F1" &&
+                obj[1] === "0B"
+              ) {
+                //获取活跃度分包目录数
+                console.log("获取活跃度分包目录数");
+                let arr = [];
+                let len = parseInt(obj[7] + obj[8]);
+                if (len === 0) {
+                  console.log("获取活跃度分包目录数调用结束");
+                } else {
+                  let xiao;
+                  let lenXiao;
+                  for (let i = 0; i < len; i++) {
+                    var n = parseInt(`0x0${i}`);
+                    xiao =
+                      0x23 ^
+                      (0 + 0x07) ^
+                      (1 + 0x02) ^
+                      (2 + 0xf1) ^
+                      (3 + 0x02) ^
+                      (4 + 0x00) ^
+                      (5 + 0x03) ^
+                      (6 + 0x00) ^
+                      (7 + n) ^
+                      8;
+                    lenXiao = [
+                      0x23,
+                      0x07,
+                      0x02,
+                      0xf1,
+                      0x02,
+                      0x00,
+                      0x03,
+                      0x00,
+                      n,
+                      xiao
+                    ];
+                    arr.push(bytesArrayToBase64(lenXiao));
+                  }
+                  console.log(arr);
+                  this.deviceArr = arr;
+                  this.sendDataToWXDevice(
+                    this.deviceId,
+                    this.deviceArr[this.deviceIndex]
+                  );
+                  this.parsePackets({
+                    studentId: this.studentId,
+                    deviceId,
+                    content: base64Data
+                  });
+                }
+              } else if (
+                obj[2] === "04" &&
+                obj[3] === "F1" &&
+                obj[1] === "0C"
+              ) {
+                //获取活跃度目录内容
+                console.log("获取活跃度目录内容");
+                let n5 = parseInt(`0x${obj[5]}`);
+                let n6 = parseInt(`0x${obj[6]}`);
+                let n7 = parseInt(`0x${obj[7]}`);
+                let n8 = parseInt(`0x${obj[8]}`);
+                this.delBag.push({
+                  n5: `0x${obj[5]}`,
+                  n6: `0x${obj[6]}`,
+                  n7: `0x${obj[7]}`,
+                  n8: `0x${obj[8]}`
+                });
+                this.utcValue = `${obj[5]}${obj[6]}${obj[7]}${obj[8]}`;
+                let xiao =
+                  0x23 ^
+                  (0 + 0x0b) ^
+                  (1 + 0x02) ^
+                  (2 + 0xf1) ^
+                  (3 + 0x03) ^
+                  (4 + 0x00) ^
+                  (5 + 0x03) ^
+                  (6 + n5) ^
+                  (7 + n6) ^
+                  (8 + n7) ^
+                  (9 + n8) ^
+                  (10 + 0x00) ^
+                  (11 + 0x00) ^
+                  12;
+                let lenXiao = [
+                  0x23,
+                  0x0b,
+                  0x02,
+                  0xf1,
+                  0x03,
+                  0x00,
+                  0x03,
+                  n5,
+                  n6,
+                  n7,
+                  n8,
+                  0x00,
+                  0x00,
+                  xiao
+                ];
+                this.sendDataToWXDevice(
+                  this.deviceId,
+                  bytesArrayToBase64(lenXiao)
+                );
+                this.parsePackets({
+                  studentId: this.studentId,
+                  deviceId,
+                  content: base64Data
+                });
+              } else if (obj[2] === "00" && obj[3] === "03") {
+                // 请求数据包
+                console.log("请求数据包");
+                this.utc = this.utcValue;
+                this.parsePacketActive({
+                  studentId: this.studentId,
+                  deviceId,
+                  content: base64Data,
+                  utc: this.utcValue
+                });
+                if (obj[0] === "FF" && obj[1] === "FF") {
+                  this.deviceIndex++;
+                  // 多次发送数据，知道目录包数等于当前索引
+                  if (this.deviceArr.length > this.deviceIndex) {
+                    this.sendDataToWXDevice(
+                      this.deviceId,
+                      this.deviceArr[this.deviceIndex]
+                    );
+                  } else {
+                    console.log(this.delBag);
+                    // 请求数据包第一个目录包结束,开始按UTC删除数据
+                    console.log("请求数据包第一个目录包结束,开始按UTC删除数据");
+                    // let xiao =
+                    //   0x23 ^
+                    //   (0 + 0x09) ^
+                    //   (1 + 0x08) ^
+                    //   (2 + 0xf1) ^
+                    //   (3 + 0x04) ^
+                    //   (4 + 0x00) ^
+                    //   (5 + 0x03) ^
+                    //   (6 + this.delBag[0].n5) ^
+                    //   (7 + this.delBag[0].n6) ^
+                    //   (8 + this.delBag[0].n7) ^
+                    //   (9 + this.delBag[0].n8) ^
+                    //   10;
+                    // let lenXiao = [
+                    //   0x23,
+                    //   0x09,
+                    //   0x08,
+                    //   0xf1,
+                    //   0x04,
+                    //   0x00,
+                    //   0x03,
+                    //   this.delBag[0].n5,
+                    //   this.delBag[0].n6,
+                    //   this.delBag[0].n7,
+                    //   this.delBag[0].n8,
+                    //   xiao
+                    // ];
+                    // console.log("开始按UTC删除数据0");
+                    // this.sendDataToWXDevice(
+                    //   this.deviceId,
+                    //   bytesArrayToBase64(lenXiao)
+                    // );
+                    // this.parsePackets({
+                    //   deviceId,
+                    //   content: base64Data,
+                    //   studentId: this.studentId
+                    // });
+                  }
                 }
               } else if (
                 obj[2] === "04" &&
@@ -629,9 +1081,9 @@ export default {
                 obj[1] === "04"
               ) {
                 if (obj[5] === "02") {
+                  console.log(this.delBag);
                   // 请求数据包请求失败，无效记录序号,开始按UTC删除数据
                   console.log("请求数据包第一个目录包结束,开始按UTC删除数据");
-                  // return false;
                   // let xiao =
                   //   0x23 ^
                   //   (0 + 0x09) ^
@@ -660,14 +1112,17 @@ export default {
                   //   xiao
                   // ];
                   // console.log("开始按UTC删除数据0");
-                  // this.sendActiveBagDataToWXDevice(
+                  // this.sendDataToWXDevice(
                   //   this.deviceId,
                   //   bytesArrayToBase64(lenXiao)
                   // );
-                  // this.parsePackets(data);
+                  // this.parsePackets({
+                  //   deviceId,
+                  //   content: base64Data,
+                  //   studentId: this.studentId
+                  // });
                 }
               } else if (obj[2] === "10" && obj[3] === "F1") {
-                // return false;
                 // let index = this.delBagIndex;
                 // index++;
                 // if (this.delBag.length > index) {
@@ -700,211 +1155,59 @@ export default {
                 //     xiao
                 //   ];
                 //   console.log("开始按UTC删除数据" + index);
-                //   this.sendActiveBagDataToWXDevice(
+                //   this.sendDataToWXDevice(
                 //     this.deviceId,
                 //     bytesArrayToBase64(lenXiao)
                 //   );
-                // this.parsePackets(data);
-              } else {
-                console.log("开启下面的包");
-                // return false;
-                // this.delBagIndex = 0;
-                // this.deviceIndex = 0;
-                // let getAcquisitionActivity = [
-                //   0x23,
-                //   0x05,
-                //   0x02,
-                //   0xf1,
-                //   0x01,
-                //   0x00,
-                //   0x03,
-                //   0xd8
-                // ];
-                // this.sendDataToWXDevice(
-                //   deviceId,
-                //   bytesArrayToBase64(getAcquisitionActivity)
-                // );
-              }
-            } else if (obj[2] === "04" && obj[3] === "F0" && obj[1] === "04") {
-              //获取最近睡眠记录条目
-              console.log("获取最近睡眠记录条目");
-              var sleepArr = [];
-              let len = parseInt(obj[5]);
-              console.log(len);
-              if (len === 0) {
-                console.log("获取最近睡眠记录条目调用结束");
-              } else {
-                let xiao;
-                let lenXiao;
-                for (let i = 0; i < len; i++) {
-                  var n = parseInt(`0x0${i}`);
-                  xiao =
-                    0x23 ^
-                    (0 + 0x04) ^
-                    (1 + 0x02) ^
-                    (2 + 0xf0) ^
-                    (3 + 0x02) ^
-                    (4 + n) ^
-                    5;
-                  lenXiao = [0x23, 0x04, 0x02, 0xf0, 0x02, n, xiao];
-                  sleepArr.push(bytesArrayToBase64(lenXiao));
-                }
-                this.sleepList = sleepArr;
-
-                this.sendActiveDataToWXDevice(
+                //   this.parsePackets(data);
+                // } else {
+                //   this.delBagIndex = 0;
+                //   this.deviceIndex = 0;
+                //   let getAcquisitionActivity = [
+                //     0x23,
+                //     0x05,
+                //     0x02,
+                //     0xf1,
+                //     0x01,
+                //     0x00,
+                //     0x03,
+                //     0xd8
+                //   ];
+                //   this.sendDataToWXDevice(
+                //     deviceId,
+                //     bytesArrayToBase64(getAcquisitionActivity)
+                //   );
+                //   this.parsePackets({
+                //     deviceId,
+                //     content: base64Data,
+                //     studentId: this.studentId
+                //   });
+                // }
+              } else if (
+                obj[1] === "03" &&
+                obj[2] === "01" &&
+                obj[3] === "01" &&
+                obj[4] === "00"
+              ) {
+                let getMovingGoals = [0x23, 0x02, 0x02, 0x06, 0x00];
+                this.sendDataToWXDevice(
                   this.deviceId,
-                  this.sleepList[this.sleepIndex]
+                  bytesArrayToBase64(getMovingGoals)
                 );
+              } else if (
+                obj[1] === "04" &&
+                obj[2] === "04" &&
+                obj[3] === "06"
+              ) {
+                this.parsePackets({
+                  deviceId,
+                  content: base64Data,
+                  studentId: this.studentId
+                });
               }
-            } else if (obj[2] === "04" && obj[3] === "F0" && obj[1] === "0E") {
-              // 获取目录的睡眠信息记录
-              console.log("获取目录的睡眠信息记录");
-              this.sleepUTC.push({
-                n5: `0x${obj[5]}`,
-                n6: `0x${obj[6]}`,
-                n7: `0x${obj[7]}`,
-                n8: `0x${obj[8]}`
-              });
-              // if (obj[0] === "FF" && obj[1] === "FF") {
-              //   this.sleepIndex++;
-              //   console.log(this.sleepIndex);
-              //   if (this.sleepList.length > this.sleepIndex) {
-              //     this.sendActiveDataToWXDevice(
-              //       this.deviceId,
-              //       this.sleepList[this.sleepIndex]
-              //     );
-              //   }
             }
-          } else if (obj[2] === "01" && obj[3] === "00") {
-            // 睡眠片段
-            console.log("睡眠片段");
-            if (obj[0] === "FF" && obj[1] === "FF") {
-              this.sleepIndex++;
-              console.log(this.sleepIndex);
-              if (this.sleepList.length > this.sleepIndex) {
-                this.sendActiveDataToWXDevice(
-                  this.deviceId,
-                  this.sleepList[this.sleepIndex]
-                );
-              } else {
-                console.log(this.sleepUTC);
-                console.log("请求数据包第一个目录包结束,开始删除睡眠数据");
-                //     //   let xiao =
-                //     //     0x23 ^
-                //     //     (0 + 0x09) ^
-                //     //     (1 + 0x08) ^
-                //     //     (2 + 0xf1) ^
-                //     //     (3 + 0x04) ^
-                //     //     (4 + 0x00) ^
-                //     //     (5 + 0x03) ^
-                //     //     (6 + this.sleepUTC[0].n5) ^
-                //     //     (7 + this.sleepUTC[0].n6) ^
-                //     //     (8 + this.sleepUTC[0].n7) ^
-                //     //     (9 + this.sleepUTC[0].n8) ^
-                //     //     10;
-
-                //     //   let lenXiao = [
-                //     //     0x23,
-                //     //     0x09,
-                //     //     0x08,
-                //     //     0xf1,
-                //     //     0x04,
-                //     //     0x00,
-                //     //     0x03,
-                //     //     this.sleepUTC[0].n5,
-                //     //     this.sleepUTC[0].n6,
-                //     //     this.sleepUTC[0].n7,
-                //     //     this.sleepUTC[0].n8,
-                //     //     xiao
-                //     //   ];
-
-                //     //   console.log("删除条目的睡眠记录信息开始0");
-                //     //   this.sendActiveBagDataToWXDevice(
-                //     //     this.deviceId,
-                //     //     bytesArrayToBase64(lenXiao)
-                //     //   );
-                //     //   this.parsePackets(data);
-              }
-              //   let xiao =
-              //     0x23 ^
-              //     (0 + 0x09) ^
-              //     (1 + 0x08) ^
-              //     (2 + 0xf1) ^
-              //     (3 + 0x04) ^
-              //     (4 + 0x00) ^
-              //     (5 + 0x03) ^
-              //     (6 + this.sleepUTC[0].n5) ^
-              //     (7 + this.sleepUTC[0].n6) ^
-              //     (8 + this.sleepUTC[0].n7) ^
-              //     (9 + this.sleepUTC[0].n8) ^
-              //     10;
-
-              //   let lenXiao = [
-              //     0x23,
-              //     0x09,
-              //     0x08,
-              //     0xf1,
-              //     0x04,
-              //     0x00,
-              //     0x03,
-              //     this.sleepUTC[0].n5,
-              //     this.sleepUTC[0].n6,
-              //     this.sleepUTC[0].n7,
-              //     this.sleepUTC[0].n8,
-              //     xiao
-              //   ];
-
-              //   console.log("删除条目的睡眠记录信息开始0");
-              //   this.sendActiveBagDataToWXDevice(
-              //     this.deviceId,
-              //     bytesArrayToBase64(lenXiao)
-              //   );
-              //   this.parsePackets(data);
-              // }
-            } else if (obj[2] === "10" && obj[3] === "F0" && obj[1] === "08") {
-              console.log("请求数据包第二个目录包结束,开始删除数据");
-            }
-          }
+          });
         });
-        let data = {
-          deviceId,
-          content: base64Data,
-          studentId: "227"
-        };
-        console.log(data);
-        this.parsePackets(data);
-      });
-    },
-    //手机蓝牙状态改变事件
-    onWXDeviceBluetoothStateChange() {
-      WeixinJSBridge.on("onWXDeviceBluetoothStateChange", res => {
-        console.log(res);
-        console.log("手机蓝牙状态改变事件");
-        let { state } = res;
-        if (state === "on") {
-          this.$toast(`蓝牙打开`);
-          this.bluetooth = true;
-        } else {
-          this.$toast(`蓝牙已关闭`);
-          this.bluetooth = false;
-          this.disconnectWXDevice();
-        }
-      });
-    },
-    //设备连接状态变化
-    onWXDeviceStateChange() {
-      WeixinJSBridge.on("onWXDeviceStateChange", res => {
-        console.log(res);
-        console.log("设备连接状态变化");
-        let { state } = res;
-        if (state === "connecting") {
-          console.log("已连接");
-        } else if (state === "connected") {
-          console.log("连接断开");
-        } else {
-          console.log("连接断开");
-        }
-        this.getWXDeviceInfos();
       });
     },
     //解析数据包
@@ -920,36 +1223,169 @@ export default {
         console.log("解析数据包");
       }
     },
-    //事件监听
-    init() {
-      // 手机蓝牙监听开启事件
-      this.onWXDeviceBluetoothStateChange();
+    async parsePacketSleep(params = {}) {
+      let res = await service.parsePacketSleep(params);
+      if (res.errorCode === 0) {
+        console.log("睡眠解析数据包");
+      }
+    },
+    // 获取电量
+    async getElectric() {
+      let res = await service.getElectric({
+        studentId: this.studentId
+      });
+      if (res.errorCode === 0) {
+        this.dataValue.electricPercent = res.data.electricPercent;
+      }
+    },
+    // 获取开启闹钟的个数
+    async getAlarmClockCount() {
+      let res = await service.getAlarmClockCount({
+        studentId: this.studentId
+      });
+      // this.clockCount = `开启了${res.data}个`;
+      console.log(res);
+      if (res.errorCode === 0) {
+        this.clockCount = `开启了${res.data}个`;
+      }
+    },
+    // 获取当前步数
+    async getStepNumber() {
+      let res = await service.getStepNumber({
+        studentId: this.studentId
+      });
+      console.log(res);
+      if (res.errorCode === 0) {
+        this.dataValue.setStep = res.data.stepTarget;
+        this.dataValue.step = res.data.stepNumber;
+      }
+    },
+    // 获取睡眠
+    async getSleepTime() {
+      let res = await service.getSleepTime({
+        studentId: this.studentId
+      });
+      if (res.errorCode === 0) {
+        this.dataValue.nightTime = res.data[0].sleepDuration;
+        this.dataValue.lunchTime = res.data[0].sleepDuration;
+      } else {
+        this.dataValue.nightTime = "0小时0分钟";
+        this.dataValue.lunchTime = "0小时0分钟";
+      }
+    },
 
-      // 设备连接状态
-      this.onWXDeviceStateChange();
-
-      // 接收到设备数据
-      this.onReceiveDataFromWXDevice();
+    // 返回佩戴习惯
+    async getMannerWear() {
+      let res = await service.getMannerWear({
+        studentId: this.studentId
+      });
+      console.log(res);
+      if (res.errorCode === 0) {
+        this.getWear = `${res.data.wear === 0 ? "左右" : "右手"}-${
+          res.data.screen === 0 ? "横屏" : "竖屏"
+        }`;
+        this.wear = res.data.wear;
+        this.screen = res.data.screen;
+      } else {
+        this.wear = 0;
+        this.screen = 0;
+        this.getWear = `左手-横屏`;
+      }
     }
-  },
-  activated() {
-    // 初始化蓝牙状态
-    this.openWXDeviceLib();
-    // 获取微信设备deviceId
-    this.getWXDeviceInfos();
-    this.init();
   }
 };
 </script>
 <style lang="less" scoped>
-.steps {
-  padding: 30px;
-  p {
-    margin-bottom: 20px;
+.home-user {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 250px;
+  padding: 0 30px;
+  color: #fff;
+  position: relative;
+  .js-user-change {
+    margin-left: 20px;
   }
 }
+.snail {
+  height: 80px;
+  width: calc(100% - 60px);
+  margin: 30px auto;
+  padding: 0 20px;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 1px 20px 0 rgba(204, 204, 204, 0.3);
+}
+.user-icon {
+  width: 60px;
+  height: 60px;
+  margin-right: 20px;
+}
+.switch-role {
+  color: #fff;
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  height: 60px;
+  padding: 0 30px;
+  align-items: center;
+  border-radius: 30px 0 0 30px;
+  background-color: #c1e77e;
+}
+
+.myhand {
+  height: 550px;
+  position: relative;
+  width: 100%;
+  .myAttr {
+    width: 90%;
+    position: absolute;
+    left: 5%;
+    top: 200px;
+    background: #fff;
+    box-shadow: 0px 8px 12px 1px rgba(162, 223, 87, 0.09);
+    border-radius: 10px;
+    .van-cell {
+      // padding: 30px 20px;
+      .van-cell__title {
+        color: #666;
+        font-size: 30px;
+      }
+      .van-cell__value {
+        color: #666666;
+        font-size: 25px;
+      }
+    }
+  }
+}
+
+.setAttr,
+.version {
+  .van-cell {
+    padding: 30px 20px;
+    .van-cell__title {
+      color: #999999;
+      font-size: 30px;
+    }
+    .van-cell__value {
+      color: #666666;
+      font-size: 25px;
+    }
+  }
+}
+
+.connectStatus {
+  position: absolute;
+  right: 0;
+  top: 100px;
+  width: 200px;
+  height: 70px;
+  border: none;
+  outline: none;
+  background: red;
+  color: #fff;
+  border-radius: 20px 0 0 20px;
+}
 </style>
-
-
-
-

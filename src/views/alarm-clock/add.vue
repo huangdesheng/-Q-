@@ -297,10 +297,12 @@ export default {
     onReceiveDataFromWXDevice() {
       WeixinJSBridge.on("onReceiveDataFromWXDevice", res => {
         console.log("接收数据onReceiveDataFromWXDevice");
+        // let obj = res.data[0];
+
         service.decoder({ content: res.base64Data }).then(res => {
           if (res.errorCode === 0) {
             let obj = res.data[0];
-            // this.addOrUpdateAlarmClock();
+            console.log(obj);
           }
         });
       });
