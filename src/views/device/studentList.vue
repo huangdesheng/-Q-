@@ -1,30 +1,45 @@
 <template>
   <div class="page">
-    <div class="page-bd myHand">
-      <template>
-        <div class="myhand">
-          <div class="flex a-i-c home-user gradient-two" style="position:relative">
-            <div class="flex a-i-c">
-              <div class="avatar flex a-i-c">
-                <template>
-                  <img src="@/assets/child-default@2x.png" width="60" height="60" radius="50" />
-                  <!-- <img :src="photo" width="60" height="60" radius="50" /> -->
-                </template>
-              </div>
-              <div class="js-user-change">
-                <template>
-                  <h3 class="mb-20" size-18>{{name}}</h3>
-                  <p size-12>运动需要坚持才能长存</p>
-                </template>
-              </div>
-            </div>
-            <!-- <button class="connectStatus">已连接</button> -->
-            <button class="connectStatus" v-if="state == 'connected'">已连接</button>
-            <button class="connectStatus" v-else-if="state == 'disconnected'">未连接</button>
-            <button class="connectStatus" v-else-if="state == 'connecting'">连接中</button>
+    <template v-if="handStatus === 0"></template>
+    <template v-if="handStatus === 1 || handStatus === 2">
+      <div class="page-bd myHand">
+        <div class="page-bd no_data">
+          <div class="empty">
+            <img src="@/assets/kong.png" alt />
+            <p class="mt-30">您还没有绑定小Q手环呢~~</p>
+            <button>去购买小Q手环</button>
+            <p class="commom">已有小Q手环？</p>
+            <p class="commom">请使用微信扫描手环上面二维码进行绑定。</p>
           </div>
-          <div class="myAttr">
-            <!-- <van-cell
+        </div>
+      </div>
+    </template>
+    <template v-if="handStatus === 3">
+      <div class="page-bd myHand">
+        <template>
+          <div class="myhand">
+            <div class="flex a-i-c home-user gradient-two" style="position:relative">
+              <div class="flex a-i-c">
+                <div class="avatar flex a-i-c">
+                  <template>
+                    <img src="@/assets/child-default@2x.png" width="60" height="60" radius="50" />
+                    <!-- <img :src="photo" width="60" height="60" radius="50" /> -->
+                  </template>
+                </div>
+                <div class="js-user-change">
+                  <template>
+                    <h3 class="mb-20" size-18>{{name}}</h3>
+                    <p size-12>运动需要坚持才能长存</p>
+                  </template>
+                </div>
+              </div>
+              <!-- <button class="connectStatus">已连接</button> -->
+              <button class="connectStatus" v-if="state == 'connected'">已连接</button>
+              <button class="connectStatus" v-else-if="state == 'disconnected'">未连接</button>
+              <button class="connectStatus" v-else-if="state == 'connecting'">连接中</button>
+            </div>
+            <div class="myAttr">
+              <!-- <van-cell
               class="a-i-c"
               size="large"
               title="活跃度"
@@ -34,81 +49,83 @@
               <template slot="icon">
                 <img src="@/assets/user-icon-5@2x.png" class="user-icon" />
               </template>
-            </van-cell>-->
-            <van-cell
-              class="a-i-c"
-              size="large"
-              title="运动步数"
-              :value="dataValue.step+'步'"
-              to="/checkStep"
-            >
-              <template slot="icon">
-                <img src="@/assets/user-icon-8@2x.png" class="user-icon" />
-              </template>
-            </van-cell>
-            <van-cell
-              class="a-i-c"
-              size="large"
-              title="昨晚睡眠"
-              :value="dataValue.nightTime"
-              to="/checkSlepp"
-            >
-              <template slot="icon">
-                <img src="@/assets/user-icon-9@2x.png" class="user-icon" />
-              </template>
-            </van-cell>
-            <van-cell
-              class="a-i-c"
-              size="large"
-              title="午睡"
-              :value="dataValue.lunchTime"
-              to="/checkSlepp"
-            >
-              <template slot="icon">
-                <img src="@/assets/user-icon-9@2x.png" class="user-icon" />
-              </template>
-            </van-cell>
+              </van-cell>-->
+              <van-cell
+                class="a-i-c"
+                size="large"
+                title="运动步数"
+                :value="dataValue.step+'步'"
+                to="/checkStep"
+              >
+                <template slot="icon">
+                  <img src="@/assets/user-icon-8@2x.png" class="user-icon" />
+                </template>
+              </van-cell>
+              <van-cell
+                class="a-i-c"
+                size="large"
+                title="昨晚睡眠"
+                :value="dataValue.nightTime"
+                to="/checkSlepp"
+              >
+                <template slot="icon">
+                  <img src="@/assets/user-icon-9@2x.png" class="user-icon" />
+                </template>
+              </van-cell>
+              <van-cell
+                class="a-i-c"
+                size="large"
+                title="午睡"
+                :value="dataValue.lunchTime"
+                to="/checkSlepp"
+              >
+                <template slot="icon">
+                  <img src="@/assets/user-icon-9@2x.png" class="user-icon" />
+                </template>
+              </van-cell>
+            </div>
           </div>
-        </div>
-        <div class="setAttr">
-          <van-cell
-            class="a-i-c"
-            size="large"
-            title="目标设定"
-            is-link
-            :value="`${dataValue.setStep}步`"
-            @click="stepTip"
-          ></van-cell>
-          <van-cell
-            class="a-i-c"
-            size="large"
-            title="手环闹钟"
-            is-link
-            :value="clockCount"
-            to="/alarm-clock"
-          ></van-cell>
-          <van-cell
-            class="a-i-c"
-            size="large"
-            title="佩戴方式"
-            is-link
-            :value="getWear"
-            @click="setWear"
-          ></van-cell>
-          <van-cell class="a-i-c" size="large" title="剩余电量" :value="dataValue.electricPercent"></van-cell>
-        </div>
-        <div style="margin-top:10px" class="version">
-          <van-cell title="版本" value="V1.0" size="large" />
-          <van-cell title="品牌" value="小Q手环学校版" size="large" />
-        </div>
-        <button @click="run">发送数据</button>
-      </template>
-    </div>
-    <div class="page-ft">
-      <div class="fixed-bottom" style="z-index: 100;">
-        <van-button type="info" size="large" class="no-radius" @click="handleCancel">解除绑定</van-button>
+          <div class="setAttr">
+            <van-cell
+              class="a-i-c"
+              size="large"
+              title="目标设定"
+              is-link
+              :value="`${dataValue.setStep}步`"
+              @click="stepTip"
+            ></van-cell>
+            <van-cell
+              class="a-i-c"
+              size="large"
+              title="手环闹钟"
+              is-link
+              :value="clockCount"
+              to="/alarm-clock"
+            ></van-cell>
+            <van-cell
+              class="a-i-c"
+              size="large"
+              title="佩戴方式"
+              is-link
+              :value="getWear"
+              @click="setWear"
+            ></van-cell>
+            <van-cell class="a-i-c" size="large" title="剩余电量" :value="dataValue.electricPercent"></van-cell>
+          </div>
+          <div style="margin-top:10px" class="version">
+            <van-cell title="版本" value="V1.0" size="large" />
+            <van-cell title="品牌" value="小Q手环学校版" size="large" />
+          </div>
+          <button @click="run" v-if="isBindBracelet == 1">发送数据</button>
+        </template>
       </div>
-    </div>
+      <div class="page-ft" v-if="isBindBracelet == 1">
+        <div class="fixed-bottom" style="z-index: 100;">
+          <van-button type="info" size="large" class="no-radius" @click="handleCancel">解除绑定</van-button>
+        </div>
+      </div>
+    </template>
+
     <van-dialog v-model="stepStatus" title="标题" show-cancel-button :beforeClose="chargeBtn">
       <van-field
         v-model="stepValue"
@@ -129,11 +146,13 @@ import { mapState } from "vuex";
 import wxapi from "@/config/wxapi";
 import { API_ROOT } from "@/config/isdev";
 import { bytesArrayToBase64 } from "@/utils/arrayToBase64";
+
 export default {
   name: "user",
   components: {
     qxFooter
   },
+
   data() {
     return {
       dataValue: {
@@ -218,7 +237,10 @@ export default {
       sleepIndex: 0,
       sleepUTC: [],
       sleepUTCIndex: 0,
-      utcSleep: 1
+      utcSleep: 1,
+      // 判断当前孩子列表存在绑定的孩子
+      hasBind: true,
+      handStatus: 0
     };
   },
   computed: {
@@ -230,16 +252,33 @@ export default {
       id: state => state.info.id,
       studentId: state => state.info.studentId,
       roleType: state => state.info.roleType,
-      isOpen: state => state.info.isOpen
+      isOpen: state => state.info.isOpen,
+      isBindBracelet: state => state.info.isBindBracelet
     })
   },
   mounted() {
+    this.deviceId = this.$route.query.deviceId;
+    this.hasBind = this.$route.query.hasBind;
     this.getElectric();
     this.getStepNumber();
     this.getAlarmClockCount();
     this.getSleepTime();
     this.getMannerWear();
     this.init();
+    console.log(this.$route.query.deviceId);
+    if (this.deviceId === "") {
+      console.log(111);
+      this.handStatus = 1;
+    } else {
+      console.log(this.isBindBracelet);
+      if (this.isBindBracelet == 0) {
+        console.log(222);
+        this.handStatus = 2;
+      } else {
+        console.log(3333);
+        this.handStatus = 3;
+      }
+    }
   },
   methods: {
     init() {
@@ -267,6 +306,9 @@ export default {
         ticket: ticket
       };
       let res = await service.unBindDevice(data);
+      if (res.errorCode === 0) {
+        this.$store.state.user.info.isBindBracelet = 0;
+      }
     },
     // 初始化设备库
     openWXDeviceLib() {
@@ -316,7 +358,6 @@ export default {
     },
 
     getWXDeviceTicket() {
-      console.log(this.deviceId);
       wx.ready(() => {
         WeixinJSBridge.invoke(
           "getWXDeviceTicket",
@@ -336,14 +377,11 @@ export default {
     getWXDeviceInfos() {
       wx.ready(() => {
         WeixinJSBridge.invoke("getWXDeviceInfos", {}, res => {
+          console.log(res);
           if (res.err_msg === "getWXDeviceInfos:ok") {
-            this.state = res.deviceInfos[0].state;
+            // this.state = res.deviceInfos[0].state;
             //绑定设备总数量
-            if (
-              res.deviceInfos.length &&
-              res.deviceInfos[0].state === "connected"
-            ) {
-              console.log(res);
+            if (res.deviceInfos.length) {
               this.state = res.deviceInfos[0].state;
               this.deviceId = res.deviceInfos[0].deviceId;
               console.log(this.deviceId);
@@ -656,6 +694,7 @@ export default {
                 // 获取最近睡眠记录条目
                 console.log("获取最近睡眠记录条目");
                 let len = parseInt(obj[5]);
+                console.log(len);
                 let sleepArr = [];
 
                 if (len === 0) {
@@ -749,59 +788,59 @@ export default {
                     // console.log(this.sleepUTC);
                     // console.log("请求数据包第一个目录包结束,开始删除睡眠数据");
                     console.log("开始获取活跃度");
-                    // let getAcquisitionActivity = [
-                    //   0x23,
-                    //   0x05,
-                    //   0x02,
-                    //   0xf1,
-                    //   0x01,
-                    //   0x00,
-                    //   0x03,
-                    //   0x00
-                    // ];
-                    // this.sendDataToWXDevice(
-                    //   deviceId,
-                    //   bytesArrayToBase64(getAcquisitionActivity)
-                    // );
-                    // this.parsePackets({
-                    //   studentId: this.studentId,
-                    //   deviceId,
-                    //   content: base64Data
-                    // });
-                    let xiao =
-                      0x23 ^
-                      (0 + 0x07) ^
-                      (1 + 0x08) ^
-                      (2 + 0xf0) ^
-                      (3 + 0x04) ^
-                      (4 + this.sleepUTC[0].n5) ^
-                      (5 + this.sleepUTC[0].n6) ^
-                      (6 + this.sleepUTC[0].n7) ^
-                      (7 + this.sleepUTC[0].n8) ^
-                      8;
-
-                    let lenXiao = [
+                    let getAcquisitionActivity = [
                       0x23,
-                      0x07,
-                      0x08,
-                      0xf0,
-                      0x04,
-                      this.sleepUTC[0].n5,
-                      this.sleepUTC[0].n6,
-                      this.sleepUTC[0].n7,
-                      this.sleepUTC[0].n8,
-                      xiao
+                      0x05,
+                      0x02,
+                      0xf1,
+                      0x01,
+                      0x00,
+                      0x03,
+                      0x00
                     ];
-                    console.log("删除条目的睡眠记录信息开始0");
                     this.sendDataToWXDevice(
-                      this.deviceId,
-                      bytesArrayToBase64(lenXiao)
+                      deviceId,
+                      bytesArrayToBase64(getAcquisitionActivity)
                     );
                     this.parsePackets({
                       studentId: this.studentId,
                       deviceId,
                       content: base64Data
                     });
+                    // let xiao =
+                    //   0x23 ^
+                    //   (0 + 0x07) ^
+                    //   (1 + 0x08) ^
+                    //   (2 + 0xf0) ^
+                    //   (3 + 0x04) ^
+                    //   (4 + this.sleepUTC[0].n5) ^
+                    //   (5 + this.sleepUTC[0].n6) ^
+                    //   (6 + this.sleepUTC[0].n7) ^
+                    //   (7 + this.sleepUTC[0].n8) ^
+                    //   8;
+
+                    // let lenXiao = [
+                    //   0x23,
+                    //   0x07,
+                    //   0x08,
+                    //   0xf0,
+                    //   0x04,
+                    //   this.sleepUTC[0].n5,
+                    //   this.sleepUTC[0].n6,
+                    //   this.sleepUTC[0].n7,
+                    //   this.sleepUTC[0].n8,
+                    //   xiao
+                    // ];
+                    // console.log("删除条目的睡眠记录信息开始0");
+                    // this.sendDataToWXDevice(
+                    //   this.deviceId,
+                    //   bytesArrayToBase64(lenXiao)
+                    // );
+                    // this.parsePackets({
+                    //   studentId: this.studentId,
+                    //   deviceId,
+                    //   content: base64Data
+                    // });
                   }
                 }
               } else if (
@@ -809,63 +848,63 @@ export default {
                 obj[3] === "F0" &&
                 obj[1] === "08"
               ) {
-                this.parsePackets({
-                  studentId: this.studentId,
-                  deviceId,
-                  content: base64Data
-                });
-                this.sleepUTCIndex++;
-                if (this.sleepUTC.length > this.sleepUTCIndex) {
-                  let xiao =
-                    0x23 ^
-                    (0 + 0x07) ^
-                    (1 + 0x08) ^
-                    (2 + 0xf0) ^
-                    (3 + 0x04) ^
-                    (4 + this.sleepUTC[this.sleepUTCIndex].n5) ^
-                    (5 + this.sleepUTC[this.sleepUTCIndex].n6) ^
-                    (6 + this.sleepUTC[this.sleepUTCIndex].n7) ^
-                    (7 + this.sleepUTC[this.sleepUTCIndex].n8) ^
-                    8;
-                  let lenXiao = [
-                    0x23,
-                    0x07,
-                    0x08,
-                    0xf0,
-                    0x04,
-                    this.sleepUTC[this.sleepUTCIndex].n5,
-                    this.sleepUTC[this.sleepUTCIndex].n6,
-                    this.sleepUTC[this.sleepUTCIndex].n7,
-                    this.sleepUTC[this.sleepUTCIndex].n8,
-                    xiao
-                  ];
-                  console.log(
-                    `删除条目的睡眠记录信息开始${this.sleepUTCIndex}`
-                  );
-                  this.sendDataToWXDevice(
-                    this.deviceId,
-                    bytesArrayToBase64(lenXiao)
-                  );
-                } else {
-                  console.log(`删除条目完成${this.sleepUTCIndex}`);
-                  let getMostRecentSleepEntry = [
-                    0x23,
-                    0x03,
-                    0x02,
-                    0xf0,
-                    0x01,
-                    0x00
-                  ];
-                  this.sendDataToWXDevice(
-                    deviceId,
-                    bytesArrayToBase64(getMostRecentSleepEntry)
-                  );
-                  this.parsePackets({
-                    studentId: this.studentId,
-                    deviceId,
-                    content: base64Data
-                  });
-                }
+                // this.parsePackets({
+                //   studentId: this.studentId,
+                //   deviceId,
+                //   content: base64Data
+                // });
+                // this.sleepUTCIndex++;
+                // if (this.sleepUTC.length > this.sleepUTCIndex) {
+                //   let xiao =
+                //     0x23 ^
+                //     (0 + 0x07) ^
+                //     (1 + 0x08) ^
+                //     (2 + 0xf0) ^
+                //     (3 + 0x04) ^
+                //     (4 + this.sleepUTC[this.sleepUTCIndex].n5) ^
+                //     (5 + this.sleepUTC[this.sleepUTCIndex].n6) ^
+                //     (6 + this.sleepUTC[this.sleepUTCIndex].n7) ^
+                //     (7 + this.sleepUTC[this.sleepUTCIndex].n8) ^
+                //     8;
+                //   let lenXiao = [
+                //     0x23,
+                //     0x07,
+                //     0x08,
+                //     0xf0,
+                //     0x04,
+                //     this.sleepUTC[this.sleepUTCIndex].n5,
+                //     this.sleepUTC[this.sleepUTCIndex].n6,
+                //     this.sleepUTC[this.sleepUTCIndex].n7,
+                //     this.sleepUTC[this.sleepUTCIndex].n8,
+                //     xiao
+                //   ];
+                //   console.log(
+                //     `删除条目的睡眠记录信息开始${this.sleepUTCIndex}`
+                //   );
+                //   this.sendDataToWXDevice(
+                //     this.deviceId,
+                //     bytesArrayToBase64(lenXiao)
+                //   );
+                // } else {
+                //   console.log(`删除条目完成${this.sleepUTCIndex}`);
+                //   let getMostRecentSleepEntry = [
+                //     0x23,
+                //     0x03,
+                //     0x02,
+                //     0xf0,
+                //     0x01,
+                //     0x00
+                //   ];
+                //   this.sendDataToWXDevice(
+                //     deviceId,
+                //     bytesArrayToBase64(getMostRecentSleepEntry)
+                //   );
+                //   this.parsePackets({
+                //     studentId: this.studentId,
+                //     deviceId,
+                //     content: base64Data
+                //   });
+                // }
               } else if (
                 obj[2] === "04" &&
                 obj[3] === "F1" &&
@@ -877,6 +916,10 @@ export default {
                 let len = parseInt(obj[7] + obj[8]);
                 if (len === 0) {
                   console.log("获取活跃度分包目录数调用结束");
+                  this.getElectric();
+                  this.getStepNumber();
+                  this.getAlarmClockCount();
+                  this.getSleepTime();
                 } else {
                   let xiao;
                   let lenXiao;
@@ -998,43 +1041,43 @@ export default {
                   } else {
                     // 请求数据包第一个目录包结束,开始按UTC删除数据
                     console.log("请求数据包第一个目录包结束,开始按UTC删除数据");
-                    let xiao =
-                      0x23 ^
-                      (0 + 0x09) ^
-                      (1 + 0x08) ^
-                      (2 + 0xf1) ^
-                      (3 + 0x04) ^
-                      (4 + 0x00) ^
-                      (5 + 0x03) ^
-                      (6 + this.delBag[0].n5) ^
-                      (7 + this.delBag[0].n6) ^
-                      (8 + this.delBag[0].n7) ^
-                      (9 + this.delBag[0].n8) ^
-                      10;
-                    let lenXiao = [
-                      0x23,
-                      0x09,
-                      0x08,
-                      0xf1,
-                      0x04,
-                      0x00,
-                      0x03,
-                      this.delBag[0].n5,
-                      this.delBag[0].n6,
-                      this.delBag[0].n7,
-                      this.delBag[0].n8,
-                      xiao
-                    ];
-                    console.log("开始按UTC删除数据0");
-                    this.sendDataToWXDevice(
-                      this.deviceId,
-                      bytesArrayToBase64(lenXiao)
-                    );
-                    this.parsePackets({
-                      deviceId,
-                      content: base64Data,
-                      studentId: this.studentId
-                    });
+                    // let xiao =
+                    //   0x23 ^
+                    //   (0 + 0x09) ^
+                    //   (1 + 0x08) ^
+                    //   (2 + 0xf1) ^
+                    //   (3 + 0x04) ^
+                    //   (4 + 0x00) ^
+                    //   (5 + 0x03) ^
+                    //   (6 + this.delBag[0].n5) ^
+                    //   (7 + this.delBag[0].n6) ^
+                    //   (8 + this.delBag[0].n7) ^
+                    //   (9 + this.delBag[0].n8) ^
+                    //   10;
+                    // let lenXiao = [
+                    //   0x23,
+                    //   0x09,
+                    //   0x08,
+                    //   0xf1,
+                    //   0x04,
+                    //   0x00,
+                    //   0x03,
+                    //   this.delBag[0].n5,
+                    //   this.delBag[0].n6,
+                    //   this.delBag[0].n7,
+                    //   this.delBag[0].n8,
+                    //   xiao
+                    // ];
+                    // console.log("开始按UTC删除数据0");
+                    // this.sendDataToWXDevice(
+                    //   this.deviceId,
+                    //   bytesArrayToBase64(lenXiao)
+                    // );
+                    // this.parsePackets({
+                    //   deviceId,
+                    //   content: base64Data,
+                    //   studentId: this.studentId
+                    // });
                   }
                 }
               } else if (
@@ -1045,105 +1088,109 @@ export default {
                 if (obj[5] === "02") {
                   // 请求数据包请求失败，无效记录序号,开始按UTC删除数据
                   console.log("请求数据包第一个目录包结束,开始按UTC删除数据");
-                  let xiao =
-                    0x23 ^
-                    (0 + 0x09) ^
-                    (1 + 0x08) ^
-                    (2 + 0xf1) ^
-                    (3 + 0x04) ^
-                    (4 + 0x00) ^
-                    (5 + 0x03) ^
-                    (6 + this.delBag[0].n5) ^
-                    (7 + this.delBag[0].n6) ^
-                    (8 + this.delBag[0].n7) ^
-                    (9 + this.delBag[0].n8) ^
-                    10;
-                  let lenXiao = [
-                    0x23,
-                    0x09,
-                    0x08,
-                    0xf1,
-                    0x04,
-                    0x00,
-                    0x03,
-                    this.delBag[0].n5,
-                    this.delBag[0].n6,
-                    this.delBag[0].n7,
-                    this.delBag[0].n8,
-                    xiao
-                  ];
-                  console.log("开始按UTC删除数据0");
-                  this.sendDataToWXDevice(
-                    this.deviceId,
-                    bytesArrayToBase64(lenXiao)
-                  );
-                  this.parsePackets({
-                    deviceId,
-                    content: base64Data,
-                    studentId: this.studentId
-                  });
+                  this.getElectric();
+                  this.getStepNumber();
+                  this.getAlarmClockCount();
+                  this.getSleepTime();
+                  // let xiao =
+                  //   0x23 ^
+                  //   (0 + 0x09) ^
+                  //   (1 + 0x08) ^
+                  //   (2 + 0xf1) ^
+                  //   (3 + 0x04) ^
+                  //   (4 + 0x00) ^
+                  //   (5 + 0x03) ^
+                  //   (6 + this.delBag[0].n5) ^
+                  //   (7 + this.delBag[0].n6) ^
+                  //   (8 + this.delBag[0].n7) ^
+                  //   (9 + this.delBag[0].n8) ^
+                  //   10;
+                  // let lenXiao = [
+                  //   0x23,
+                  //   0x09,
+                  //   0x08,
+                  //   0xf1,
+                  //   0x04,
+                  //   0x00,
+                  //   0x03,
+                  //   this.delBag[0].n5,
+                  //   this.delBag[0].n6,
+                  //   this.delBag[0].n7,
+                  //   this.delBag[0].n8,
+                  //   xiao
+                  // ];
+                  // console.log("开始按UTC删除数据0");
+                  // this.sendDataToWXDevice(
+                  //   this.deviceId,
+                  //   bytesArrayToBase64(lenXiao)
+                  // );
+                  // this.parsePackets({
+                  //   deviceId,
+                  //   content: base64Data,
+                  //   studentId: this.studentId
+                  // });
                 }
               } else if (obj[2] === "10" && obj[3] === "F1") {
-                let index = this.delBagIndex;
-                index++;
-                if (this.delBag.length > index) {
-                  this.delBagIndex = index;
-                  let xiao =
-                    0x23 ^
-                    (0 + 0x09) ^
-                    (1 + 0x08) ^
-                    (2 + 0xf1) ^
-                    (3 + 0x04) ^
-                    (4 + 0x00) ^
-                    (5 + 0x03) ^
-                    (6 + this.delBag[index].n5) ^
-                    (7 + this.delBag[index].n6) ^
-                    (8 + this.delBag[index].n7) ^
-                    (9 + this.delBag[index].n8) ^
-                    10;
-                  let lenXiao = [
-                    0x23,
-                    0x09,
-                    0x08,
-                    0xf1,
-                    0x04,
-                    0x00,
-                    0x03,
-                    this.delBag[index].n5,
-                    this.delBag[index].n6,
-                    this.delBag[index].n7,
-                    this.delBag[index].n8,
-                    xiao
-                  ];
-                  console.log("开始按UTC删除数据" + index);
-                  this.sendDataToWXDevice(
-                    this.deviceId,
-                    bytesArrayToBase64(lenXiao)
-                  );
-                  this.parsePackets(data);
-                } else {
-                  this.delBagIndex = 0;
-                  this.deviceIndex = 0;
-                  let getAcquisitionActivity = [
-                    0x23,
-                    0x05,
-                    0x02,
-                    0xf1,
-                    0x01,
-                    0x00,
-                    0x03,
-                    0xd8
-                  ];
-                  this.sendDataToWXDevice(
-                    deviceId,
-                    bytesArrayToBase64(getAcquisitionActivity)
-                  );
-                  this.parsePackets({
-                    deviceId,
-                    content: base64Data,
-                    studentId: this.studentId
-                  });
-                }
+                // let index = this.delBagIndex;
+                // index++;
+                // if (this.delBag.length > index) {
+                //   this.delBagIndex = index;
+                //   let xiao =
+                //     0x23 ^
+                //     (0 + 0x09) ^
+                //     (1 + 0x08) ^
+                //     (2 + 0xf1) ^
+                //     (3 + 0x04) ^
+                //     (4 + 0x00) ^
+                //     (5 + 0x03) ^
+                //     (6 + this.delBag[index].n5) ^
+                //     (7 + this.delBag[index].n6) ^
+                //     (8 + this.delBag[index].n7) ^
+                //     (9 + this.delBag[index].n8) ^
+                //     10;
+                //   let lenXiao = [
+                //     0x23,
+                //     0x09,
+                //     0x08,
+                //     0xf1,
+                //     0x04,
+                //     0x00,
+                //     0x03,
+                //     this.delBag[index].n5,
+                //     this.delBag[index].n6,
+                //     this.delBag[index].n7,
+                //     this.delBag[index].n8,
+                //     xiao
+                //   ];
+                //   console.log("开始按UTC删除数据" + index);
+                //   this.sendDataToWXDevice(
+                //     this.deviceId,
+                //     bytesArrayToBase64(lenXiao)
+                //   );
+                //   this.parsePackets(data);
+                // } else {
+                //   this.delBagIndex = 0;
+                //   this.deviceIndex = 0;
+                //   let getAcquisitionActivity = [
+                //     0x23,
+                //     0x05,
+                //     0x02,
+                //     0xf1,
+                //     0x01,
+                //     0x00,
+                //     0x03,
+                //     0xd8
+                //   ];
+                //   this.sendDataToWXDevice(
+                //     deviceId,
+                //     bytesArrayToBase64(getAcquisitionActivity)
+                //   );
+                //   this.parsePackets({
+                //     deviceId,
+                //     content: base64Data,
+                //     studentId: this.studentId
+                //   });
+                // }
               } else if (
                 obj[1] === "03" &&
                 obj[2] === "01" &&
@@ -1252,6 +1299,21 @@ export default {
         this.screen = 0;
         this.getWear = `左手-横屏`;
       }
+    },
+
+    // 获取当前孩子列表
+    async queryOpenStudentList() {
+      let res = await service.queryOpenStudentList({
+        openId: this.$store.state.user.info.openId
+      });
+      if (res.errorCode === 0) {
+        let lists = res.data.filter(item => item.isBindBracelet === 1);
+        if (lists.length === 1) {
+          this.hasBind = true;
+        } else {
+          this.hasBind = false;
+        }
+      }
     }
   }
 };
@@ -1348,6 +1410,39 @@ export default {
   background: red;
   color: #fff;
   border-radius: 20px 0 0 20px;
+}
+
+.no_data {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .empty {
+    padding: 0 !important;
+    color: #ccc;
+    img {
+      width: 400px;
+      height: 400px;
+    }
+    button {
+      outline: none;
+      border: none;
+      margin: 100px 0px 50px;
+      padding: 25px 100px;
+      background: linear-gradient(
+        117deg,
+        rgba(162, 225, 78, 1),
+        rgba(162, 222, 90, 1)
+      );
+      border-radius: 75px;
+      color: #fff;
+    }
+    .commom {
+      color: #999;
+      font-size: 30px;
+    }
+  }
 }
 </style>
 

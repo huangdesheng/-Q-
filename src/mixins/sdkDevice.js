@@ -83,11 +83,10 @@ export default {
         WeixinJSBridge.invoke("getWXDeviceInfos", {}, res => {
           console.log(res)
           if (res.err_msg === "getWXDeviceInfos:ok") {
-            this.state = res.deviceInfos[0].state;
+
             //绑定设备总数量
             if (
-              res.deviceInfos.length &&
-              res.deviceInfos[0].state === "connected"
+              res.deviceInfos.length
             ) {
               this.state = res.deviceInfos[0].state;
               this.deviceId = res.deviceInfos[0].deviceId;

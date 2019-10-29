@@ -1,6 +1,17 @@
 <template>
   <div class="page">
-    <div class="page-bd">
+    <div class="page-bd myHand">
+      <div class="page-bd no_data">
+        <div class="empty">
+          <img src="@/assets/kong.png" alt />
+          <p class="mt-30">您还没有绑定小Q手环呢~~</p>
+          <button>去购买小Q手环</button>
+          <p class="commom">已有小Q手环？</p>
+          <p class="commom">请使用微信扫描手环上面二维码进行绑定。</p>
+        </div>
+      </div>
+    </div>
+    <!-- <div class="page-bd">
       <div class="gazelle">
         <div class="gazelle-head">
           <img :src="photo" width="40" height="40" radius="50" v-if="photo">
@@ -44,7 +55,7 @@
           <div class="cell-ft">A</div>
         </div>
       </div>
-    </div>
+    </div>-->
   </div>
 </template>
 <script>
@@ -102,5 +113,38 @@ export default {
 }
 .cells-title {
   color: #2e2e2e;
+}
+
+.no_data {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .empty {
+    padding: 0 !important;
+    color: #ccc;
+    img {
+      width: 400px;
+      height: 400px;
+    }
+    button {
+      outline: none;
+      border: none;
+      margin: 100px 0px 50px;
+      padding: 25px 100px;
+      background: linear-gradient(
+        117deg,
+        rgba(162, 225, 78, 1),
+        rgba(162, 222, 90, 1)
+      );
+      border-radius: 75px;
+      color: #fff;
+    }
+    .commom {
+      color: #999;
+      font-size: 30px;
+    }
+  }
 }
 </style>
