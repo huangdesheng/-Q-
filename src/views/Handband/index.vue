@@ -3,8 +3,13 @@
     <div class="cells-title studentList">选择需要绑定手环的小孩</div>
     <div class="list">
       <div class="flex title">
-        <span class="tp"></span>
-        <span>孩子列表</span>
+        <div class="title_left">
+          <span class="tp"></span>
+          <span>孩子列表</span>
+        </div>
+        <button class="connectStatus" v-if="state == 'connected'">设备已连接</button>
+        <button class="connectStatus" v-else-if="state == 'disconnected'">设备未连接</button>
+        <button class="connectStatus" v-else-if="state == 'connecting'">设备连接中</button>
       </div>
       <van-radio-group v-model="radio">
         <van-cell-group>
@@ -15,17 +20,32 @@
             clickable
             @click="selectChild(item)"
           >
-            <van-radio :name="item.studentId" checked-color="#a2e14e" :disabled="hasBind" />
-            <!-- <van-radio :name="item.studentId" checked-color="#a2e14e" v-else /> -->
+            <template v-if="hasBind">
+              <van-radio
+                :name="item.studentId"
+                checked-color="#a2e14e"
+                :disabled="hasBind"
+                v-if="item.isBindBracelet == 0"
+              />
+              <span v-else class="binded">已绑定</span>
+            </template>
+            <template v-else>
+              <van-radio :name="item.studentId" checked-color="#a2e14e" />
+            </template>
           </van-cell>
         </van-cell-group>
       </van-radio-group>
-      <button @click="addChild">添加小孩</button>
     </div>
-    <button class="connectStatus" v-if="state == 'connected'">已连接</button>
+    <div class="addChild" @click="addChild" v-if="!hasBind">
+      <van-icon name="add-o" />
+      <span>点击新增小孩</span>
+    </div>
+    <!-- <button class="connectStatus" v-if="state == 'connected'">已连接</button>
     <button class="connectStatus" v-else-if="state == 'disconnected'">未连接</button>
-    <button class="connectStatus" v-else-if="state == 'connecting'">连接中</button>
-    <div class="page-ft" v-if="!hasBind">
+    <button class="connectStatus" v-else-if="state == 'connecting'">连接中</button>-->
+
+    <p class="tip">注释：如若设备长时间未连接请重新开启蓝牙并让手机与 手环设备贴合</p>
+    <div class="page-ft" v-if="!hasBind && state === 'connected'">
       <div class="fixed-bottom" style="z-index: 100;">
         <van-button type="info" size="large" class="no-radius" @click="handleBang">确认绑定</van-button>
       </div>
@@ -165,28 +185,72 @@ export default {
   background: #fff;
 
   .title {
-    margin: 0 3vw;
+    margin: 0 0vw 0 1vw;
     align-items: center;
-    padding: 3vw 0vw;
-    .tp {
-      height: 30px;
-      width: 6px;
-      background: #a2e14e;
-      margin-right: 10px;
+    padding: 4vw 0vw;
+    justify-content: space-between;
+    .title_left {
+      .tp {
+        height: 30px;
+        width: 6px;
+        background: #a2e14e;
+        margin-right: 10px;
+      }
     }
   }
 }
 
 .connectStatus {
-  position: fixed;
-  right: 0;
-  top: 500px;
-  width: 200px;
-  height: 70px;
+  width: 250px;
+  height: 60px;
   border: none;
   outline: none;
-  background: red;
+  background: rgba(192, 231, 126, 1);
+  border-radius: 25px 0px 0px 25px;
   color: #fff;
-  border-radius: 20px 0 0 20px;
+}
+
+.addChild {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0 4vw;
+  margin: 5vw 0 5vw;
+  span {
+    margin-left: 15px;
+    color: #a2df58;
+    font-size: 30px;
+  }
+}
+
+.van-icon {
+  font-size: 40px;
+  color: #a2df58;
+}
+
+.list {
+  .van-radio-group {
+    .van-cell-group {
+      .van-cell {
+        padding: 30px 15px;
+      }
+    }
+  }
+}
+
+.binded {
+  font-size: 25px;
+  background: #b0de7a;
+  color: #fff;
+  border-radius: 100px;
+  padding: 5px 15px;
+}
+
+.tip {
+  font-size: 25px;
+  line-height: 40px;
+  color: #666;
+  padding: 0 10vw;
+  margin: 20px 0;
 }
 </style>

@@ -164,8 +164,7 @@ export default {
     ...mapState("user", {
       roleType: state => state.info.roleType,
       photo: state => state.info.photo,
-      openId: state => state.info.openId,
-      studentId: state => state.info.studentId
+      openId: state => state.info.openId
     })
   },
   methods: {
@@ -234,8 +233,7 @@ export default {
         this.studentId = res.data.studentId;
         this.$dialog
           .confirm({
-            title: "提示",
-            message: "是否需要绑定改孩子"
+            message: "手环是否与该孩子进行绑定？"
           })
           .then(() => {
             this.handleBang(args);

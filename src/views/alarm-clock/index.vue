@@ -1,31 +1,44 @@
 <template>
   <div class="page">
-    <div class="page-bd">
-      <div class="cells flex j-c-s-b a-i-c alarm" v-for="(item,index) in lists" :key="index">
-        <div @click="editClock(item.clockId,item.id)">
-          <p>{{item.remark}}</p>
-          <p class="flex a-i-c">
-            <span>上午</span>
-            {{item.time}}
-          </p>
+    <template v-if="lists === 1"></template>
+    <template v-if="lists.length === 0">
+      <div class="page-bd myHand">
+        <div class="page-bd no_data">
+          <div class="empty">
+            <img src="@/assets/kong.png" alt />
+            <p class="mt-30">添加闹钟有助于您把控时间哦~</p>
+          </div>
         </div>
-        <div class="flex-1" @click="editClock(item.clockId,item.id)">
-          <p>
-            <span v-if="String(item.bitMap).split('')[0] == 1">周日</span>
-            <span v-if="String(item.bitMap).split('')[1] == 1">周一</span>
-            <span v-if="String(item.bitMap).split('')[2] == 1">周二</span>
-            <span v-if="String(item.bitMap).split('')[3] == 1">周三</span>
-            <span v-if="String(item.bitMap).split('')[4] == 1">周四</span>
-            <span v-if="String(item.bitMap).split('')[5] ==1">周五</span>
-            <span v-if="String(item.bitMap).split('')[6] == 1">周六</span>
-          </p>
-          <p v-if="item.status === true">开启</p>
-          <p v-if="item.status === false">未开启</p>
-        </div>
-        <van-switch v-model="item.status" active-color="#FDA322" @change="clockBtn(item)" />
       </div>
-    </div>
-
+    </template>
+    <template v-if="lists.length >0">
+      <div class="page-bd">
+        <div class="cells flex j-c-s-b a-i-c alarm" v-for="(item,index) in lists" :key="index">
+          <div @click="editClock(item.clockId,item.id)">
+            <p>{{item.remark}}</p>
+            <p class="flex a-i-c">
+              <span v-if="parseInt(item.time.slice(0, 2))<12">上午</span>
+              <span v-else>下午</span>
+              {{item.time}}
+            </p>
+          </div>
+          <div class="flex-1" @click="editClock(item.clockId,item.id)">
+            <p>
+              <span v-if="String(item.bitMap).split('')[0] == 1">周日</span>
+              <span v-if="String(item.bitMap).split('')[1] == 1">周一</span>
+              <span v-if="String(item.bitMap).split('')[2] == 1">周二</span>
+              <span v-if="String(item.bitMap).split('')[3] == 1">周三</span>
+              <span v-if="String(item.bitMap).split('')[4] == 1">周四</span>
+              <span v-if="String(item.bitMap).split('')[5] ==1">周五</span>
+              <span v-if="String(item.bitMap).split('')[6] == 1">周六</span>
+            </p>
+            <p v-if="item.status === true">开启</p>
+            <p v-if="item.status === false">未开启</p>
+          </div>
+          <van-switch v-model="item.status" active-color="#FDA322" @change="clockBtn(item)" />
+        </div>
+      </div>
+    </template>
     <div class="page-ft" v-if="lists.length<6">
       <div class="fixed-bottom" style="z-index: 100;">
         <van-button type="info" size="large" class="no-radius" @click="addClock">添加闹钟</van-button>
@@ -38,11 +51,12 @@ import service from "@/api";
 import { mapState } from "vuex";
 import sdkDevice from "@/mixins/sdkDevice";
 import { bytesArrayToBase64 } from "@/utils/arrayToBase64";
+
 export default {
   name: "alarmClock",
   data() {
     return {
-      lists: [],
+      lists: 1,
       itemObj: {}
     };
   },
@@ -88,7 +102,6 @@ export default {
         this.lists = res.data;
       }
     },
-
     async addOrUpdateAlarmClock() {
       let data = this.itemObj;
       data.status = data.status === true ? 1 : 0;
@@ -192,8 +205,24 @@ export default {
     }
     p {
       &:nth-of-type(2) {
-        padding-top: 10px;
+        padding-top: 20px;
       }
+    }
+  }
+}
+
+.no_data {
+  width: 100vw;
+  height: 90vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .empty {
+    padding: 0 !important;
+    color: #ccc;
+    img {
+      width: 350px;
+      height: 350px;
     }
   }
 }

@@ -33,7 +33,7 @@
     <div class="page-ft">
       <div class="fixed-bottom" style="z-index: 100;">
         <div class="flex">
-          <van-button size="large" type="danger" class="no-radius">移除</van-button>
+          <!-- <van-button size="large" type="danger" class="no-radius">移除</van-button> -->
           <van-button size="large" type="info" class="no-radius" @click="submit">保存</van-button>
         </div>
       </div>

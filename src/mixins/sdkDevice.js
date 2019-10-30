@@ -2,7 +2,7 @@ export default {
   data() {
     return {
       deviceId: "",
-      state: "connecting",
+      state: "disconnected",
     }
   },
 

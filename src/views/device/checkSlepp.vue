@@ -35,7 +35,7 @@
         </div>
       </div>
       <div class="content">
-        <div class="box">
+        <div class="box" v-if="totalSleep.length>0">
           <van-cell
             :title="totalSleep[0].date"
             :value="totalSleep[0].sleepTotal"
@@ -46,13 +46,9 @@
 
         <template>
           <div v-for="(item,index) in list" :key="index" class="box">
-            <van-cell :title="item.createTime" :value="item.sleepTime+'分钟'" />
+            <van-cell :title="item.createTime" :value="item.sleepDuration" />
           </div>
         </template>
-        <!-- <van-cell title="08月16日" value="6小时35分钟" />
-        <van-cell title="08月16日" value="6小时35分钟" />
-        <van-cell title="08月16日" value="6小时35分钟" />
-        <van-cell title="08月16日" value="6小时35分钟" />-->
       </div>
     </div>
   </div>
@@ -68,7 +64,12 @@ export default {
       // step: "",
       list: [],
       totalSleep: [],
-      obj: {}
+      obj: {
+        shallowSleepTime: "0小时0分钟",
+        deepSleepTime: "0小时0分钟",
+        wakingHours: "0分钟",
+        sleepDuration: "0小时0分钟"
+      }
     };
   },
   mounted() {
@@ -111,7 +112,7 @@ export default {
             sleepDuration: "0小时0分钟"
           };
         } else {
-          this.obj = res.data;
+          this.obj = res.data[0];
         }
       } else {
         this.obj = {
@@ -124,7 +125,7 @@ export default {
     },
     async getWeekSleep() {
       let res = await service.getWeekSleep({
-        studentId: "1"
+        studentId: this.studentId
       });
       console.log(res);
       if (res.errorCode === 0) {
@@ -132,10 +133,6 @@ export default {
         this.totalSleep = res.data.filter(
           item => item.createTime === "总睡眠时长"
         );
-        // this.setStep = res.data.stepTarget;
-        // this.step = res.data.stepNumber;
-        console.log(res);
-        // this.dataValue.electricPercent = res.data.electricPercent;
       }
     }
   }
