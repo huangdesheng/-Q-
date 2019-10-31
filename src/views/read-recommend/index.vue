@@ -13,6 +13,10 @@ export default {
   name: "readRecommend",
   data() {
     return {};
+  },
+  mounted() {
+    let timestamp = new Date().getTime();
+    console.log(timestamp);
   }
 };
 </script>

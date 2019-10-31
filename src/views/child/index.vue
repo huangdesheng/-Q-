@@ -68,8 +68,7 @@ export default {
         this.$router.go(-1);
       } else {
         let { sex, ...args } = params;
-        console.log(args);
-        return false;
+
         let _cookie = Cookies.getJSON("info");
         let obj = Object.assign({}, _cookie, args);
         console.log(obj);

@@ -292,11 +292,11 @@ export default {
             _this.show = true;
           }, 1000);
 
-          let getLocalTime = [0x23, 0x02, 0x02, 0x02, 0x25];
-          this.sendDataToWXDevice(
-            this.deviceId,
-            bytesArrayToBase64(getLocalTime)
-          );
+          // let getLocalTime = [0x23, 0x02, 0x02, 0x02, 0x25];
+          // this.sendDataToWXDevice(
+          //   this.deviceId,
+          //   bytesArrayToBase64(getLocalTime)
+          // );
         }
       }
     }
