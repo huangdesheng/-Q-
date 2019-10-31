@@ -8,23 +8,23 @@ export default {
   methods: {
     //选图
     handleChooseImage(count = 9) {
-      console.log(11111)
+
       wx.chooseImage({
         count, //选择9张
         sizeType: ["compressed"], // 可以指定是原图还是压缩图，默认二者都有
         sourceType: ["album", "camera"], // 可以指定来源是相册还是相机，默认二者都有
         success: res => {
-          console.log("res"+":"+res)
+          console.log("res" + ":" + res)
           let localIds = res.localIds; // 返回选定照片的本地ID列表，localId可以作为img标签的src属性显示图片
           // 判断 ios
           if (window.__wxjs_is_wkwebview) {
-            this.handleLocalImgData(localIds);//ios图片读取
+            this.handleLocalImgData(localIds); //ios图片读取
           } else {
             localIds.forEach(element => {
               this.imagesList.push(element);
             });
           }
-          this.handleUploadImage(localIds);//上传图片
+          this.handleUploadImage(localIds); //上传图片
         },
         fail: res => {
           console.log('00000');
@@ -52,7 +52,7 @@ export default {
         }
         wx.uploadImage({
           localId: loacId, // 需要上传的图片的本地ID，由chooseImage接口获得
-          isShowProgressTips: 0, // 默认为1，显示进度提示
+          isShowProgressTips: 1, // 默认为1，显示进度提示
           success: res => {
             let serverId = res.serverId; // 返回图片的服务器端ID
             this.serverId.push(serverId);

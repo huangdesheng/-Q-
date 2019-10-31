@@ -181,3 +181,23 @@ export function getAlarmClock(params, config = {
     .then(res => res.data)
     .catch(e => console.log(e));
 }
+
+
+// 获取课程总Q星值
+export function getStarTotal(params, config = {
+  showLoading: false
+}) {
+  return ax.post('/qxiao-mp/action/mod-xiaojiao/device/getStarTotal.do', params, config)
+    .then(res => res.data)
+    .catch(e => console.log(e));
+}
+
+
+// 查询学生课程活跃度数值
+export function StudentLessonActive(params, config = {
+  showLoading: false
+}) {
+  return ax.post('/qxiao-mp/action/mod-xiaojiao/device/StudentLessonActive.do', params, config)
+    .then(res => res.data)
+    .catch(e => console.log(e));
+}

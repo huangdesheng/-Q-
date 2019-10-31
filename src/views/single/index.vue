@@ -472,7 +472,9 @@ export default {
         this.$router.push({
           path: "/bracelet",
           query: {
-            title: params.title
+            title: params.title,
+            startTime: params.startTime,
+            endTime: params.startTime
           }
         });
       } else {
