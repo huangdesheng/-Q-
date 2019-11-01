@@ -252,7 +252,9 @@ export default {
       utcSleep: 1,
       // 判断当前孩子列表存在绑定的孩子
       hasBind: true,
-      handStatus: 0
+      handStatus: 0,
+      // 设置的状态
+      setStatus: 0
     };
   },
   computed: {
@@ -475,7 +477,6 @@ export default {
       let deviceId = this.deviceId;
       this.dataValue.setStep = this.stepValue;
       let number = parseInt(this.stepValue);
-      console.log(number);
       if (action === "confirm") {
         if (number < 65535) {
           let start;
@@ -524,11 +525,13 @@ export default {
       };
       let res = await service.getStarTotal(data);
       if (res.errorCode === 0) {
+        // console.log(res.data);
         this.setStart(res.data);
       }
     },
 
     setStart(value) {
+      // console.log(1);
       let num = parseInt(value);
       let start;
       let end;
@@ -547,7 +550,8 @@ export default {
         end = `0x${data.slice(2, 4)}`;
       }
       let setStartVlue = [0x23, 0x04, 0x01, 0x04, start, end, 0x00];
-      this.sendDataToWXDevice(this.deviceId, bytesArrayToBase64(setStartVlue));
+      // let getStartVlue = [0x23, 0x02, 0x02, 0x04, 0x00];
+      this.sendDataToWXDevice(this.deviceId, bytesArrayToBase64(getStartVlue));
     },
 
     sumbitStep() {
@@ -1314,7 +1318,6 @@ export default {
                 obj[2] === "04" &&
                 obj[3] === "06"
               ) {
-                console.log(obj);
                 this.parsePackets({
                   deviceId,
                   content: base64Data,

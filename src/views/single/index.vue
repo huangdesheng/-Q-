@@ -267,13 +267,16 @@ import pageMixin from "@/mixins/page";
 import echartMixin from "@/mixins/echarts";
 import dayjs from "dayjs";
 import { mapState } from "vuex";
+// 20191101
+import sdkDevice from "@/mixins/sdkDevice";
 export default {
   name: "home",
   components: {
     qxFooter,
     qxChart
   },
-  mixins: [pageMixin, echartMixin, formatter],
+
+  mixins: [pageMixin, echartMixin, formatter, sdkDevice],
   data() {
     return {
       dialogImage: false,
@@ -468,13 +471,14 @@ export default {
     },
     jumpCourseView(params) {
       //如果没有绑定手环
-      if (this.isBindBracelet == 1) {
+      if (this.isBindBracelet == 0) {
         this.$router.push({
-          path: "/bracelet",
+          // path: "/bracelet",
+          path: "/device",
           query: {
             title: params.title,
             startTime: params.startTime,
-            endTime: params.startTime
+            endTime: params.endTime
           }
         });
       } else {
@@ -488,6 +492,7 @@ export default {
     },
     //筛选在家表现行为图表
     handleScreen(params = {}, index) {
+      console.log(this.deviceId);
       if (this.active == 0) {
         let { actionType, actionId } = params;
         this.screenIndex = index;
@@ -499,8 +504,21 @@ export default {
         this.lessonIndex = index;
         this.schoolQuery.lessonId = lessonId;
         this.stateMentList(this.schoolQuery);
+        // console.log(this.deviceId);
       }
     },
+    // // 20191101
+    // onClick() {
+    //   let entryData = sessionStorage.getItem("entryData");
+    //   if (
+    //     this.active === 1 &&
+    //     this.deviceId != "" &&
+    //     this.isBindBracelet == 1 &&
+    //     entryData === null
+    //   ) {
+    //     console.log(true);
+    //   }
+    // },
     //行为列表查询
     async actionListQuery() {
       let obj = {
@@ -568,7 +586,29 @@ export default {
         this.shareImgUrl = res.data;
         this.dialogImage = true;
       }
+    },
+    // 20191101
+    onReceiveDataFromWXDevice() {
+      wx.ready(function() {
+        WeixinJSBridge.on("onReceiveDataFromWXDevice", res => {
+          console.log("接收数据onReceiveDataFromWXDevice");
+          service.decoder({ content: res.base64Data }).then(res => {
+            if (res.errorCode === 0) {
+              let obj = res.data[0];
+              // this.addOrUpdateAlarmClock();
+            }
+          });
+        });
+      });
     }
+    // 获取用户绑定设备（20191101）
+    // async getOpenId() {
+    //   let data = {
+    //     openId: this.$store.state.user.info.openId
+    //   };
+    //   let res = await service.getOpenId(data);
+    //   console.log(res);
+    // }
   },
   mounted() {
     this.stateMentList();
@@ -576,10 +616,14 @@ export default {
       //查询最新Q星数
       this.queryStar({ studentId: this.studentId });
     }
+    // this.getOpenId();
+    // this.init();
   },
   activated() {
     this.actionListQuery();
     this.lessonList();
+    // this.getOpenId();
+    // this.init();
   },
   //导航离开该组件的对应路由时调用
   beforeRouteLeave(to, from, next) {
