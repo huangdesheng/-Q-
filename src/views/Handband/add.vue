@@ -13,7 +13,6 @@
         ></van-datetime-picker>
       </van-popup>
       <!-- popup -->
-      <div class="cells-title studentList">请先添加需要绑定手环的小孩</div>
       <div class="cells">
         <div class="cell min-h120">
           <div class="cell-hd">
@@ -44,12 +43,53 @@
             <select class="select" name dir="rtl" v-model="form.sex">
               <option
                 :value="option.id"
-                v-for="(option,index) in sexList"
+                v-for="(option, index) in sexList"
                 :key="index"
               >{{ option.name }}</option>
             </select>
           </div>
         </div>
+
+        <div class="cell min-h120">
+          <div class="cell-hd">出生日期</div>
+          <div class="cell-bd">
+            <input
+              class="input"
+              placeholder="请选择出生日期"
+              @click="popupShow = true"
+              v-model="form.birthday"
+              readonly
+              maxlength="20"
+            />
+          </div>
+        </div>
+
+        <div class="cell min-h120">
+          <div class="cell-hd">
+            <label class="label">地址</label>
+          </div>
+          <div class="cell-bd">
+            <input class="input" placeholder="请输入地址" maxlength="100" v-model.trim="form.address" />
+          </div>
+        </div>
+
+        <div class="cell cell-select cell-select-after min-h120">
+          <div class="cell-hd">
+            <label for class="label">关系</label>
+          </div>
+          <div class="cell-bd">
+            <select class="select" name dir="rtl" v-model="form.relation">
+              <!-- 兼容性问题修改 -->
+              <optgroup disabled hidden></optgroup>
+              <option
+                :value="option.id"
+                v-for="(option, index) in relationList"
+                :key="index"
+              >{{ option.name }}</option>
+            </select>
+          </div>
+        </div>
+
         <div class="cell min-h120">
           <div class="cell-hd">
             <label class="label">家长手机号码</label>
@@ -64,43 +104,20 @@
             />
           </div>
         </div>
-        <div class="cell cell-select cell-select-after min-h120">
+
+        <!-- <div class="cell min-h120 authCode">
           <div class="cell-hd">
-            <label for class="label">关系</label>
+            <label class="label" @click="acquireYZM">获取验证码</label>
           </div>
-          <div class="cell-bd">
-            <select class="select" name dir="rtl" v-model="form.relation">
-              <!-- 兼容性问题修改 -->
-              <optgroup disabled hidden></optgroup>
-              <option
-                :value="option.id"
-                v-for="(option,index) in relationList"
-                :key="index"
-              >{{ option.name }}</option>
-            </select>
-          </div>
-        </div>
-        <div class="cell min-h120">
-          <div class="cell-hd">出生日期</div>
           <div class="cell-bd">
             <input
               class="input"
-              placeholder="请选择出生日期"
-              @click="popupShow = true"
-              v-model="form.birthday"
-              readonly
-              maxlength="20"
+              type="number"
+              placeholder="请输入验证码"
+              v-model.trim="form.verifyCode"
             />
           </div>
-        </div>
-        <div class="cell min-h120">
-          <div class="cell-hd">
-            <label class="label">地址</label>
-          </div>
-          <div class="cell-bd">
-            <input class="input" placeholder="请输入地址" maxlength="100" v-model.trim="form.address" />
-          </div>
-        </div>
+        </div>-->
       </div>
     </div>
     <div class="page-ft">
@@ -128,6 +145,8 @@ export default {
       startDate: new Date(),
       imageUrl: "",
       filesObj: null,
+      deviceId: "gh_0d6d4aa4b57b_05430824aeb67970",
+      studentId: "",
       form: {
         openId: this.$store.state.user.info.openId,
         studentName: "",
@@ -137,23 +156,23 @@ export default {
         sex: 1,
         tel: "",
         relation: 1
+        // verifyCode: ""
       }
     };
   },
   computed: {
     ...mapState("user", {
-      roleType: state => state.info.roleType
+      roleType: state => state.info.roleType,
+      photo: state => state.info.photo,
+      openId: state => state.info.openId
     })
   },
   methods: {
-    //   选择日期的确定按钮(20191007)
     handleConfirm(value) {
       let now = dayjs(new Date(value).getTime()).format("YYYY-MM-DD");
       this.form.birthday = now;
       this.popupShow = false;
     },
-
-    // 点击图片上传
     handleRead(file, detail) {
       this.imageUrl = file.content;
       this.filesObj = file.file;
@@ -211,28 +230,109 @@ export default {
       let res = await service.addStudentWithOpen(params);
       if (res.errorCode === 0) {
         let { first, ...args } = res.data;
-        //如果是第一个添加的孩子，则自动关联上
-        if (first) {
-          let _cookie = Cookies.getJSON("info");
-          let obj = Object.assign({}, _cookie, args);
-          this.$store.dispatch("user/setInfo", obj).then(data => {
-            if (data.success === "ok") {
+        this.studentId = res.data.studentId;
+        this.$dialog
+          .confirm({
+            message: "手环是否与该孩子进行绑定？"
+          })
+          .then(() => {
+            this.handleBang(args);
+          })
+          .catch(() => {
+            if (first) {
+              let _cookie = Cookies.getJSON("info");
+              let obj = Object.assign({}, _cookie, args);
+              this.$store.dispatch("user/setInfo", obj).then(data => {
+                if (data.success === "ok") {
+                  this.$router.go(-1);
+                }
+              });
+            } else {
               this.$router.go(-1);
             }
           });
-        } else {
-          this.$router.go(-1);
-        }
       } else {
         this.$toast(`${res.errorMsg}`);
       }
+    },
+
+    // 确认绑定
+    async handleBang(arg) {
+      console.log(arg);
+      let data = {
+        deviceId: this.deviceId,
+        studentId: this.studentId
+      };
+      // console.log(data);
+      // return false;
+      if (this.deviceId === "") {
+        this.$toast(`暂无搜索到手环设备`);
+        return false;
+      }
+      // if (this.isBindBracelet === 1) {
+      //   this.$toast(`该孩子已经绑定手环`);
+      //   return false;
+      // }
+      let res = await service.bindStudent(data);
+      console.log(res);
+
+      if (res.errorCode === 0) {
+        arg.isBindBracelet = 1;
+        this.setStudentInfo(arg);
+      }
+    },
+
+    async setStudentInfo(args) {
+      let _cookie = Cookies.getJSON("info");
+      let obj = Object.assign({}, _cookie, args);
+      this.$store.dispatch("user/setInfo", obj).then(data => {
+        if (data.success === "ok") {
+          let param = {
+            openId: this.openId,
+            studentId: obj.studentId,
+            type: 1
+          };
+          this.switchingState(param);
+          this.$router.push({
+            path: "/device/studentList",
+            query: {
+              deviceId: this.deviceId,
+              hasBind: true
+            }
+          });
+        }
+      });
+    },
+
+    async switchingState(params = {}) {
+      let res = await service.switchingState(params);
+      console.log(res);
+      if (res.errorCode === 0) {
+      }
     }
+    //获取验证码
+    // async telVeriftCode(tel) {
+    //   let res = await service.telVeriftCode({ tel, codeType: 0 });
+    //   if (res.errorCode === 0) {
+    //     this.$toast("验证码已经发送，请注意查收");
+    //   } else if (res.errorCode === -1) {
+    //     this.$toast(`${res.errorMsg}`);
+    //   }
+    // }
   }
 };
 </script>
 <style lang="less" scoped>
-.studentList {
-  color: #93db21;
-  font-size: 30px;
+.authCode {
+  display: flex;
+  flex-direction: row-reverse;
+  .input {
+    text-align: left;
+  }
+  label {
+    font-size: 30px;
+    font-family: PingFang SC;
+    color: rgba(149, 207, 59, 1);
+  }
 }
 </style>

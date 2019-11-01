@@ -64,11 +64,11 @@ export default {
     //点击孩子进行切换操作
     handleStudentChange(params = {}) {
       //当前关联的不切换
-
       if (this.studentId == params.studentId) {
         this.$router.go(-1);
       } else {
         let { sex, ...args } = params;
+
         let _cookie = Cookies.getJSON("info");
         let obj = Object.assign({}, _cookie, args);
         console.log(obj);
@@ -91,18 +91,18 @@ export default {
         });
       }
     },
-    //查询学生列表--开放版
-    async queryOpenStudentList(params = {}) {
-      let res = await service.queryOpenStudentList(params);
-      if (res.errorCode === 0) {
-        this.list = res.data;
-      }
-    },
     //最后登录状态记录
     async switchingState(params = {}) {
       let res = await service.switchingState(params);
       console.log(res);
       if (res.errorCode === 0) {
+      }
+    },
+    //查询学生列表--开放版
+    async queryOpenStudentList(params = {}) {
+      let res = await service.queryOpenStudentList(params);
+      if (res.errorCode === 0) {
+        this.list = res.data;
       }
     }
   },

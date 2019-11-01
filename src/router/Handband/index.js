@@ -4,7 +4,7 @@ export default [{
     component: () => import('@/views/Handband'),
     meta: {
       title: "手环绑定",
-      keepAlive: true,
+      keepAlive: false,
       isShare: false,
     }
   },
@@ -13,7 +13,7 @@ export default [{
     name: "Handband/add",
     component: () => import('@/views/Handband/add'),
     meta: {
-      title: "手环绑定",
+      title: "添加小孩",
       keepAlive: true,
       isShare: false,
     }

@@ -467,14 +467,14 @@ export default {
       });
     },
     jumpCourseView(params) {
-      console.log(params);
-
       //如果没有绑定手环
-      if (this.isBindBracelet == 0) {
+      if (this.isBindBracelet == 1) {
         this.$router.push({
           path: "/bracelet",
           query: {
-            title: params.title
+            title: params.title,
+            startTime: params.startTime,
+            endTime: params.startTime
           }
         });
       } else {

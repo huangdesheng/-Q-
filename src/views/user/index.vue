@@ -81,7 +81,7 @@
             <img src="@/assets/user-icon-6@2x.png" class="user-icon" />
           </template>
         </van-cell>
-        <van-cell
+        <!-- <van-cell
           class="a-i-c"
           size="large"
           :title="cell.title"
@@ -92,6 +92,42 @@
         >
           <template slot="icon">
             <img :src="cell.icon" class="user-icon" />
+          </template>
+        </van-cell>-->
+
+        <van-cell class="a-i-c" size="large" title="我的作品" is-link to="/works">
+          <template slot="icon">
+            <img src="../../assets/user-icon-5@2x.png" class="user-icon" />
+          </template>
+        </van-cell>
+        <van-cell class="a-i-c" size="large" title="我的课表" is-link to="/schedule">
+          <template slot="icon">
+            <img src="../../assets/user-icon-11@2x.png" class="user-icon" />
+          </template>
+        </van-cell>
+        <van-cell class="a-i-c" size="large" title="我的手环" is-link @click="handleHand">
+          <template slot="icon">
+            <img src="../../assets/user-icon-7@2x.png" class="user-icon" />
+          </template>
+        </van-cell>
+        <van-cell class="a-i-c" size="large" title="教育推荐" is-link to="/edu-recommend">
+          <template slot="icon">
+            <img src="../../assets/user-icon-8@2x.png" class="user-icon" />
+          </template>
+        </van-cell>
+        <van-cell class="a-i-c" size="large" title="阅读推荐" is-link to="/read-recommend">
+          <template slot="icon">
+            <img src="../../assets/user-icon-9@2x.png" class="user-icon" />
+          </template>
+        </van-cell>
+        <van-cell class="a-i-c" size="large" title="活动推荐" is-link to="/activity-recommend">
+          <template slot="icon">
+            <img src="../../assets/user-icon-10@2x.png" class="user-icon" />
+          </template>
+        </van-cell>
+        <van-cell class="a-i-c" size="large" title="帮助中心" is-link to="/help-center">
+          <template slot="icon">
+            <img src="../../assets/user-icon-2@2x.png" class="user-icon" />
           </template>
         </van-cell>
       </template>
@@ -137,16 +173,19 @@ import qxFooter from "@/components/Footer";
 import { mapState } from "vuex";
 import wxapi from "@/config/wxapi";
 import { API_ROOT } from "@/config/isdev";
+import sdkDevice from "@/mixins/sdkDevice";
 export default {
   name: "user",
   components: {
     qxFooter
   },
+
   data() {
     return {
       switched: false,
       visibility: false,
       roleList: [],
+      hasBind: true,
       teacherMenu: [
         {
           title: "学生作品",
@@ -213,6 +252,7 @@ export default {
       ]
     };
   },
+  mixins: [sdkDevice],
   computed: {
     ...mapState("user", {
       openId: state => state.info.openId,
@@ -303,7 +343,172 @@ export default {
           }
         });
       }
-    }
+    },
+
+    // 获取当前孩子列表
+    async queryOpenStudentList() {
+      let res = await service.queryOpenStudentList({
+        openId: this.$store.state.user.info.openId
+      });
+      if (res.errorCode === 0) {
+        let lists = res.data.filter(item => item.isBindBracelet === 1);
+        if (lists.length === 1) {
+          this.hasBind = true;
+        } else {
+          this.hasBind = false;
+        }
+      }
+    },
+
+    // 获取绑定设备的状态
+    handleHand() {
+      // this.$router.push({
+      //   path: "/device/studentList",
+      //   query: {
+      //     deviceId: this.deviceId,
+      //     hasBind: this.hasBind
+      //   }
+      // });
+      this.init();
+    },
+    init() {
+      // 初始化蓝牙状态
+      this.openWXDeviceLib();
+      // 设备连接状态
+      this.getWXDeviceInfos();
+      // 手机蓝牙监听开启事件
+      this.onWXDeviceBluetoothStateChange();
+      // 设备连接状态
+      this.onWXDeviceStateChange();
+      // 接收到设备数据
+      this.onReceiveDataFromWXDevice();
+    },
+    // 初始化设备库
+    openWXDeviceLib() {
+      wx.ready(() => {
+        WeixinJSBridge.invoke(
+          "openWXDeviceLib",
+          {
+            connType: "blue"
+          },
+          res => {
+            if (res.err_msg === "openWXDeviceLib:ok") {
+              //使用前请先打开手机蓝牙
+              if (res.bluetoothState === "off") {
+                this.bluetooth = false;
+                this.$dialog({
+                  message: "使用前请先打开手机蓝牙"
+                });
+              }
+              //用户没有授权微信使用蓝牙功能
+              if (res.bluetoothState === "unauthorized") {
+                this.bluetooth = false;
+                this.$dialog({
+                  message: "请授权微信蓝牙功能并打开蓝牙"
+                });
+              }
+              //蓝牙已打开
+              if (res.bluetoothState === "on") {
+                this.bluetooth = true;
+              }
+            } else {
+              this.bluetooth = false; //微信蓝牙打开失败
+              this.$dialog({
+                message: "微信蓝牙打开失败"
+              });
+            }
+          }
+        );
+      });
+    },
+
+    //设备连接状态变化
+    onWXDeviceStateChange() {
+      wx.ready(() => {
+        WeixinJSBridge.on("onWXDeviceStateChange", res => {
+          console.log(res);
+          console.log("设备连接状态变化");
+          let { state } = res;
+          if (state === "connecting") {
+            console.log("已连接");
+            this.$dialog.close();
+          } else if (state === "connected") {
+            console.log("连接断开");
+          } else {
+            console.log("连接断开");
+          }
+          this.getWXDeviceInfos();
+        });
+      });
+    },
+
+    // 获取设备信息
+    getWXDeviceInfos() {
+      wx.ready(() => {
+        WeixinJSBridge.invoke("getWXDeviceInfos", {}, res => {
+          console.log(res);
+          if (res.err_msg === "getWXDeviceInfos:ok") {
+            //绑定设备总数量
+            if (res.deviceInfos.length) {
+              this.state = res.deviceInfos[0].state;
+              this.deviceId = res.deviceInfos[0].deviceId;
+              console.log(this.deviceId);
+            } else {
+              this.list = [];
+              this.deviceId = "";
+            }
+            if (this.bluetooth === true) {
+              this.$router.push({
+                path: "/device/studentList",
+                query: {
+                  deviceId: this.deviceId,
+                  hasBind: this.hasBind
+                }
+              });
+            }
+          }
+        });
+      });
+    },
+
+    //断开设备连接
+    disconnectWXDevice() {
+      wx.ready(() => {
+        WeixinJSBridge.invoke(
+          "disconnectWXDevice",
+          {
+            deviceId: this.deviceId,
+            connType: "blue"
+          },
+          res => {
+            if (res.err_msg === "disConnectWXDevice:ok") {
+              this.deviceId = "";
+              this.$dialog({
+                message: "使用前请先打开手机蓝牙"
+              });
+            }
+          }
+        );
+      });
+    },
+
+    //手机蓝牙状态改变事件
+    onWXDeviceBluetoothStateChange() {
+      wx.ready(() => {
+        WeixinJSBridge.on("onWXDeviceBluetoothStateChange", res => {
+          let { state } = res;
+          if (state === "on") {
+            this.$toast(`蓝牙打开`);
+            this.bluetooth = true;
+          } else {
+            this.$toast(`蓝牙已关闭`);
+            this.bluetooth = false;
+            this.disconnectWXDevice();
+          }
+        });
+      });
+    },
+    onReceiveDataFromWXDevice() {}
   },
   mounted() {
     this.handleInitSwitch();

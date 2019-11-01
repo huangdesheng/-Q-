@@ -1,1 +1,0 @@
-import ax from '../axios';

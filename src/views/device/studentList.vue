@@ -1,30 +1,51 @@
 <template>
   <div class="page">
-    <div class="page-bd myHand">
-      <template>
-        <div class="myhand">
-          <div class="flex a-i-c home-user gradient-two" style="position:relative">
-            <div class="flex a-i-c">
-              <div class="avatar flex a-i-c">
-                <template>
-                  <img src="@/assets/child-default@2x.png" width="60" height="60" radius="50" />
-                  <!-- <img :src="photo" width="60" height="60" radius="50" /> -->
-                </template>
-              </div>
-              <div class="js-user-change">
-                <template>
-                  <h3 class="mb-20" size-18>{{name}}</h3>
-                  <p size-12>运动需要坚持才能长存</p>
-                </template>
-              </div>
-            </div>
-            <!-- <button class="connectStatus">已连接</button> -->
-            <button class="connectStatus" v-if="state == 'connected'">已连接</button>
-            <button class="connectStatus" v-else-if="state == 'disconnected'">未连接</button>
-            <button class="connectStatus" v-else-if="state == 'connecting'">连接中</button>
+    <div class="dialog" v-if="show">
+      <div>
+        <van-loading size="24px" vertical v-if="show">加载中...</van-loading>
+        <p>{{tip}}</p>
+      </div>
+    </div>
+    <template v-if="handStatus === 0"></template>
+    <template v-if="handStatus === 1 || handStatus === 2">
+      <div class="page-bd myHand">
+        <div class="page-bd no_data">
+          <div class="empty">
+            <img src="@/assets/kong.png" alt />
+            <p class="mt-30">您还没有绑定小Q手环呢~~</p>
+            <button>去购买小Q手环</button>
+            <p class="commom">已有小Q手环？</p>
+            <p class="commom">请使用微信扫描手环上面二维码进行绑定。</p>
           </div>
-          <div class="myAttr">
-            <!-- <van-cell
+        </div>
+      </div>
+    </template>
+    <template v-if="handStatus === 3">
+      <div class="page-bd myHand">
+        <template>
+          <div class="myhand">
+            <div class="flex a-i-c home-user gradient-two" style="position:relative">
+              <div class="flex a-i-c">
+                <div class="avatar flex a-i-c">
+                  <template>
+                    <img src="@/assets/child-default@2x.png" width="60" height="60" radius="50" />
+                    <!-- <img :src="photo" width="60" height="60" radius="50" /> -->
+                  </template>
+                </div>
+                <div class="js-user-change">
+                  <template>
+                    <h3 class="mb-20" size-18>{{name}}</h3>
+                    <p size-12>运动需要坚持才能长存</p>
+                  </template>
+                </div>
+              </div>
+              <!-- <button class="connectStatus">已连接</button> -->
+              <button class="connectStatus" v-if="state == 'connected'" @click="getStarTotal">设备已连接</button>
+              <button class="connectStatus" v-else-if="state == 'disconnected'">设备未连接</button>
+              <button class="connectStatus" v-else-if="state == 'connecting'">设备未连接</button>
+            </div>
+            <div class="myAttr">
+              <!-- <van-cell
               class="a-i-c"
               size="large"
               title="活跃度"
@@ -34,81 +55,87 @@
               <template slot="icon">
                 <img src="@/assets/user-icon-5@2x.png" class="user-icon" />
               </template>
-            </van-cell>-->
-            <van-cell
-              class="a-i-c"
-              size="large"
-              title="运动步数"
-              :value="dataValue.step+'步'"
-              to="/checkStep"
-            >
-              <template slot="icon">
-                <img src="@/assets/user-icon-8@2x.png" class="user-icon" />
-              </template>
-            </van-cell>
-            <van-cell
-              class="a-i-c"
-              size="large"
-              title="昨晚睡眠"
-              :value="dataValue.nightTime"
-              to="/checkSlepp"
-            >
-              <template slot="icon">
-                <img src="@/assets/user-icon-9@2x.png" class="user-icon" />
-              </template>
-            </van-cell>
-            <van-cell
-              class="a-i-c"
-              size="large"
-              title="午睡"
-              :value="dataValue.lunchTime"
-              to="/checkSlepp"
-            >
-              <template slot="icon">
-                <img src="@/assets/user-icon-9@2x.png" class="user-icon" />
-              </template>
-            </van-cell>
+              </van-cell>-->
+              <van-cell
+                class="a-i-c"
+                size="large"
+                title="运动步数"
+                :value="dataValue.step+'步'"
+                to="/checkStep"
+              >
+                <template slot="icon">
+                  <img src="@/assets/nowStep.png" class="user-icon" />
+                </template>
+              </van-cell>
+              <van-cell
+                class="a-i-c"
+                size="large"
+                title="昨晚睡眠"
+                :value="dataValue.nightTime"
+                to="/checkSlepp"
+              >
+                <template slot="icon">
+                  <img src="@/assets/nightSleep.png" class="user-icon" />
+                </template>
+              </van-cell>
+              <van-cell
+                class="a-i-c"
+                size="large"
+                title="午睡"
+                :value="dataValue.lunchTime"
+                to="/checkSlepp"
+              >
+                <template slot="icon">
+                  <img src="@/assets/launchSleep.png" class="user-icon" />
+                </template>
+              </van-cell>
+            </div>
           </div>
-        </div>
-        <div class="setAttr">
-          <van-cell
-            class="a-i-c"
-            size="large"
-            title="目标设定"
-            is-link
-            :value="`${dataValue.setStep}步`"
-            @click="stepTip"
-          ></van-cell>
-          <van-cell
-            class="a-i-c"
-            size="large"
-            title="手环闹钟"
-            is-link
-            :value="clockCount"
-            to="/alarm-clock"
-          ></van-cell>
-          <van-cell
-            class="a-i-c"
-            size="large"
-            title="佩戴方式"
-            is-link
-            :value="getWear"
-            @click="setWear"
-          ></van-cell>
-          <van-cell class="a-i-c" size="large" title="剩余电量" :value="dataValue.electricPercent"></van-cell>
-        </div>
-        <div style="margin-top:10px" class="version">
-          <van-cell title="版本" value="V1.0" size="large" />
-          <van-cell title="品牌" value="小Q手环学校版" size="large" />
-        </div>
-        <button @click="run">发送数据</button>
-      </template>
-    </div>
-    <div class="page-ft">
-      <div class="fixed-bottom" style="z-index: 100;">
-        <van-button type="info" size="large" class="no-radius" @click="handleCancel">解除绑定</van-button>
+          <div class="setAttr">
+            <van-cell
+              class="a-i-c"
+              size="large"
+              title="目标设定"
+              is-link
+              :value="`${dataValue.setStep}步`"
+              @click="stepTip"
+            ></van-cell>
+            <van-cell
+              class="a-i-c"
+              size="large"
+              title="手环闹钟"
+              is-link
+              :value="clockCount"
+              to="/alarm-clock"
+            ></van-cell>
+            <van-cell
+              class="a-i-c"
+              size="large"
+              title="佩戴方式"
+              is-link
+              :value="getWear"
+              @click="setWear"
+            ></van-cell>
+            <van-cell class="a-i-c" size="large" title="剩余电量" :value="dataValue.electricPercent"></van-cell>
+          </div>
+          <div style="margin-top:10px" class="version">
+            <van-cell title="版本" value="V1.0" size="large" />
+            <van-cell title="品牌" value="小Q手环学校版" size="large" />
+          </div>
+          <!-- <button @click="run" v-if="isBindBracelet == 1">发送数据</button> -->
+        </template>
       </div>
-    </div>
+      <div class="backIndex" @click="backIndex">
+        <van-icon name="arrow-left" />
+        <span>返回首页</span>
+      </div>
+      <div class="page-ft" v-if="isBindBracelet == 1">
+        <div class="fixed-bottom" style="z-index: 100;">
+          <van-button type="info" size="large" class="no-radius" @click="handleCancel">解除绑定</van-button>
+        </div>
+      </div>
+    </template>
+
     <van-dialog v-model="stepStatus" title="标题" show-cancel-button :beforeClose="chargeBtn">
       <van-field
         v-model="stepValue"
@@ -129,11 +156,13 @@ import { mapState } from "vuex";
 import wxapi from "@/config/wxapi";
 import { API_ROOT } from "@/config/isdev";
 import { bytesArrayToBase64 } from "@/utils/arrayToBase64";
+
 export default {
   name: "user",
   components: {
     qxFooter
   },
+
   data() {
     return {
       dataValue: {
@@ -144,6 +173,8 @@ export default {
         setStep: 0,
         electricPercent: "0%"
       },
+      show: false,
+      tip: "数据导入中....",
       getValueMenu: [
         {
           title: "活跃度",
@@ -218,7 +249,10 @@ export default {
       sleepIndex: 0,
       sleepUTC: [],
       sleepUTCIndex: 0,
-      utcSleep: 1
+      utcSleep: 1,
+      // 判断当前孩子列表存在绑定的孩子
+      hasBind: true,
+      handStatus: 0
     };
   },
   computed: {
@@ -230,16 +264,40 @@ export default {
       id: state => state.info.id,
       studentId: state => state.info.studentId,
       roleType: state => state.info.roleType,
-      isOpen: state => state.info.isOpen
+      isOpen: state => state.info.isOpen,
+      isBindBracelet: state => state.info.isBindBracelet
     })
   },
   mounted() {
-    this.getElectric();
-    this.getStepNumber();
-    this.getAlarmClockCount();
-    this.getSleepTime();
-    this.getMannerWear();
+    this.deviceId = this.$route.query.deviceId;
+    this.hasBind = this.$route.query.hasBind;
     this.init();
+    if (this.deviceId === "") {
+      this.handStatus = 1;
+    } else {
+      if (this.isBindBracelet == 0) {
+        this.handStatus = 2;
+      } else {
+        this.handStatus = 3;
+        let entryData = sessionStorage.getItem("entryData");
+        this.getElectric();
+        this.getStepNumber();
+        this.getAlarmClockCount();
+        this.getSleepTime();
+        this.getMannerWear();
+        if (!entryData) {
+          let _this = this;
+          setTimeout(function() {
+            _this.show = true;
+          }, 1000);
+          let getLocalTime = [0x23, 0x02, 0x02, 0x02, 0x25];
+          this.sendDataToWXDevice(
+            this.deviceId,
+            bytesArrayToBase64(getLocalTime)
+          );
+        }
+      }
+    }
   },
   methods: {
     init() {
@@ -254,10 +312,20 @@ export default {
       // 接收到设备数据
       this.onReceiveDataFromWXDevice();
     },
-
     handleCancel() {
-      // 获取操作凭证
-      this.getWXDeviceTicket();
+      this.$dialog
+        .confirm({
+          message: "确认解绑当前小孩"
+        })
+        .then(() => {
+          this.getWXDeviceTicket();
+        });
+    },
+
+    backIndex() {
+      this.$router.push({
+        path: "/single"
+      });
     },
 
     async unBindDevice(ticket) {
@@ -267,6 +335,9 @@ export default {
         ticket: ticket
       };
       let res = await service.unBindDevice(data);
+      if (res.errorCode === 0) {
+        this.$store.state.user.info.isBindBracelet = 0;
+      }
     },
     // 初始化设备库
     openWXDeviceLib() {
@@ -316,7 +387,6 @@ export default {
     },
 
     getWXDeviceTicket() {
-      console.log(this.deviceId);
       wx.ready(() => {
         WeixinJSBridge.invoke(
           "getWXDeviceTicket",
@@ -336,14 +406,11 @@ export default {
     getWXDeviceInfos() {
       wx.ready(() => {
         WeixinJSBridge.invoke("getWXDeviceInfos", {}, res => {
+          console.log(res);
           if (res.err_msg === "getWXDeviceInfos:ok") {
-            this.state = res.deviceInfos[0].state;
+            // this.state = res.deviceInfos[0].state;
             //绑定设备总数量
-            if (
-              res.deviceInfos.length &&
-              res.deviceInfos[0].state === "connected"
-            ) {
-              console.log(res);
+            if (res.deviceInfos.length) {
               this.state = res.deviceInfos[0].state;
               this.deviceId = res.deviceInfos[0].deviceId;
               console.log(this.deviceId);
@@ -408,11 +475,27 @@ export default {
       let deviceId = this.deviceId;
       this.dataValue.setStep = this.stepValue;
       let number = parseInt(this.stepValue);
-
+      console.log(number);
       if (action === "confirm") {
         if (number < 65535) {
-          let start = `0x${number.toString(16).slice(0, 2)}`;
-          let end = `0x${number.toString(16).slice(2, 4)}`;
+          let start;
+          let end;
+          let data = number.toString(16);
+          console.log(data);
+          if (data.length === 1) {
+            start = `0x00`;
+            end = `0x0${data}`;
+          } else if (data.length === 2) {
+            start = `0x00`;
+            end = `0x${data}`;
+          } else if (data.length === 3) {
+            start = `0x0${data.slice(0, 1)}`;
+            end = `0x${data.slice(1, 3)}`;
+          } else {
+            start = `0x${data.slice(0, 2)}`;
+            end = `0x${data.slice(2, 4)}`;
+          }
+
           let setMovingGoals = [0x23, 0x04, 0x01, 0x06, start, end, 0x00];
           this.sendDataToWXDevice(
             this.deviceId,
@@ -427,6 +510,44 @@ export default {
       } else {
         done();
       }
+    },
+
+    async getStarTotal() {
+      var now = new Date();
+      var year = now.getFullYear(); //年
+      var month = now.getMonth() + 1; //月
+      var day = now.getDate(); //日
+      let date = `${year}-${month}-${day}`;
+      let data = {
+        studentId: this.studentId,
+        day: date
+      };
+      let res = await service.getStarTotal(data);
+      if (res.errorCode === 0) {
+        this.setStart(res.data);
+      }
+    },
+
+    setStart(value) {
+      let num = parseInt(value);
+      let start;
+      let end;
+      let data = num.toString(16);
+      if (data.length === 1) {
+        start = `0x00`;
+        end = `0x0${data}`;
+      } else if (data.length === 2) {
+        start = `0x00`;
+        end = `0x${data}`;
+      } else if (data.length === 3) {
+        start = `0x0${data.slice(0, 1)}`;
+        end = `0x${data.slice(1, 3)}`;
+      } else {
+        start = `0x${data.slice(0, 2)}`;
+        end = `0x${data.slice(2, 4)}`;
+      }
+      let setStartVlue = [0x23, 0x04, 0x01, 0x04, start, end, 0x00];
+      this.sendDataToWXDevice(this.deviceId, bytesArrayToBase64(setStartVlue));
     },
 
     sumbitStep() {
@@ -572,7 +693,7 @@ export default {
         },
         res => {
           if (res.err_msg === "sendDataToWXDevice:ok") {
-            this.$toast(`数据已发送`);
+            // this.$toast(`数据已发送`);
           } else {
             this.$toast(`数据发送失败`);
           }
@@ -603,9 +724,9 @@ export default {
                   bytesArrayToBase64(getDeviceSoc)
                 );
                 this.parsePackets({
+                  studentId: this.studentId,
                   deviceId,
-                  content: base64Data,
-                  studentId: this.studentId
+                  content: base64Data
                 });
               } else if (
                 obj[1] === "04" &&
@@ -620,9 +741,9 @@ export default {
                   bytesArrayToBase64(getCurrentNumberOfSteps)
                 );
                 this.parsePackets({
+                  studentId: this.studentId,
                   deviceId,
-                  content: base64Data,
-                  studentId: this.studentId
+                  content: base64Data
                 });
               } else if (
                 obj[1] === "04" &&
@@ -644,9 +765,9 @@ export default {
                   bytesArrayToBase64(getMostRecentSleepEntry)
                 );
                 this.parsePackets({
+                  studentId: this.studentId,
                   deviceId,
-                  content: base64Data,
-                  studentId: this.studentId
+                  content: base64Data
                 });
               } else if (
                 obj[2] === "04" &&
@@ -656,6 +777,7 @@ export default {
                 // 获取最近睡眠记录条目
                 console.log("获取最近睡眠记录条目");
                 let len = parseInt(obj[5]);
+                console.log(len);
                 let sleepArr = [];
 
                 if (len === 0) {
@@ -678,9 +800,9 @@ export default {
                     bytesArrayToBase64(getAcquisitionActivity)
                   );
                   this.parsePackets({
+                    studentId: this.studentId,
                     deviceId,
-                    content: base64Data,
-                    studentId: this.studentId
+                    content: base64Data
                   });
                 } else {
                   let xiao;
@@ -746,8 +868,8 @@ export default {
                       this.sleepList[this.sleepIndex]
                     );
                   } else {
-                    // console.log(this.sleepUTC);
-                    // console.log("请求数据包第一个目录包结束,开始删除睡眠数据");
+                    console.log(this.sleepUTC);
+                    console.log("请求数据包第一个目录包结束,开始删除睡眠数据");
                     console.log("开始获取活跃度");
                     let getAcquisitionActivity = [
                       0x23,
@@ -764,9 +886,9 @@ export default {
                       bytesArrayToBase64(getAcquisitionActivity)
                     );
                     this.parsePackets({
+                      studentId: this.studentId,
                       deviceId,
-                      content: base64Data,
-                      studentId: this.studentId
+                      content: base64Data
                     });
                     // let xiao =
                     //   0x23 ^
@@ -809,63 +931,63 @@ export default {
                 obj[3] === "F0" &&
                 obj[1] === "08"
               ) {
-                this.parsePackets({
-                  studentId: this.studentId,
-                  deviceId,
-                  content: base64Data
-                });
-                this.sleepUTCIndex++;
-                if (this.sleepUTC.length > this.sleepUTCIndex) {
-                  // let xiao =
-                  //   0x23 ^
-                  //   (0 + 0x07) ^
-                  //   (1 + 0x08) ^
-                  //   (2 + 0xf0) ^
-                  //   (3 + 0x04) ^
-                  //   (4 + this.sleepUTC[this.sleepUTCIndex].n5) ^
-                  //   (5 + this.sleepUTC[this.sleepUTCIndex].n6) ^
-                  //   (6 + this.sleepUTC[this.sleepUTCIndex].n7) ^
-                  //   (7 + this.sleepUTC[this.sleepUTCIndex].n8) ^
-                  //   8;
-                  // let lenXiao = [
-                  //   0x23,
-                  //   0x07,
-                  //   0x08,
-                  //   0xf0,
-                  //   0x04,
-                  //   this.sleepUTC[this.sleepUTCIndex].n5,
-                  //   this.sleepUTC[this.sleepUTCIndex].n6,
-                  //   this.sleepUTC[this.sleepUTCIndex].n7,
-                  //   this.sleepUTC[this.sleepUTCIndex].n8,
-                  //   xiao
-                  // ];
-                  // console.log(
-                  //   `删除条目的睡眠记录信息开始${this.sleepUTCIndex}`
-                  // );
-                  // this.sendDataToWXDevice(
-                  //   this.deviceId,
-                  //   bytesArrayToBase64(lenXiao)
-                  // );
-                } else {
-                  console.log(`删除条目完成${this.sleepUTCIndex}`);
-                  let getMostRecentSleepEntry = [
-                    0x23,
-                    0x03,
-                    0x02,
-                    0xf0,
-                    0x01,
-                    0x00
-                  ];
-                  this.sendDataToWXDevice(
-                    deviceId,
-                    bytesArrayToBase64(getMostRecentSleepEntry)
-                  );
-                  this.parsePackets({
-                    deviceId,
-                    content: base64Data,
-                    studentId: this.studentId
-                  });
-                }
+                // this.parsePackets({
+                //   studentId: this.studentId,
+                //   deviceId,
+                //   content: base64Data
+                // });
+                // this.sleepUTCIndex++;
+                // if (this.sleepUTC.length > this.sleepUTCIndex) {
+                //   let xiao =
+                //     0x23 ^
+                //     (0 + 0x07) ^
+                //     (1 + 0x08) ^
+                //     (2 + 0xf0) ^
+                //     (3 + 0x04) ^
+                //     (4 + this.sleepUTC[this.sleepUTCIndex].n5) ^
+                //     (5 + this.sleepUTC[this.sleepUTCIndex].n6) ^
+                //     (6 + this.sleepUTC[this.sleepUTCIndex].n7) ^
+                //     (7 + this.sleepUTC[this.sleepUTCIndex].n8) ^
+                //     8;
+                //   let lenXiao = [
+                //     0x23,
+                //     0x07,
+                //     0x08,
+                //     0xf0,
+                //     0x04,
+                //     this.sleepUTC[this.sleepUTCIndex].n5,
+                //     this.sleepUTC[this.sleepUTCIndex].n6,
+                //     this.sleepUTC[this.sleepUTCIndex].n7,
+                //     this.sleepUTC[this.sleepUTCIndex].n8,
+                //     xiao
+                //   ];
+                //   console.log(
+                //     `删除条目的睡眠记录信息开始${this.sleepUTCIndex}`
+                //   );
+                //   this.sendDataToWXDevice(
+                //     this.deviceId,
+                //     bytesArrayToBase64(lenXiao)
+                //   );
+                // } else {
+                //   console.log(`删除条目完成${this.sleepUTCIndex}`);
+                //   let getMostRecentSleepEntry = [
+                //     0x23,
+                //     0x03,
+                //     0x02,
+                //     0xf0,
+                //     0x01,
+                //     0x00
+                //   ];
+                //   this.sendDataToWXDevice(
+                //     deviceId,
+                //     bytesArrayToBase64(getMostRecentSleepEntry)
+                //   );
+                //   this.parsePackets({
+                //     studentId: this.studentId,
+                //     deviceId,
+                //     content: base64Data
+                //   });
+                // }
               } else if (
                 obj[2] === "04" &&
                 obj[3] === "F1" &&
@@ -875,8 +997,26 @@ export default {
                 console.log("获取活跃度分包目录数");
                 let arr = [];
                 let len = parseInt(obj[7] + obj[8]);
+                console.log(len);
                 if (len === 0) {
                   console.log("获取活跃度分包目录数调用结束");
+
+                  this.getElectric();
+                  this.getStepNumber();
+                  this.getAlarmClockCount();
+                  this.getSleepTime();
+                  this.getMannerWear();
+                  sessionStorage.setItem("entryData", 1);
+                  this.tip = "数据导入完成";
+                  let _this = this;
+                  setTimeout(function() {
+                    _this.show = false;
+                  }, 2000);
+                  // this.$toast.loading({
+                  //   message: "加载中...",
+                  //   forbidClick: true,
+                  //   loadingType: "spinner"
+                  // });
                 } else {
                   let xiao;
                   let lenXiao;
@@ -914,9 +1054,9 @@ export default {
                     this.deviceArr[this.deviceIndex]
                   );
                   this.parsePackets({
+                    studentId: this.studentId,
                     deviceId,
-                    content: base64Data,
-                    studentId: this.studentId
+                    content: base64Data
                   });
                 }
               } else if (
@@ -973,19 +1113,19 @@ export default {
                   bytesArrayToBase64(lenXiao)
                 );
                 this.parsePackets({
+                  studentId: this.studentId,
                   deviceId,
-                  content: base64Data,
-                  studentId: this.studentId
+                  content: base64Data
                 });
               } else if (obj[2] === "00" && obj[3] === "03") {
                 // 请求数据包
                 console.log("请求数据包");
                 this.utc = this.utcValue;
                 this.parsePacketActive({
+                  studentId: this.studentId,
                   deviceId,
                   content: base64Data,
-                  utc: this.utcValue,
-                  studentId: this.studentId
+                  utc: this.utcValue
                 });
                 if (obj[0] === "FF" && obj[1] === "FF") {
                   this.deviceIndex++;
@@ -998,6 +1138,13 @@ export default {
                   } else {
                     // 请求数据包第一个目录包结束,开始按UTC删除数据
                     console.log("请求数据包第一个目录包结束,开始按UTC删除数据");
+                    this.getElectric();
+                    this.getStepNumber();
+                    this.getAlarmClockCount();
+                    this.getSleepTime();
+                    sessionStorage.setItem("entryData", 1);
+                    this.show = false;
+                    this.tip = "数据导入完成";
                     // let xiao =
                     //   0x23 ^
                     //   (0 + 0x09) ^
@@ -1045,6 +1192,13 @@ export default {
                 if (obj[5] === "02") {
                   // 请求数据包请求失败，无效记录序号,开始按UTC删除数据
                   console.log("请求数据包第一个目录包结束,开始按UTC删除数据");
+                  this.getElectric();
+                  this.getStepNumber();
+                  this.getAlarmClockCount();
+                  this.getSleepTime();
+                  sessionStorage.setItem("entryData", 1);
+                  this.show = false;
+                  this.tip = "数据导入完成";
                   // let xiao =
                   //   0x23 ^
                   //   (0 + 0x09) ^
@@ -1160,6 +1314,7 @@ export default {
                 obj[2] === "04" &&
                 obj[3] === "06"
               ) {
+                console.log(obj);
                 this.parsePackets({
                   deviceId,
                   content: base64Data,
@@ -1228,7 +1383,7 @@ export default {
       });
       if (res.errorCode === 0) {
         this.dataValue.nightTime = res.data[0].sleepDuration;
-        this.dataValue.lunchTime = res.data[0].sleepDuration;
+        this.dataValue.lunchTime = "0小时0分钟";
       } else {
         this.dataValue.nightTime = "0小时0分钟";
         this.dataValue.lunchTime = "0小时0分钟";
@@ -1251,6 +1406,21 @@ export default {
         this.wear = 0;
         this.screen = 0;
         this.getWear = `左手-横屏`;
+      }
+    },
+
+    // 获取当前孩子列表
+    async queryOpenStudentList() {
+      let res = await service.queryOpenStudentList({
+        openId: this.$store.state.user.info.openId
+      });
+      if (res.errorCode === 0) {
+        let lists = res.data.filter(item => item.isBindBracelet === 1);
+        if (lists.length === 1) {
+          this.hasBind = true;
+        } else {
+          this.hasBind = false;
+        }
       }
     }
   }
@@ -1297,26 +1467,33 @@ export default {
 }
 
 .myhand {
-  height: 550px;
+  height: 600px;
   position: relative;
   width: 100%;
   .myAttr {
     width: 90%;
     position: absolute;
     left: 5%;
-    top: 200px;
+    top: 220px;
     background: #fff;
     box-shadow: 0px 8px 12px 1px rgba(162, 223, 87, 0.09);
     border-radius: 10px;
     .van-cell {
-      // padding: 30px 20px;
+      &:first-of-type {
+        border-radius: 30px 30px 0px 0;
+      }
+      &:last-of-type {
+        border-radius: 0px 0px 30px 30px;
+      }
+      padding: 30px;
       .van-cell__title {
         color: #666;
         font-size: 30px;
+        margin-left: 10px;
       }
       .van-cell__value {
         color: #666666;
-        font-size: 25px;
+        font-size: 28px;
       }
     }
   }
@@ -1325,14 +1502,14 @@ export default {
 .setAttr,
 .version {
   .van-cell {
-    padding: 30px 20px;
+    padding: 40px 20px;
     .van-cell__title {
       color: #999999;
       font-size: 30px;
     }
     .van-cell__value {
       color: #666666;
-      font-size: 25px;
+      font-size: 28px;
     }
   }
 }
@@ -1340,14 +1517,95 @@ export default {
 .connectStatus {
   position: absolute;
   right: 0;
-  top: 100px;
-  width: 200px;
+  top: 40px;
+  width: 230px;
   height: 70px;
   border: none;
   outline: none;
-  background: red;
+  background: #c0e77e;
+  color: #ff4040;
+  border-radius: 80px 0 0 80px;
+}
+
+.backIndex {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 230px;
+  height: 70px;
+  position: fixed;
+  left: 0;
+  top: 800px;
+  background: #c0e77e;
   color: #fff;
-  border-radius: 20px 0 0 20px;
+  border-radius: 0px 80px 80px 0px;
+  .van-icon {
+    margin-left: 10px;
+    font-size: 40px;
+  }
+}
+
+.no_data {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .empty {
+    padding: 0 !important;
+    color: #ccc;
+    img {
+      width: 350px;
+      height: 350px;
+    }
+    button {
+      outline: none;
+      border: none;
+      margin: 150px 0px 50px;
+      padding: 20px 100px;
+      background: linear-gradient(
+        117deg,
+        rgba(162, 225, 78, 1),
+        rgba(162, 222, 90, 1)
+      );
+      border-radius: 75px;
+      color: #fff;
+    }
+    .commom {
+      color: #999;
+      font-size: 28px;
+    }
+  }
+}
+
+.gradient-two {
+  height: 36vw;
+}
+
+.dialog {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  > div {
+    width: 400px;
+    height: 300px;
+    background: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    > p {
+      width: 100%;
+      text-align: center;
+    }
+  }
 }
 </style>
 

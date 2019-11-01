@@ -58,10 +58,11 @@ export default {
     })
   },
   mounted() {
+    // this.StudentLessonActive();
     this.drawLine();
   },
   methods: {
-    drawLine() {
+    drawLine(activeData, date) {
       // 基于准备好的dom，初始化echarts实例
       let myChart = echarts.init(document.getElementById("myChart"));
       // 绘制图表
@@ -104,6 +105,7 @@ export default {
             "10:40",
             "10:45"
           ]
+          // data: date
         },
         yAxis: {
           type: "value",
@@ -115,7 +117,7 @@ export default {
             name: "活跃度",
             type: "line",
             stack: "总量",
-            data: [20, 150, 100, 290, 175, 100, 280, 50, 175, 100]
+            data: [10, 20, 30, 40, 20, 10, 25, 60, 100, 150]
           }
         ]
       });
@@ -132,13 +134,26 @@ export default {
     },
 
     async StudentLessonActive() {
-      console.log(this.date);
       let data = {
         studentId: this.studentId,
-        day: "2019-10-24",
-        startTime: "04:00",
-        endTime: "05:00"
+        day: this.date,
+        startTime: this.$route.query.startTime,
+        endTime: this.$route.query.endTime
       };
+      let res = await service.StudentLessonActive(data);
+      if (res.errorCode === 0) {
+        let hour = this.$route.query.startTime.slice(0, 2);
+        let min = this.$route.query.startTime.slice(3, 5);
+        let date = [];
+        for (let i = 0; i < 7; i++) {
+          if (parseInt(min + i * 5) < 60) {
+            arr.push(`${hour}:${parseInt(min + i * 5)}`);
+          } else {
+            arr.push(`${hour + 1}:${parseInt(min + i * 5) - 60}`);
+          }
+        }
+        this.drawLine(res.data.data, date);
+      }
     }
   }
 };
