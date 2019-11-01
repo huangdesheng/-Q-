@@ -1,6 +1,12 @@
   <template>
   <div class="page">
     <div class="page-bd">
+      <div class="dialogData" style="z-index:1000" v-if="show">
+        <div>
+          <van-loading size="24px" vertical v-if="show">加载中...</van-loading>
+          <p>{{tip}}</p>
+        </div>
+      </div>
       <!-- dialog 图片生成分享 -->
       <van-dialog v-model="dialogImage" close-on-click-overlay :show-confirm-button="false">
         <div class="cells">
@@ -66,7 +72,7 @@
           <van-icon name="arrow" size="16px"></van-icon>
         </div>
         <!-- 用户 -->
-        <van-tabs v-model="active" :line-height="2">
+        <van-tabs v-model="active" :line-height="2" @click="onClick">
           <van-tab title="在家表现">
             <div class="container">
               <!-- 蒙版 -->
@@ -269,13 +275,13 @@ import dayjs from "dayjs";
 import { mapState } from "vuex";
 // 20191101
 import sdkDevice from "@/mixins/sdkDevice";
+import { bytesArrayToBase64 } from "@/utils/arrayToBase64";
 export default {
   name: "home",
   components: {
     qxFooter,
     qxChart
   },
-
   mixins: [pageMixin, echartMixin, formatter, sdkDevice],
   data() {
     return {
@@ -313,7 +319,24 @@ export default {
       actionView: {},
       myActions: [], //我的行为列表
       lessonsList: [],
-      remark: {}
+      remark: {},
+
+      // 获取活跃度目录条数20191101
+      deviceArr: [],
+      deviceIndex: 0,
+      delBag: [],
+      utcValue: "",
+      utc: "1",
+      delBagIndex: 0,
+      // 睡眠部分20191101
+      sleepList: [],
+      sleepIndex: 0,
+      sleepUTC: [],
+      sleepUTCIndex: 0,
+      utcSleep: 1,
+      //20191101
+      show: false,
+      tip: "数据导入中...."
     };
   },
   computed: {
@@ -471,10 +494,10 @@ export default {
     },
     jumpCourseView(params) {
       //如果没有绑定手环
-      if (this.isBindBracelet == 0) {
+      if (this.isBindBracelet == 1) {
         this.$router.push({
-          // path: "/bracelet",
-          path: "/device",
+          path: "/bracelet",
+          // path: "/device",
           query: {
             title: params.title,
             startTime: params.startTime,
@@ -587,28 +610,734 @@ export default {
         this.dialogImage = true;
       }
     },
+
+    //20191101
+    onClick() {
+      let entryData = sessionStorage.getItem("entryData");
+      if (
+        this.active === 1 &&
+        this.deviceId != "" &&
+        this.isBindBracelet == 1 &&
+        entryData === null
+      ) {
+        let _this = this;
+        setTimeout(function() {
+          _this.show = true;
+        }, 1000);
+        let getLocalTime = [0x23, 0x02, 0x02, 0x02, 0x25];
+        this.sendDataToWXDevice(
+          this.deviceId,
+          bytesArrayToBase64(getLocalTime)
+        );
+      }
+    },
+    // 发送数据给设备
+    sendDataToWXDevice(deviceId, base64Data = "") {
+      console.log("send data");
+      WeixinJSBridge.invoke(
+        "sendDataToWXDevice",
+        {
+          deviceId,
+          connType: "blue",
+          base64Data
+        },
+        res => {
+          if (res.err_msg === "sendDataToWXDevice:ok") {
+            // this.$toast(`数据已发送`);
+          } else {
+            this.$toast(`数据发送失败`);
+          }
+        }
+      );
+    },
+
+    async getStarTotal() {
+      var now = new Date();
+      var year = now.getFullYear(); //年
+      var month = now.getMonth() + 1; //月
+      var day = now.getDate(); //日
+      let date = `${year}-${month < 10 ? "0" : ""}${month}-${
+        day < 10 ? "0" : ""
+      }${day}`;
+      let data = {
+        studentId: this.studentId,
+        day: date
+      };
+      let res = await service.getStarTotal(data);
+      if (res.errorCode === 0) {
+        // console.log(res.data);
+        this.setStart(res.data);
+      }
+    },
+
+    setStart(value) {
+      // console.log(1);
+      let num = parseInt(value);
+      let start;
+      let end;
+      let data = num.toString(16);
+      if (data.length === 1) {
+        start = `0x00`;
+        end = `0x0${data}`;
+      } else if (data.length === 2) {
+        start = `0x00`;
+        end = `0x${data}`;
+      } else if (data.length === 3) {
+        start = `0x0${data.slice(0, 1)}`;
+        end = `0x${data.slice(1, 3)}`;
+      } else {
+        start = `0x${data.slice(0, 2)}`;
+        end = `0x${data.slice(2, 4)}`;
+      }
+      let setStartVlue = [0x23, 0x04, 0x01, 0x04, start, end, 0x00];
+      // let getStartVlue = [0x23, 0x02, 0x02, 0x04, 0x00];
+      this.sendDataToWXDevice(this.deviceId, bytesArrayToBase64(setStartVlue));
+    },
     // 20191101
     onReceiveDataFromWXDevice() {
-      wx.ready(function() {
+      wx.ready(() => {
         WeixinJSBridge.on("onReceiveDataFromWXDevice", res => {
           console.log("接收数据onReceiveDataFromWXDevice");
-          service.decoder({ content: res.base64Data }).then(res => {
+          //设备id
+          //base64编码过的设备发到H5的数据
+          let { deviceId, base64Data } = res;
+          //调用后台接口进行base64解码
+          service.decoder({ content: base64Data }).then(res => {
             if (res.errorCode === 0) {
               let obj = res.data[0];
-              // this.addOrUpdateAlarmClock();
+              console.log(obj);
+              // return false;
+              let len = parseInt(obj[5]);
+              if (obj[1] === "08" && obj[2] === "04" && obj[3] === "02") {
+                // 获取本地时间日期结束，开始电量信息
+                console.log("获取本地时间日期结束，开始电量信息");
+                let getDeviceSoc = [0x23, 0x02, 0x02, 0x03, 0x00];
+                this.sendDataToWXDevice(
+                  deviceId,
+                  bytesArrayToBase64(getDeviceSoc)
+                );
+                this.parsePackets({
+                  studentId: this.studentId,
+                  deviceId,
+                  content: base64Data
+                });
+              } else if (
+                obj[1] === "04" &&
+                obj[2] === "04" &&
+                obj[3] === "03"
+              ) {
+                // 获取电量信息结束，开始获取当前步数
+                console.log("获取电量信息结束，开始获取当前步数");
+                let getCurrentNumberOfSteps = [0x23, 0x02, 0x02, 0x05, 0x00];
+                this.sendDataToWXDevice(
+                  deviceId,
+                  bytesArrayToBase64(getCurrentNumberOfSteps)
+                );
+                this.parsePackets({
+                  studentId: this.studentId,
+                  deviceId,
+                  content: base64Data
+                });
+              } else if (
+                obj[1] === "04" &&
+                obj[2] === "04" &&
+                obj[3] === "05"
+              ) {
+                // 获取当前步数结束，开始获取获取最近睡眠
+                console.log("获取当前步数结束，开始获取获取最近睡眠");
+                let getMostRecentSleepEntry = [
+                  0x23,
+                  0x03,
+                  0x02,
+                  0xf0,
+                  0x01,
+                  0x00
+                ];
+                this.sendDataToWXDevice(
+                  deviceId,
+                  bytesArrayToBase64(getMostRecentSleepEntry)
+                );
+                this.parsePackets({
+                  studentId: this.studentId,
+                  deviceId,
+                  content: base64Data
+                });
+              } else if (
+                obj[2] === "04" &&
+                obj[3] === "F0" &&
+                obj[1] === "04"
+              ) {
+                // 获取最近睡眠记录条目
+                console.log("获取最近睡眠记录条目");
+                let len = parseInt(obj[5]);
+                console.log(len);
+                let sleepArr = [];
+
+                if (len === 0) {
+                  // 获取已存的睡眠历史记录条数为0,开始获取活跃度目录条数
+                  console.log(
+                    "获取已存的睡眠历史记录条数为0,开始获取活跃度目录条数"
+                  );
+                  let getAcquisitionActivity = [
+                    0x23,
+                    0x05,
+                    0x02,
+                    0xf1,
+                    0x01,
+                    0x00,
+                    0x03,
+                    0x00
+                  ];
+                  this.sendDataToWXDevice(
+                    deviceId,
+                    bytesArrayToBase64(getAcquisitionActivity)
+                  );
+                  this.parsePackets({
+                    studentId: this.studentId,
+                    deviceId,
+                    content: base64Data
+                  });
+                } else {
+                  let xiao;
+                  let lenXiao;
+                  for (let i = 0; i < len; i++) {
+                    var n = parseInt(`0x0${i}`);
+                    xiao =
+                      0x23 ^
+                      (0 + 0x04) ^
+                      (1 + 0x02) ^
+                      (2 + 0xf0) ^
+                      (3 + 0x02) ^
+                      (4 + n) ^
+                      5;
+                    lenXiao = [0x23, 0x04, 0x02, 0xf0, 0x02, n, xiao];
+                    sleepArr.push(bytesArrayToBase64(lenXiao));
+                  }
+                  this.sleepList = sleepArr;
+                  this.sendDataToWXDevice(
+                    this.deviceId,
+                    this.sleepList[this.sleepIndex]
+                  );
+                  this.parsePackets({
+                    deviceId,
+                    content: base64Data,
+                    studentId: this.studentId
+                  });
+                }
+              } else if (
+                obj[2] === "04" &&
+                obj[3] === "F0" &&
+                obj[1] === "0E"
+              ) {
+                // 获取目录的睡眠信息记录
+                console.log("获取目录的睡眠信息记录");
+                this.sleepUTC.push({
+                  n5: `0x${obj[5]}`,
+                  n6: `0x${obj[6]}`,
+                  n7: `0x${obj[7]}`,
+                  n8: `0x${obj[8]}`
+                });
+                this.utcSleep = `${obj[5]}${obj[6]}${obj[7]}${obj[8]}`;
+                this.parsePackets({
+                  deviceId,
+                  content: base64Data,
+                  studentId: this.studentId
+                });
+              } else if (obj[2] === "01" && obj[3] === "00") {
+                // 睡眠片段
+                console.log("睡眠片段");
+                this.parsePacketSleep({
+                  studentId: this.studentId,
+                  deviceId,
+                  content: base64Data,
+                  utc: this.utcSleep
+                });
+                if (obj[0] === "FF" && obj[1] === "FF") {
+                  this.sleepIndex++;
+                  console.log(this.sleepIndex);
+                  if (this.sleepList.length > this.sleepIndex) {
+                    this.sendDataToWXDevice(
+                      this.deviceId,
+                      this.sleepList[this.sleepIndex]
+                    );
+                  } else {
+                    console.log(this.sleepUTC);
+                    console.log("请求数据包第一个目录包结束,开始删除睡眠数据");
+                    // console.log("开始获取活跃度");
+                    // let getAcquisitionActivity = [
+                    //   0x23,
+                    //   0x05,
+                    //   0x02,
+                    //   0xf1,
+                    //   0x01,
+                    //   0x00,
+                    //   0x03,
+                    //   0x00
+                    // ];
+                    // this.sendDataToWXDevice(
+                    //   deviceId,
+                    //   bytesArrayToBase64(getAcquisitionActivity)
+                    // );
+                    // this.parsePackets({
+                    //   studentId: this.studentId,
+                    //   deviceId,
+                    //   content: base64Data
+                    // });
+                    let xiao =
+                      0x23 ^
+                      (0 + 0x07) ^
+                      (1 + 0x08) ^
+                      (2 + 0xf0) ^
+                      (3 + 0x04) ^
+                      (4 + this.sleepUTC[0].n5) ^
+                      (5 + this.sleepUTC[0].n6) ^
+                      (6 + this.sleepUTC[0].n7) ^
+                      (7 + this.sleepUTC[0].n8) ^
+                      8;
+
+                    let lenXiao = [
+                      0x23,
+                      0x07,
+                      0x08,
+                      0xf0,
+                      0x04,
+                      this.sleepUTC[0].n5,
+                      this.sleepUTC[0].n6,
+                      this.sleepUTC[0].n7,
+                      this.sleepUTC[0].n8,
+                      xiao
+                    ];
+                    console.log("删除条目的睡眠记录信息开始0");
+                    this.sendDataToWXDevice(
+                      this.deviceId,
+                      bytesArrayToBase64(lenXiao)
+                    );
+                    this.parsePackets({
+                      studentId: this.studentId,
+                      deviceId,
+                      content: base64Data
+                    });
+                  }
+                }
+              } else if (
+                obj[2] === "10" &&
+                obj[3] === "F0" &&
+                obj[1] === "08"
+              ) {
+                this.parsePackets({
+                  studentId: this.studentId,
+                  deviceId,
+                  content: base64Data
+                });
+                this.sleepUTCIndex++;
+                if (this.sleepUTC.length > this.sleepUTCIndex) {
+                  let xiao =
+                    0x23 ^
+                    (0 + 0x07) ^
+                    (1 + 0x08) ^
+                    (2 + 0xf0) ^
+                    (3 + 0x04) ^
+                    (4 + this.sleepUTC[this.sleepUTCIndex].n5) ^
+                    (5 + this.sleepUTC[this.sleepUTCIndex].n6) ^
+                    (6 + this.sleepUTC[this.sleepUTCIndex].n7) ^
+                    (7 + this.sleepUTC[this.sleepUTCIndex].n8) ^
+                    8;
+                  let lenXiao = [
+                    0x23,
+                    0x07,
+                    0x08,
+                    0xf0,
+                    0x04,
+                    this.sleepUTC[this.sleepUTCIndex].n5,
+                    this.sleepUTC[this.sleepUTCIndex].n6,
+                    this.sleepUTC[this.sleepUTCIndex].n7,
+                    this.sleepUTC[this.sleepUTCIndex].n8,
+                    xiao
+                  ];
+                  console.log(
+                    `删除条目的睡眠记录信息开始${this.sleepUTCIndex}`
+                  );
+                  this.sendDataToWXDevice(
+                    this.deviceId,
+                    bytesArrayToBase64(lenXiao)
+                  );
+                } else {
+                  console.log(`删除条目完成${this.sleepUTCIndex}`);
+                  let getMostRecentSleepEntry = [
+                    0x23,
+                    0x03,
+                    0x02,
+                    0xf0,
+                    0x01,
+                    0x00
+                  ];
+                  this.sendDataToWXDevice(
+                    deviceId,
+                    bytesArrayToBase64(getMostRecentSleepEntry)
+                  );
+                  this.parsePackets({
+                    studentId: this.studentId,
+                    deviceId,
+                    content: base64Data
+                  });
+                }
+              } else if (
+                obj[2] === "04" &&
+                obj[3] === "F1" &&
+                obj[1] === "0B"
+              ) {
+                //获取活跃度分包目录数
+                console.log("获取活跃度分包目录数");
+                let arr = [];
+                let len = parseInt(obj[7] + obj[8]);
+                console.log(len);
+                if (len === 0) {
+                  console.log("获取活跃度分包目录数调用结束");
+                  this.lessonList();
+                  this.getStarTotal();
+                  sessionStorage.setItem("entryData", 1);
+                  this.tip = "数据导入完成";
+                  let _this = this;
+                  setTimeout(function() {
+                    _this.show = false;
+                  }, 2000);
+                } else {
+                  let xiao;
+                  let lenXiao;
+                  for (let i = 0; i < len; i++) {
+                    var n = parseInt(`0x0${i}`);
+                    xiao =
+                      0x23 ^
+                      (0 + 0x07) ^
+                      (1 + 0x02) ^
+                      (2 + 0xf1) ^
+                      (3 + 0x02) ^
+                      (4 + 0x00) ^
+                      (5 + 0x03) ^
+                      (6 + 0x00) ^
+                      (7 + n) ^
+                      8;
+                    lenXiao = [
+                      0x23,
+                      0x07,
+                      0x02,
+                      0xf1,
+                      0x02,
+                      0x00,
+                      0x03,
+                      0x00,
+                      n,
+                      xiao
+                    ];
+                    arr.push(bytesArrayToBase64(lenXiao));
+                  }
+                  console.log(arr);
+                  this.deviceArr = arr;
+                  this.sendDataToWXDevice(
+                    this.deviceId,
+                    this.deviceArr[this.deviceIndex]
+                  );
+                  this.parsePackets({
+                    studentId: this.studentId,
+                    deviceId,
+                    content: base64Data
+                  });
+                }
+              } else if (
+                obj[2] === "04" &&
+                obj[3] === "F1" &&
+                obj[1] === "0C"
+              ) {
+                //获取活跃度目录内容
+                console.log("获取活跃度目录内容");
+                let n5 = parseInt(`0x${obj[5]}`);
+                let n6 = parseInt(`0x${obj[6]}`);
+                let n7 = parseInt(`0x${obj[7]}`);
+                let n8 = parseInt(`0x${obj[8]}`);
+                this.delBag.push({
+                  n5: `0x${obj[5]}`,
+                  n6: `0x${obj[6]}`,
+                  n7: `0x${obj[7]}`,
+                  n8: `0x${obj[8]}`
+                });
+                this.utcValue = `${obj[5]}${obj[6]}${obj[7]}${obj[8]}`;
+                let xiao =
+                  0x23 ^
+                  (0 + 0x0b) ^
+                  (1 + 0x02) ^
+                  (2 + 0xf1) ^
+                  (3 + 0x03) ^
+                  (4 + 0x00) ^
+                  (5 + 0x03) ^
+                  (6 + n5) ^
+                  (7 + n6) ^
+                  (8 + n7) ^
+                  (9 + n8) ^
+                  (10 + 0x00) ^
+                  (11 + 0x00) ^
+                  12;
+                let lenXiao = [
+                  0x23,
+                  0x0b,
+                  0x02,
+                  0xf1,
+                  0x03,
+                  0x00,
+                  0x03,
+                  n5,
+                  n6,
+                  n7,
+                  n8,
+                  0x00,
+                  0x00,
+                  xiao
+                ];
+                this.sendDataToWXDevice(
+                  this.deviceId,
+                  bytesArrayToBase64(lenXiao)
+                );
+                this.parsePackets({
+                  studentId: this.studentId,
+                  deviceId,
+                  content: base64Data
+                });
+              } else if (obj[2] === "00" && obj[3] === "03") {
+                // 请求数据包
+                console.log("请求数据包");
+                this.utc = this.utcValue;
+                this.parsePacketActive({
+                  studentId: this.studentId,
+                  deviceId,
+                  content: base64Data,
+                  utc: this.utcValue
+                });
+                if (obj[0] === "FF" && obj[1] === "FF") {
+                  this.deviceIndex++;
+                  // 多次发送数据，知道目录包数等于当前索引
+                  if (this.deviceArr.length > this.deviceIndex) {
+                    this.sendDataToWXDevice(
+                      this.deviceId,
+                      this.deviceArr[this.deviceIndex]
+                    );
+                  } else {
+                    // 请求数据包第一个目录包结束,开始按UTC删除数据
+                    // console.log("请求数据包第一个目录包结束,开始按UTC删除数据");
+                    // this.lessonList();
+                    // this.getStarTotal();
+                    // sessionStorage.setItem("entryData", 1);
+                    // this.show = false;
+                    // this.tip = "数据导入完成";
+                    let xiao =
+                      0x23 ^
+                      (0 + 0x09) ^
+                      (1 + 0x08) ^
+                      (2 + 0xf1) ^
+                      (3 + 0x04) ^
+                      (4 + 0x00) ^
+                      (5 + 0x03) ^
+                      (6 + this.delBag[0].n5) ^
+                      (7 + this.delBag[0].n6) ^
+                      (8 + this.delBag[0].n7) ^
+                      (9 + this.delBag[0].n8) ^
+                      10;
+                    let lenXiao = [
+                      0x23,
+                      0x09,
+                      0x08,
+                      0xf1,
+                      0x04,
+                      0x00,
+                      0x03,
+                      this.delBag[0].n5,
+                      this.delBag[0].n6,
+                      this.delBag[0].n7,
+                      this.delBag[0].n8,
+                      xiao
+                    ];
+                    console.log("开始按UTC删除数据0");
+                    this.sendDataToWXDevice(
+                      this.deviceId,
+                      bytesArrayToBase64(lenXiao)
+                    );
+                    this.parsePackets({
+                      deviceId,
+                      content: base64Data,
+                      studentId: this.studentId
+                    });
+                  }
+                }
+              } else if (
+                obj[2] === "04" &&
+                obj[3] === "F1" &&
+                obj[1] === "04"
+              ) {
+                if (obj[5] === "02") {
+                  // 请求数据包请求失败，无效记录序号,开始按UTC删除数据
+                  // console.log("请求数据包第一个目录包结束,开始按UTC删除数据");
+                  // this.lessonList();
+                  // this.getStarTotal();
+                  // sessionStorage.setItem("entryData", 1);
+                  // this.show = false;
+                  // this.tip = "数据导入完成";
+                  let xiao =
+                    0x23 ^
+                    (0 + 0x09) ^
+                    (1 + 0x08) ^
+                    (2 + 0xf1) ^
+                    (3 + 0x04) ^
+                    (4 + 0x00) ^
+                    (5 + 0x03) ^
+                    (6 + this.delBag[0].n5) ^
+                    (7 + this.delBag[0].n6) ^
+                    (8 + this.delBag[0].n7) ^
+                    (9 + this.delBag[0].n8) ^
+                    10;
+                  let lenXiao = [
+                    0x23,
+                    0x09,
+                    0x08,
+                    0xf1,
+                    0x04,
+                    0x00,
+                    0x03,
+                    this.delBag[0].n5,
+                    this.delBag[0].n6,
+                    this.delBag[0].n7,
+                    this.delBag[0].n8,
+                    xiao
+                  ];
+                  console.log("开始按UTC删除数据0");
+                  this.sendDataToWXDevice(
+                    this.deviceId,
+                    bytesArrayToBase64(lenXiao)
+                  );
+                  this.parsePackets({
+                    deviceId,
+                    content: base64Data,
+                    studentId: this.studentId
+                  });
+                }
+              } else if (obj[2] === "10" && obj[3] === "F1") {
+                let index = this.delBagIndex;
+                index++;
+                if (this.delBag.length > index) {
+                  this.delBagIndex = index;
+                  let xiao =
+                    0x23 ^
+                    (0 + 0x09) ^
+                    (1 + 0x08) ^
+                    (2 + 0xf1) ^
+                    (3 + 0x04) ^
+                    (4 + 0x00) ^
+                    (5 + 0x03) ^
+                    (6 + this.delBag[index].n5) ^
+                    (7 + this.delBag[index].n6) ^
+                    (8 + this.delBag[index].n7) ^
+                    (9 + this.delBag[index].n8) ^
+                    10;
+                  let lenXiao = [
+                    0x23,
+                    0x09,
+                    0x08,
+                    0xf1,
+                    0x04,
+                    0x00,
+                    0x03,
+                    this.delBag[index].n5,
+                    this.delBag[index].n6,
+                    this.delBag[index].n7,
+                    this.delBag[index].n8,
+                    xiao
+                  ];
+                  console.log("开始按UTC删除数据" + index);
+                  this.sendDataToWXDevice(
+                    this.deviceId,
+                    bytesArrayToBase64(lenXiao)
+                  );
+                  this.parsePackets(data);
+                } else {
+                  this.delBagIndex = 0;
+                  this.deviceIndex = 0;
+                  let getAcquisitionActivity = [
+                    0x23,
+                    0x05,
+                    0x02,
+                    0xf1,
+                    0x01,
+                    0x00,
+                    0x03,
+                    0xd8
+                  ];
+                  this.sendDataToWXDevice(
+                    deviceId,
+                    bytesArrayToBase64(getAcquisitionActivity)
+                  );
+                  this.parsePackets({
+                    deviceId,
+                    content: base64Data,
+                    studentId: this.studentId
+                  });
+                }
+              } else if (
+                obj[1] === "03" &&
+                obj[2] === "01" &&
+                obj[3] === "01" &&
+                obj[4] === "00"
+              ) {
+                let getMovingGoals = [0x23, 0x02, 0x02, 0x06, 0x00];
+                this.sendDataToWXDevice(
+                  this.deviceId,
+                  bytesArrayToBase64(getMovingGoals)
+                );
+              } else if (
+                obj[1] === "04" &&
+                obj[2] === "04" &&
+                obj[3] === "06"
+              ) {
+                this.parsePackets({
+                  deviceId,
+                  content: base64Data,
+                  studentId: this.studentId
+                });
+              }
             }
           });
         });
       });
+    },
+    //解析数据包20191101
+    async parsePackets(params = {}) {
+      let res = await service.parsePackets(params);
+      if (res.errorCode === 0) {
+        console.log("解析数据包");
+      }
+    },
+    // 活跃度解析数据包20191101
+    async parsePacketActive(params = {}) {
+      let res = await service.parsePacketActive(params);
+      if (res.errorCode === 0) {
+        console.log("活跃度解析数据包");
+      }
+    },
+    // 睡眠解析数据包20191101
+    async parsePacketSleep(params = {}) {
+      let res = await service.parsePacketSleep(params);
+      if (res.errorCode === 0) {
+        console.log("睡眠解析数据包");
+      }
+    },
+    // 获取用户绑定设备20191101
+    async getDeviceIdList() {
+      let data = {
+        openId: this.$store.state.user.info.openId
+      };
+      let res = await service.getDeviceIdList(data);
+      if (res.errorCode === 0) {
+        if (res.data != null) {
+          this.init();
+        }
+      }
     }
-    // 获取用户绑定设备（20191101）
-    // async getOpenId() {
-    //   let data = {
-    //     openId: this.$store.state.user.info.openId
-    //   };
-    //   let res = await service.getOpenId(data);
-    //   console.log(res);
-    // }
   },
   mounted() {
     this.stateMentList();
@@ -616,13 +1345,12 @@ export default {
       //查询最新Q星数
       this.queryStar({ studentId: this.studentId });
     }
-    // this.getOpenId();
-    // this.init();
+    this.getDeviceIdList();
   },
   activated() {
     this.actionListQuery();
     this.lessonList();
-    // this.getOpenId();
+    this.getDeviceIdList();
     // this.init();
   },
   //导航离开该组件的对应路由时调用
@@ -859,6 +1587,32 @@ export default {
     color: #252525;
     i {
       background-color: #f00;
+    }
+  }
+}
+
+//20191101
+.dialogData {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  > div {
+    width: 400px;
+    height: 300px;
+    background: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    > p {
+      width: 100%;
+      text-align: center;
     }
   }
 }
