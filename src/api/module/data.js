@@ -201,3 +201,12 @@ export function StudentLessonActive(params, config = {
     .then(res => res.data)
     .catch(e => console.log(e));
 }
+
+//获取用户绑定设备
+export function getDeviceIdList(params, config = {
+  showLoading: false
+}) {
+  return ax.post('/qxiao-mp/action/mod-xiaojiao/device/getDeviceIdList.do', params, config)
+    .then(res => res.data)
+    .catch(e => console.log(e));
+}

@@ -362,14 +362,10 @@ export default {
 
     // 获取绑定设备的状态
     handleHand() {
-      // this.$router.push({
-      //   path: "/device/studentList",
-      //   query: {
-      //     deviceId: this.deviceId,
-      //     hasBind: this.hasBind
-      //   }
-      // });
-      this.init();
+      this.$router.push({
+        path: "/device"
+      });
+      // this.init();
     },
     init() {
       // 初始化蓝牙状态

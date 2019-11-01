@@ -24,6 +24,7 @@
 </template>
 
 <script>
+import service from "@/api";
 let echarts = require("echarts/lib/echarts");
 import { mapState } from "vuex";
 // 引入折线组件
@@ -58,8 +59,8 @@ export default {
     })
   },
   mounted() {
-    // this.StudentLessonActive();
-    this.drawLine();
+    this.StudentLessonActive();
+    // this.drawLine();
   },
   methods: {
     drawLine(activeData, date) {
@@ -93,19 +94,19 @@ export default {
           type: "category",
           boundaryGap: false,
           name: "分钟",
-          data: [
-            "10:00",
-            "10:05",
-            "10:10",
-            "10:15",
-            "10:20",
-            "10:25",
-            "10:30",
-            "10:35",
-            "10:40",
-            "10:45"
-          ]
-          // data: date
+          // data: [
+          //   "10:00",
+          //   "10:05",
+          //   "10:10",
+          //   "10:15",
+          //   "10:20",
+          //   "10:25",
+          //   "10:30",
+          //   "10:35",
+          //   "10:40",
+          //   "10:45"
+          // ]
+          data: date
         },
         yAxis: {
           type: "value",
@@ -117,7 +118,7 @@ export default {
             name: "活跃度",
             type: "line",
             stack: "总量",
-            data: [10, 20, 30, 40, 20, 10, 25, 60, 100, 150]
+            data: activeData
           }
         ]
       });
@@ -140,19 +141,41 @@ export default {
         startTime: this.$route.query.startTime,
         endTime: this.$route.query.endTime
       };
+
       let res = await service.StudentLessonActive(data);
       if (res.errorCode === 0) {
+        let activeData;
+        if (res.data.data === null) {
+          activeData = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        } else {
+          activeData = res.data.data;
+        }
         let hour = this.$route.query.startTime.slice(0, 2);
         let min = this.$route.query.startTime.slice(3, 5);
         let date = [];
-        for (let i = 0; i < 7; i++) {
-          if (parseInt(min + i * 5) < 60) {
-            arr.push(`${hour}:${parseInt(min + i * 5)}`);
+        for (let i = 0; i < 10; i++) {
+          if (parseInt(min) + i * 5 < 60) {
+            if (parseInt(min) + i * 5 < 10) {
+              date.push(`${hour}:0${parseInt(min) + i * 5}`);
+            } else {
+              date.push(`${hour}:${parseInt(min) + i * 5}`);
+            }
           } else {
-            arr.push(`${hour + 1}:${parseInt(min + i * 5) - 60}`);
+            console.log(2);
+            if (parseInt(min) + i * 5 - 60 < 10) {
+              date.push(
+                `${parseInt(hour) + 1 < 10 ? 0 : ""}${parseInt(hour) +
+                  1}:0${parseInt(min) + i * 5 - 60}`
+              );
+            } else {
+              date.push(
+                `${parseInt(hour) + 1 < 10 ? 0 : ""}${parseInt(hour) +
+                  1}:${parseInt(min) + i * 5 - 60}`
+              );
+            }
           }
         }
-        this.drawLine(res.data.data, date);
+        this.drawLine(activeData, date);
       }
     }
   }
