@@ -61,16 +61,16 @@
         <template v-if="roleType == 3">
           <template v-if="query.needSignature">
             <template v-if="experience != 1">
-              <div v-if="info.confirmFlag === -1"></div>
+              <div v-if="info.signature === -1"></div>
               <div
-                v-if="info.confirmFlag === 0"
+                v-if="info.signature === 0"
                 class="clickRead"
                 @click="handleConfirmFlag"
               >
                 <p>家长签名</p>
               </div>
               <div
-                v-if="info.confirmFlag === 1"
+                v-if="info.signature === 1"
                 v-cloak
                 class="clickRead2"
                 @click="handleConfirmFlag"
@@ -94,7 +94,7 @@
                 v-if="info.confirmFlag === 1"
                 v-cloak
                 class="clickRead2"
-                @click="handleConfirmFlag"
+                @click="handleConfirmFlag2"
               >
                 <p>已确认阅读</p>
               </div>
@@ -127,7 +127,8 @@ export default {
         this.$store.state.user.info.roleType || this.$route.query.roleType,
       needConfirm: parseInt(this.$route.query.needConfirm), //0 不用确认
       info: {
-        confirmFlag: -1
+        confirmFlag: -1,
+        signature:-1
       },
       signature: "", //签名图片
       show: false //是否放大签名图片
@@ -171,7 +172,7 @@ export default {
     //签名
     handleConfirmFlag() {
       //0-无需确认 1-需要确认
-      if (!this.info.confirmFlag) {
+      if (!this.info.signature) {
         let { openId, noticeId, studentId } = this.query;
         this.$router.push({
           path: "/signature",
@@ -227,7 +228,7 @@ export default {
       if (this.roleType == 3) {
         let res = await service.noticeConfirm(params);
         if (res.errorCode === 0) {
-          this.info.confirmFlag = 1;
+          // this.info.confirmFlag = 1;
           // this.$toast("签名成功");
         }
       }
@@ -268,7 +269,9 @@ export default {
   //   }
   // }
   activated() {
-    console.log(this.$route.query.needSignature);
+    if (this.signature) {
+      this.info.signature = 1;
+    }
     if (this.roleType == 1 || this.roleType == 4) {
       this.querySchoolNoticeDefaul(this.query);
     } else {
