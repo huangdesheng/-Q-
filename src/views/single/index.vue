@@ -2,10 +2,16 @@
   <div class="page">
     <div class="page-bd">
       <!-- dialog 图片生成分享 -->
-      <van-dialog v-model="dialogImage" close-on-click-overlay :show-confirm-button="false">
+      <van-dialog
+        v-model="dialogImage"
+        close-on-click-overlay
+        :show-confirm-button="false"
+      >
         <div class="cells">
           <img :src="shareImgUrl" />
-          <p class="text-center pt-30 pb-30 share-desctext">长按图片保存或发给朋友</p>
+          <p class="text-center pt-30 pb-30 share-desctext">
+            长按图片保存或发给朋友
+          </p>
         </div>
       </van-dialog>
       <!-- dialog 1 -->
@@ -18,13 +24,20 @@
           <div class>
             <strong>评价标准:</strong>
             <ul class="ml-20 disc font-color">
-              <li v-for="(item, index) in actionView.rules" :key="index">{{ item.ruleText }}</li>
+              <li v-for="(item, index) in actionView.rules" :key="index">
+                {{ item.ruleText }}
+              </li>
             </ul>
           </div>
         </div>
       </van-dialog>
       <!-- dialog 1 -->
-      <van-dialog v-model="dialogNote" title="添加备注" show-cancel-button :before-close="handleSubmit">
+      <van-dialog
+        v-model="dialogNote"
+        title="添加备注"
+        show-cancel-button
+        :before-close="handleSubmit"
+      >
         <div class="cells" style="padding:15px 0 15px 0;">
           <div class="cell">
             <div class="cell-bd">
@@ -44,9 +57,21 @@
           <div class="flex a-i-c">
             <template v-if="name">
               <div class="avatar-circle flex a-i-c j-c-c">
-                <img :src="photo" width="60" height="60" radius="50" v-if="photo" />
+                <img
+                  :src="photo"
+                  width="60"
+                  height="60"
+                  radius="50"
+                  v-if="photo"
+                />
                 <!-- 如果用户没有上传头像 -->
-                <img src="@/assets/child-default@2x.png" width="60" height="60" radius="50" v-else />
+                <img
+                  src="@/assets/child-default@2x.png"
+                  width="60"
+                  height="60"
+                  radius="50"
+                  v-else
+                />
               </div>
               <div class="js-user-change">
                 <h3 class="mb-20" size-18>
@@ -58,7 +83,12 @@
             </template>
             <template v-else>
               <div class="avatar-circle">
-                <img src="@/assets/child-default@2x.png" width="60" height="60" radius="50" />
+                <img
+                  src="@/assets/child-default@2x.png"
+                  width="60"
+                  height="60"
+                  radius="50"
+                />
               </div>
               <p class="ml-20">尚未有关注孩子，点击添加。</p>
             </template>
@@ -70,10 +100,19 @@
           <van-tab title="在家表现">
             <div class="container">
               <!-- 蒙版 -->
-              <div class="overlay" v-if="studentId == 0" style="z-index: 500" @click="overlay"></div>
+              <div
+                class="overlay"
+                v-if="studentId == 0"
+                style="z-index: 500"
+                @click="overlay"
+              ></div>
               <div class="mod">
                 <!-- 今天的 -->
-                <router-link :to="{path: '/actionHistory'}" tag="div" class="action-today flex">
+                <router-link
+                  :to="{ path: '/actionHistory' }"
+                  tag="div"
+                  class="action-today flex"
+                >
                   <div class="cell-bd">
                     <time size-16>{{ query.day }}</time>
                     <span>日获得Q星{{ start }}颗</span>
@@ -138,11 +177,19 @@
                 </div>
                 <div class="dhole flex">
                   <router-link to="/action">
-                    <img src="@/assets/action-icon-1@2x.png" width="20" height="20" />
+                    <img
+                      src="@/assets/action-icon-1@2x.png"
+                      width="20"
+                      height="20"
+                    />
                     <span class="ml-10">行为管理</span>
                   </router-link>
                   <router-link to="/prize">
-                    <img src="@/assets/prize-icon-1@2x.png" width="20" height="20" />
+                    <img
+                      src="@/assets/prize-icon-1@2x.png"
+                      width="20"
+                      height="20"
+                    />
                     <span class="ml-10">奖励兑换</span>
                   </router-link>
                 </div>
@@ -151,22 +198,67 @@
               <div class="mod">
                 <div class="share-image flex a-i-c j-c-s-b min-h100 mt-30">
                   <p>晒一晒我的表现</p>
-                  <van-icon name="share" size="20px" @click="shareActionImage(1)"></van-icon>
+                  <van-icon
+                    name="share"
+                    size="20px"
+                    @click="shareActionImage(1)"
+                  ></van-icon>
                 </div>
               </div>
             </div>
-            <div class="mod no-radius" ref="mod">
+            <div class="mod no-radius atHome" ref="mod">
               <div class="echarts-head flex a-i-c j-c-c mb-30">
                 <span>近一周在家表现</span>
               </div>
+              <div class="statement" @click="showPopup">
+                <van-icon name="share" size="15px" color="#FF9933"></van-icon>
+                <span>行为报表</span>
+              </div>
+              <van-popup v-model="show" @close="onClose">
+                <div class="flex a-i-c" @click="popupOne = true">
+                  <time size-16>{{ query1.startDate }}</time>
+                  <span style="padding:0 4px;">至</span>
+                  <time class="mr-20" size-16>{{ query1.endDate }}</time>
+                </div>
+                <div style="textAlign:center">
+                  <van-button
+                    type="primary"
+                    size="small"
+                    @click="statementPopup"
+                    >查询</van-button
+                  >
+                </div>
+              </van-popup>
+              <!-- 角色选择 -->
+              <!-- 日期选择 1 -->
+              <van-popup v-model="popupOne" position="bottom">
+                <calendar
+                  :zero="true"
+                  :value="valueOne"
+                  :range="true"
+                  :lunar="true"
+                  @select="selectOne"
+                ></calendar>
+              </van-popup>
+              <!-- 日期选择 1 -->
+              <!-- 日期选择 2 -->
+              <van-popup v-model="popupTwo" position="bottom">
+                <calendar
+                  :zero="true"
+                  :value="valueTwo"
+                  :range="true"
+                  :lunar="true"
+                  @select="selectTwo"
+                ></calendar>
+              </van-popup>
               <!-- 筛选 -->
               <div class="screen">
                 <div
                   class="screen-item"
-                  :class="[screenIndex == index ? 'curr': '']"
-                  v-for="(item,index) in myActions"
+                  :class="[screenIndex == index ? 'curr' : '']"
+                  v-for="(item, index) in myActions"
                   :key="item.title"
-                  @click="handleScreen(item,index)"
+                  @click="handleScreen(item, index)"
                 >
                   <i style="width:12px;height:12px;margin-right:4px;"></i>
                   <span>{{ item.title }}</span>
@@ -176,12 +268,25 @@
               <qxChart id="homeStat" :option="homeOption" />
             </div>
           </van-tab>
+          <!-- 报表 -->
+          <van-popup v-model="statementShow" @close="statementOnClose"
+            >内容</van-popup
+          >
           <van-tab title="在校表现">
             <div class="container">
               <!-- 蒙版 -->
-              <div class="overlay" v-if="studentId == 0" style="z-index: 500" @click="overlay"></div>
+              <div
+                class="overlay"
+                v-if="studentId == 0"
+                style="z-index: 500"
+                @click="overlay"
+              ></div>
               <div class="mod">
-                <router-link :to="{path: '/course/history'}" tag="div" class="action-today flex">
+                <router-link
+                  :to="{ path: '/course/history' }"
+                  tag="div"
+                  class="action-today flex"
+                >
                   <div class="cell-bd">
                     <time size-16>{{ query.day }}</time>
                     <span>日获得Q星{{ inSchool }}颗</span>
@@ -200,12 +305,14 @@
                       <div class="action-cell-label">
                         <div>{{ item.title }}</div>
                         <!-- 课堂时间 -->
-                        <span
-                          size-12
-                          v-show="item.startTime"
-                        >{{ item.startTime }}-{{ item.endTime }}</span>
+                        <span size-12 v-show="item.startTime"
+                          >{{ item.startTime }}-{{ item.endTime }}</span
+                        >
                       </div>
-                      <div class="action-cell-rate" @click="jumpCourseView(item)">
+                      <div
+                        class="action-cell-rate"
+                        @click="jumpCourseView(item)"
+                      >
                         <van-rate
                           v-model="item.starCount"
                           :count="5"
@@ -223,7 +330,11 @@
               <div class="mod">
                 <div class="share-image flex a-i-c j-c-s-b min-h100 mt-30">
                   <p @click="popupShow = true">晒一晒我的表现</p>
-                  <van-icon name="share" size="20px" @click="shareActionImage(2)"></van-icon>
+                  <van-icon
+                    name="share"
+                    size="20px"
+                    @click="shareActionImage(2)"
+                  ></van-icon>
                 </div>
               </div>
             </div>
@@ -235,10 +346,10 @@
               <div class="screen">
                 <div
                   class="screen-item"
-                  :class="[lessonIndex == index ? 'curr': '']"
+                  :class="[lessonIndex == index ? 'curr' : '']"
                   v-for="(item, index) in lessonsList"
                   :key="item.title"
-                  @click="handleScreen(item,index)"
+                  @click="handleScreen(item, index)"
                 >
                   <i style="width:12px;height:12px;margin-right:4px;"></i>
                   <span>{{ item.title }}</span>
@@ -257,6 +368,7 @@
   </div>
 </template>
 <script>
+import calendar from "@/components/calendar";
 import Cookies from "js-cookie";
 import { urlSearch } from "@/utils/urlSearch";
 import service from "@/api";
@@ -273,7 +385,8 @@ export default {
   name: "home",
   components: {
     qxFooter,
-    qxChart
+    qxChart,
+    calendar
   },
 
   mixins: [pageMixin, echartMixin, formatter, sdkDevice],
@@ -313,7 +426,37 @@ export default {
       actionView: {},
       myActions: [], //我的行为列表
       lessonsList: [],
-      remark: {}
+      remark: {},
+      show: false, //控制日期
+      popupOne: false, //控制日期选择器
+      popupTwo: false,
+      valueOne: [
+        dayjs()
+          .format("YYYY-MM-DD")
+          .split("-"),
+        dayjs()
+          .format("YYYY-MM-DD")
+          .split("-")
+      ], //默认日期
+      valueTwo: [
+        dayjs()
+          .format("YYYY-MM-DD")
+          .split("-"),
+        dayjs()
+          .format("YYYY-MM-DD")
+          .split("-")
+      ], //默认日期
+      query1: {
+        classId: this.$store.state.user.info.classId,
+        startDate: dayjs().format("YYYY-MM-DD"),
+        endDate: dayjs().format("YYYY-MM-DD")
+      },
+      query2: {
+        classId: this.$store.state.user.info.classId,
+        startDate: dayjs().format("YYYY-MM-DD"),
+        endDate: dayjs().format("YYYY-MM-DD")
+      },
+      statementShow: false //报表的出现与隐藏
     };
   },
   computed: {
@@ -346,6 +489,37 @@ export default {
     }
   },
   methods: {
+    //查询报表
+    statementPopup() {
+      this.statementShow = true;
+    },
+    //关闭报表
+    statementOnClose() {
+      this.statementShow = false;
+    },
+    //在家表现选择日期范围
+    selectOne(begin, end) {
+      //begin end (Array)
+      if (begin && end) {
+        this.query1.startDate = begin.join("-");
+        this.query1.endDate = end.join("-");
+      }
+    },
+    //在校表现选择日期范围
+    selectTwo(begin, end) {
+      if (begin && end) {
+        this.query2.startDate = begin.join("-");
+        this.query2.endDate = end.join("-");
+      }
+    },
+    //弹出时间
+    showPopup() {
+      this.show = true;
+    },
+    //关闭日期选择器
+    onClose() {
+      this.show = false;
+    },
     overlay() {
       if (this.studentId == 0) {
         this.$dialog
@@ -859,6 +1033,23 @@ export default {
     color: #252525;
     i {
       background-color: #f00;
+    }
+  }
+}
+.atHome {
+  position: relative;
+  .statement {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    display: flex;
+    align-items: center;
+    span {
+      font-size: 20px;
+      font-family: PingFang SC;
+      font-weight: 500;
+      color: rgba(255, 153, 51, 1);
+      margin-left: 9px;
     }
   }
 }

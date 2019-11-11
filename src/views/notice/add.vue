@@ -162,7 +162,7 @@
             </div>
           </div>
         </div>
-        <div class="signature">
+        <div class="signature" v-if="form.needConfirm">
           <van-checkbox
             v-model="form.needSignature"
             @change="onChange"
@@ -210,7 +210,7 @@ export default {
         title: "", //通知标题
         textContent: "", //通知内容
         images: [], //图片
-        needConfirm: true, //是否需要确认 0-无需确认 1-需要确认
+        needConfirm: false, //是否需要确认 0-无需确认 1-需要确认
         senders: [], //发送对象
         sendType: 1, //发送类型 2-老师，1-班级
         clockType: false, //定时发送标志 0-即时发送 1-定时发送

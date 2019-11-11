@@ -65,8 +65,15 @@
               <div class="cell-ft">
                 <template v-if="read.needSignature">
                   <div class="readTime2">
-                    <span style="color:#92cd36;marginBottom:5px;" v-if="read.signatureUrl">
-                      <img :src="read.signatureUrl" @click="showPopup(read.signatureUrl)" alt="" />
+                    <span
+                      style="color:#92cd36;marginBottom:5px;"
+                      v-if="read.signatureUrl"
+                    >
+                      <img
+                        :src="read.signatureUrl"
+                        @click="showPopup(read.signatureUrl)"
+                        alt=""
+                      />
                     </span>
                     <p>{{ read.postTime }}</p>
                   </div>
@@ -84,7 +91,9 @@
                     <p>{{ read.postTime }}</p>
                   </div> -->
                   <div class="readTime">
-                    <span v-if="read.confirmFlag" style="color:#92cd36;marginBottom:5px;"
+                    <span
+                      v-if="read.confirmFlag"
+                      style="color:#92cd36;marginBottom:5px;"
                       >已确认通知</span
                     >
                     <p>{{ read.postTime }}</p>
@@ -162,8 +171,8 @@ export default {
       readList: [],
       unreadList: [],
       gradeList: [], //级统计
-      show:false,//是否放大签名图片
-      signaturePhoto:"",//放大的图片
+      show: false, //是否放大签名图片
+      signaturePhoto: "" //放大的图片
     };
   },
   computed: {
@@ -176,13 +185,13 @@ export default {
   },
   methods: {
     //点击签名图片
-    showPopup(photo){
-      this.signaturePhoto=photo;
-      this.show=true;
+    showPopup(photo) {
+      this.signaturePhoto = photo;
+      this.show = true;
     },
     //退出放大的图片
-    onClose(){
-      this.show=false;
+    onClose() {
+      this.show = false;
     },
     handleTabClick(index) {
       this.query.readFlag = index;
@@ -290,8 +299,12 @@ export default {
   font-size: 26px;
   color: rgba(153, 153, 153, 1);
 }
-.magnify{
-  width: 400px!important;
-  height: 250px!important;
+.magnify {
+  width: 100% !important;
+  height: 100% !important;
+}
+.van-popup {
+  width: 600px;
+  height: 300px;
 }
 </style>

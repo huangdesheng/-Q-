@@ -11,7 +11,7 @@
         /> -->
          <input
           type="button"
-          value="清屏"
+          value="清空"
           @click="clear"
         />
         <input

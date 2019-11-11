@@ -44,7 +44,7 @@
           v-model="currentDate"
           type="year-month"
           @confirm="handleChangeMonth"
-          @cancel="popupTwo = false"
+         
           :formatter="formatter"
         ></van-datetime-picker>
       </van-popup>
