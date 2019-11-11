@@ -37,6 +37,15 @@
         </div>
       </article>
     </div>
+    <div class="ParentsSignature" v-if="signature">
+      <span>家长签名:</span>
+      <!-- <img src="@/assets/action-icon-1@2x.png" alt="" /> -->
+      <!-- <van-cell title="展示弹出层" is-link @click="showPopup" /> -->
+      <img :src="signature" @click="showPopup" alt="" />
+      <van-popup v-model="show" @close="onClose">
+        <img :src="signature" alt="" class="magnify" />
+      </van-popup>
+    </div>
     <div class="page-ft" v-show="!parseInt(info.isDel)">
       <div class="fixed-bottom" style="z-index: 100;">
         <template v-if="roleType == 1 || roleType == 4">
@@ -50,29 +59,49 @@
           </section>
         </template>
         <template v-if="roleType == 3">
-          <template v-if="needConfirm">
+          <template v-if="query.needSignature">
             <template v-if="experience != 1">
-              <!-- <van-button
-                type="info"
-                size="large"
-                class="no-radius"
-                :disabled="info.confirmFlag == 1"
-                @click="handleConfirmFlag"
-                >{{ info.confirmFlag ? "已确认" : "确认" }}</van-button
-              > -->
               <div v-if="info.confirmFlag === -1"></div>
               <div
                 v-if="info.confirmFlag === 0"
                 class="clickRead"
                 @click="handleConfirmFlag"
               >
+                <p>家长签名</p>
+              </div>
+              <div
+                v-if="info.confirmFlag === 1"
+                v-cloak
+                class="clickRead2"
+                @click="handleConfirmFlag"
+              >
+                <p>已签名</p>
+              </div>
+            </template>
+          </template>
+
+          <template v-else-if="needConfirm">
+            <template v-if="experience != 1">
+              <div v-if="info.confirmFlag === -1"></div>
+              <div
+                v-if="info.confirmFlag === 0"
+                class="clickRead"
+                @click="handleConfirmFlag2"
+              >
                 <p>点击确认阅读</p>
               </div>
-              <div v-if="info.confirmFlag === 1" v-cloak class="clickRead2">
+              <div
+                v-if="info.confirmFlag === 1"
+                v-cloak
+                class="clickRead2"
+                @click="handleConfirmFlag"
+              >
                 <p>已确认阅读</p>
               </div>
             </template>
           </template>
+
+          <template v-else> </template>
         </template>
       </div>
     </div>
@@ -82,6 +111,7 @@
 import Cookies from "js-cookie";
 import service from "@/api";
 import { mapState } from "vuex";
+import Bus from "@/utils/Bus";
 export default {
   name: "noticeShow",
   data() {
@@ -90,14 +120,17 @@ export default {
         openId: this.$store.state.user.info.openId || this.$route.query.openId, //用户openid
         noticeId: this.$route.query.noticeId,
         classId: this.$route.query.classId,
-        studentId: this.$route.query.studentId
+        studentId: this.$route.query.studentId,
+        needSignature: this.$route.query.needSignature //签名是否出现 0-不出现 1-出现
       },
       roleType:
         this.$store.state.user.info.roleType || this.$route.query.roleType,
       needConfirm: parseInt(this.$route.query.needConfirm), //0 不用确认
       info: {
         confirmFlag: -1
-      }
+      },
+      signature: "", //签名图片
+      show: false //是否放大签名图片
     };
   },
   computed: {
@@ -105,7 +138,20 @@ export default {
       experience: state => state.info.experience //0不是体验用户 1是
     })
   },
+  created() {
+    Bus.$on("signImage", function(data) {
+      console.log(data);
+    });
+  },
   methods: {
+    //点击签名图片
+    showPopup() {
+      this.show = true;
+    },
+    //退出放大的图片
+    onClose() {
+      this.show = false;
+    },
     handleBackHome() {
       //体验用户
       if (this.experience == 1) {
@@ -122,11 +168,30 @@ export default {
         this.backPage(obj);
       }
     },
+    //签名
     handleConfirmFlag() {
       //0-无需确认 1-需要确认
       if (!this.info.confirmFlag) {
         let { openId, noticeId, studentId } = this.query;
-        this.noticeConfirm({ openId, noticeId, studentId });
+        this.$router.push({
+          path: "/signature",
+          query: {
+            openId,
+            noticeId,
+            studentId
+          }
+        });
+        setTimeout(() => {
+          this.noticeConfirm({ openId, noticeId, studentId });
+        }, 2000);
+      }
+    },
+    //阅读
+    handleConfirmFlag2() {
+      //0-无需确认 1-需要确认
+      if (!this.info.confirmFlag) {
+        let { openId, noticeId, studentId } = this.query;
+        this.noticeConfirm2({ openId, noticeId, studentId });
       }
     },
     handleReaders(params) {
@@ -152,11 +217,23 @@ export default {
     async noticeDetail(params = {}) {
       let res = await service.noticeDetail(params);
       if (res.errorCode === 0) {
+        console.log(res.data.signatureUrl);
         this.info = res.data;
+        this.signature = res.data.signatureUrl;
+      }
+    },
+    //签名确认
+    async noticeConfirm(params = {}) {
+      if (this.roleType == 3) {
+        let res = await service.noticeConfirm(params);
+        if (res.errorCode === 0) {
+          this.info.confirmFlag = 1;
+          // this.$toast("签名成功");
+        }
       }
     },
     //公告确认
-    async noticeConfirm(params = {}) {
+    async noticeConfirm2(params = {}) {
       if (this.roleType == 3) {
         let res = await service.noticeConfirm(params);
         if (res.errorCode === 0) {
@@ -191,6 +268,7 @@ export default {
   //   }
   // }
   activated() {
+    console.log(this.$route.query.needSignature);
     if (this.roleType == 1 || this.roleType == 4) {
       this.querySchoolNoticeDefaul(this.query);
     } else {
@@ -262,5 +340,26 @@ export default {
     );
     box-shadow: 0px 6px 10px 0px rgba(204, 204, 204, 0.58);
   }
+}
+.ParentsSignature {
+  margin: 40px 0 0 32px;
+  height: 55px;
+  line-height: 55px;
+  span {
+    font-size: 36px;
+    font-family: PingFang SC;
+    font-weight: 500;
+    color: rgba(46, 46, 46, 1);
+    margin-right: 30px;
+  }
+  img {
+    display: inline-block;
+    width: 88px;
+    height: 55px;
+  }
+}
+.magnify {
+  width: 400px !important;
+  height: 250px !important;
 }
 </style>

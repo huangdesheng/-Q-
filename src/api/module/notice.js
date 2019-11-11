@@ -80,3 +80,12 @@ export function queryClassNotice(params, config = {
     .then(res => res.data)
     .catch(e => console.log(e));
 }
+//上传接口
+export function saveSignature(params, config = {
+  showLoading: true
+}) {
+  return ax.post('/qxiao-mp/action/mod-xiaojiao/notice/saveSignature.do', params, config)
+    .then(res => res.data)
+    .catch(e => console.log(e));
+}
+

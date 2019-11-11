@@ -12,7 +12,7 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/': {
-        target: 'http://192.168.18.200:8080/', //目标接口域名
+        target: 'http://192.168.18.199:8080/', //目标接口域名
         changeOrigin: true, //是否跨域
         secure: true, //允许https请求
         pathRewrite: {
@@ -22,7 +22,7 @@ module.exports = {
     },
 
     // Various Dev Server settings
-    host: '192.168.18.7', // can be overwritten by process.env.HOST
+    host: '192.168.18.127', // can be overwritten by process.env.HOST
     // host: "192.168.18.127", // can be overwritten by process.env.HOST
     port: 9527, // can be overwritten by process.env.PORT, if port is in use, a free one will be determined
     autoOpenBrowser: false,

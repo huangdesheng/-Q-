@@ -37,7 +37,13 @@
       <div class="pichi gradient-two">
         <div class="pichi-head">
           <img :src="photo" width="50" height="50" radius="50" v-if="photo" />
-          <img src="@/assets/child-default@2x.png" width="40" height="40" radius="50" v-else />
+          <img
+            src="@/assets/child-default@2x.png"
+            width="40"
+            height="40"
+            radius="50"
+            v-else
+          />
           <h3 size-18 class="ml-20">
             {{ name }}
             <small>总Q星: {{ totalStarCount }}</small>
@@ -47,17 +53,29 @@
           <div class="flex a-i-c j-c-c mb-30" @click="handleMessage">
             <img src="@/assets/rate-icon@2x.png" width="30" height="30" />
             <strong class="ml-20">{{ todayStarTotal }}</strong>
-            <p size-12 style="align-self: flex-end;margin-bottom:8px">(可兑换Q星数量)</p>
+            <p size-12 style="align-self: flex-end;margin-bottom:8px">
+              (可兑换Q星数量)
+            </p>
           </div>
           <p>手指勾勾约定好，奖励兑现要做到！</p>
         </div>
         <div class="pichi-ft">
           <a href="javascript:void(0);" @click="dialogVisible = true">
-            <img src="@/assets/prize-icon-2@2x.png" width="20" height="20" alt />
+            <img
+              src="@/assets/prize-icon-2@2x.png"
+              width="20"
+              height="20"
+              alt
+            />
             <span class="ml-10">添加奖项</span>
           </a>
-          <router-link :to="{path: '/prize/log'}">
-            <img src="@/assets/prize-icon-3@2x.png" width="20" height="20" alt />
+          <router-link :to="{ path: '/prize/log' }">
+            <img
+              src="@/assets/prize-icon-3@2x.png"
+              width="20"
+              height="20"
+              alt
+            />
             <span class="ml-10">兑换记录</span>
           </router-link>
         </div>
@@ -73,12 +91,16 @@
           v-for="(item, index) in list"
           :key="index"
           :disabled="item.prizeType === 0"
-          :on-close="onClose(index,item.itemId, item.prizeType)"
+          :on-close="onClose(index, item.itemId, item.prizeType)"
         >
           <van-cell-group>
             <div class="cell min-h160">
               <div class="cell-hd">
-                <van-checkbox v-model="item.checked" checked-color="#92cd36" @change="chg"></van-checkbox>
+                <van-checkbox
+                  v-model="item.checked"
+                  checked-color="#92cd36"
+                  @change="chg"
+                ></van-checkbox>
               </div>
               <div class="cell-bd pl-20">
                 <p class="mb-20" size-16>{{ item.textContent }}</p>
@@ -122,6 +144,10 @@ export default {
         openId: this.$store.state.user.info.openId,
         page: 1,
         pageSize: 20
+      },
+      query2: {
+        studentId: this.$store.state.user.info.studentId,
+        openId: this.$store.state.user.info.openId
       },
       form: {
         openId: this.$store.state.user.info.openId,
@@ -242,6 +268,14 @@ export default {
           });
       }
     },
+    //奖励兑换-可兑换Q星数量
+    async queryTotalCountStar(params = {}) {
+      let res = await service.queryTotalCountStar(params);
+      if (res.errorCode === 0) {
+        console.log(res);
+        this.todayStarTotal = res.data.todayTotal;
+      }
+    },
     //奖励兑换
     async prizeExchange(params = {}) {
       let res = await service.prizeExchange(params);
@@ -261,9 +295,9 @@ export default {
     async prizeListQuery(params = {}) {
       let res = await service.prizeListQuery(params);
       if (res.errorCode === 0) {
-        if (res.data.data) {
-          this.todayStarTotal = res.data.data[0].todayTotal;
-          this.list = res.data.data.map(element => {
+        if (res.data) {
+          // this.todayStarTotal = res.data.data[0].todayTotal;
+          this.list = res.data.map(element => {
             return {
               ...element,
               checked: false,
@@ -276,6 +310,7 @@ export default {
   },
   mounted() {
     this.prizeListQuery(this.query);
+    this.queryTotalCountStar(this.query2);
   }
 };
 </script>

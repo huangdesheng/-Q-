@@ -47,6 +47,7 @@ import punch from './punch';
 import notFound from './not-found';
 import Handband from './Handband';
 import alarmClock from './alarm-clock';
+import signature from './signature';
 
 Vue.use(Router);
 
@@ -95,7 +96,8 @@ export const constantRouterMap = [
   ...punch,
   ...notFound,
   ...Handband,
-  ...alarmClock
+  ...alarmClock,
+  ...signature
 ]
 
 

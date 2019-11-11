@@ -1,7 +1,7 @@
 <template>
   <div class="page">
     <!-- 发送的班级和老师 -->
-    <div class="panel" style="z-index: 999" :class="{'panel-on': isActive}">
+    <div class="panel" style="z-index: 999" :class="{ 'panel-on': isActive }">
       <div class="panel-hd">
         <van-tabs color="#92cd36" :line-height="2" @click="handleTabClick">
           <van-tab title="班级"></van-tab>
@@ -10,31 +10,53 @@
       </div>
       <div class="panel-bd">
         <!-- 班级列表 -->
-        <div class="panel-bd_cell" :style="{display: tabIndex === 0 ? 'block':'none'}">
+        <div
+          class="panel-bd_cell"
+          :style="{ display: tabIndex === 0 ? 'block' : 'none' }"
+        >
           <div class="cells weui-cells_checkbox mt-20">
-            <label class="cell class-box weui-check__label" v-for="(c,i) in classList" :key="i">
+            <label
+              class="cell class-box weui-check__label"
+              v-for="(c, i) in classList"
+              :key="i"
+            >
               <div class="cell-hd"></div>
               <div class="cell-bd" style="padding-left:0">
                 <p>{{ c.className }}</p>
               </div>
               <div class="cell-ft">
                 <van-checkbox-group v-model="classChenkList">
-                  <van-checkbox :key="c.classId" :name="c.classId" checked-color="#92cd36"></van-checkbox>
+                  <van-checkbox
+                    :key="c.classId"
+                    :name="c.classId"
+                    checked-color="#92cd36"
+                  ></van-checkbox>
                 </van-checkbox-group>
               </div>
             </label>
           </div>
         </div>
         <!-- 老师列表 -->
-        <div class="panel-bd_cell" :style="{display: tabIndex === 1 ? 'block':'none'}">
+        <div
+          class="panel-bd_cell"
+          :style="{ display: tabIndex === 1 ? 'block' : 'none' }"
+        >
           <div class="cells weui-cells_checkbox mt-20">
-            <label class="cell item weui-check__label" v-for="(t,i) in teacherList" :key="i">
+            <label
+              class="cell item weui-check__label"
+              v-for="(t, i) in teacherList"
+              :key="i"
+            >
               <div class="cell-bd" style="padding-left:0">
                 <p>{{ t.teacherName }}</p>
               </div>
               <div class="cell-ft">
                 <van-checkbox-group v-model="teacherCheckList">
-                  <van-checkbox :key="t.teacherId" :name="t.teacherId" checked-color="#92cd36"></van-checkbox>
+                  <van-checkbox
+                    :key="t.teacherId"
+                    :name="t.teacherId"
+                    checked-color="#92cd36"
+                  ></van-checkbox>
                 </van-checkbox-group>
               </div>
             </label>
@@ -45,10 +67,17 @@
         <div class="tabbar weui-cells_checkbox">
           <label id="handle" class="cell weui-check__label">
             <div class="cell-hd">
-              <van-checkbox v-model="checked" @change="handleCheckAll" checked-color="#92cd36">全选</van-checkbox>
+              <van-checkbox
+                v-model="checked"
+                @change="handleCheckAll"
+                checked-color="#92cd36"
+                >全选</van-checkbox
+              >
             </div>
           </label>
-          <a href="javascript:void(0);" id="publish" @click="handleSave">确定</a>
+          <a href="javascript:void(0);" id="publish" @click="handleSave"
+            >确定</a
+          >
         </div>
       </div>
     </div>
@@ -94,7 +123,7 @@
                   class="uploader-file"
                   v-for="(file, index) in imagesList"
                   :key="index"
-                  :style="{backgroundImage: `url(${file})`}"
+                  :style="{ backgroundImage: `url(${file})` }"
                 >
                   <van-icon
                     name="clear"
@@ -125,15 +154,33 @@
               <label for class="label">是否需要确定</label>
             </div>
             <div class="cell-ft">
-              <van-switch v-model="form.needConfirm" size="28px" active-color="#92cd36"></van-switch>
+              <van-switch
+                v-model="form.needConfirm"
+                size="28px"
+                active-color="#92cd36"
+              ></van-switch>
             </div>
           </div>
+        </div>
+        <div class="signature">
+          <van-checkbox
+            v-model="form.needSignature"
+            @change="onChange"
+            checked-color="#93DB21"
+            >是否需要家长签名</van-checkbox
+          >
         </div>
       </form>
     </div>
     <div class="page-ft">
       <div class="fixed-bottom" style="z-index: 100;">
-        <van-button type="info" size="large" class="no-radius" @click="handleSubmit">发布</van-button>
+        <van-button
+          type="info"
+          size="large"
+          class="no-radius"
+          @click="handleSubmit"
+          >发布</van-button
+        >
       </div>
     </div>
   </div>
@@ -167,7 +214,8 @@ export default {
         senders: [], //发送对象
         sendType: 1, //发送类型 2-老师，1-班级
         clockType: false, //定时发送标志 0-即时发送 1-定时发送
-        clockTime: "" //定时发送时间
+        clockTime: "", //定时发送时间
+        needSignature: true //是否需要签名 0-无需签名 1-需要签名
       }
     };
   },
@@ -179,6 +227,12 @@ export default {
     }
   },
   methods: {
+    //签名复选框
+    onChange(event) {
+      // this.setData({
+      //   checked: event.detail
+      // });
+    },
     handleShowDatePicker(value) {
       let now = moment(new Date(value).getTime()).format("YYYY-MM-DD");
       this.form.clockTime = now;
@@ -250,6 +304,7 @@ export default {
         clockType,
         needConfirm,
         senders,
+        needSignature,
         ...args
       } = this.form;
       if (title === "") {
@@ -268,12 +323,14 @@ export default {
       }
       clockType === false ? (clockType = 0) : (clockType = 1);
       needConfirm === false ? (needConfirm = 0) : (needConfirm = 1);
+      needSignature === false ? (needSignature = 0) : (needSignature = 1);
       let obj = Object.assign({}, args, {
         title,
         textContent,
         senders,
         clockType,
-        needConfirm
+        needConfirm,
+        needSignature
       });
       let params = {
         openId: this.openId,
@@ -328,7 +385,7 @@ export default {
   },
   mounted() {
     this.classInfo();
-    this.classTeacher();
+    this.classTeacher()
   }
 };
 </script>
@@ -385,5 +442,15 @@ export default {
 }
 .class-box {
   height: 100px;
+}
+.signature {
+  margin-top: 19px;
+  margin-left: 30px;
+}
+.signature /deep/ .van-checkbox__label {
+  color: #93db21;
+  font-size: 26px;
+  font-family: PingFang SC;
+  font-weight: 500;
 }
 </style>

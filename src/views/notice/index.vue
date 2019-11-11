@@ -88,13 +88,21 @@
                   <div class="figure-icon">
                     <div class="user">
                       <div class="userImg">
-                        <img v-if="notice.photo" :src="notice.photo" alt="">
-                        <img v-else src="@/assets/child-default@2x.png" alt="" />
+                        <img v-if="notice.photo" :src="notice.photo" alt="" />
+                        <img
+                          v-else
+                          src="@/assets/child-default@2x.png"
+                          alt=""
+                        />
                       </div>
                       <span class="name">{{ notice.name }}</span>
                     </div>
                     <div class="readNum">
-                      <van-icon name="eye-o" size="16px" color="#999999"></van-icon>
+                      <van-icon
+                        name="eye-o"
+                        size="16px"
+                        color="#999999"
+                      ></van-icon>
                       <span>{{ notice.classReadCount }}</span>
                     </div>
                   </div>
@@ -205,7 +213,7 @@ export default {
       };
     },
     jump(notice) {
-      let { noticeId, needConfirm, classId, studentId } = notice;
+      let { noticeId, needConfirm, classId, studentId, needSignature } = notice;
       let openId = this.query.openId;
       let roleType = this.roleType;
       this.$router.push({
@@ -214,7 +222,8 @@ export default {
           noticeId,
           needConfirm,
           classId,
-          studentId
+          studentId,
+          needSignature
         }
       });
     },

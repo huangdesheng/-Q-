@@ -63,13 +63,31 @@
                 <p class>{{ read.studentName }}</p>
               </div>
               <div class="cell-ft">
-                <template v-if="needConfirm">
-                  <span v-if="read.confirmFlag === 0" style="color:#FEBF56"
+                <template v-if="read.needSignature">
+                  <div class="readTime2">
+                    <span style="color:#92cd36;marginBottom:5px;" v-if="read.signatureUrl">
+                      <img :src="read.signatureUrl" @click="showPopup(read.signatureUrl)" alt="" />
+                    </span>
+                    <p>{{ read.postTime }}</p>
+                  </div>
+                  <van-popup v-model="show" @close="onClose">
+                    <img :src="signaturePhoto" alt="" class="magnify" />
+                  </van-popup>
+                </template>
+
+                <template v-else-if="needConfirm">
+                  <!-- <span v-if="read.confirmFlag === 0" style="color:#FEBF56"
                     >未确认通知</span
                   >
                   <div class="readTime" v-else>
-                    <p>{{ read.postTime }}</p>
                     <span style="color:#92cd36">已确认通知</span>
+                    <p>{{ read.postTime }}</p>
+                  </div> -->
+                  <div class="readTime">
+                    <span v-if="read.confirmFlag" style="color:#92cd36;marginBottom:5px;"
+                      >已确认通知</span
+                    >
+                    <p>{{ read.postTime }}</p>
                   </div>
                 </template>
 
@@ -103,7 +121,7 @@
                 <p class>{{ unread.studentName }}</p>
               </div>
               <div class="cell-ft">
-                <template v-if="needConfirm">
+                <!-- <template v-if="needConfirm">
                   <span v-if="unread.confirmFlag === 0" style="color:#FEBF56"
                     >未确认通知</span
                   >
@@ -115,7 +133,7 @@
 
                 <template v-else>
                   {{ unread.postTime }}
-                </template>
+                </template> -->
               </div>
             </div>
           </van-tab>
@@ -143,7 +161,9 @@ export default {
       },
       readList: [],
       unreadList: [],
-      gradeList: [] //级统计
+      gradeList: [], //级统计
+      show:false,//是否放大签名图片
+      signaturePhoto:"",//放大的图片
     };
   },
   computed: {
@@ -155,6 +175,15 @@ export default {
     }
   },
   methods: {
+    //点击签名图片
+    showPopup(photo){
+      this.signaturePhoto=photo;
+      this.show=true;
+    },
+    //退出放大的图片
+    onClose(){
+      this.show=false;
+    },
     handleTabClick(index) {
       this.query.readFlag = index;
       this.noticeReaders(index);
@@ -233,8 +262,25 @@ export default {
   span {
     width: 100%;
     display: inline-block;
-    text-align: right;
+    text-align: center;
     margin-top: 15px;
+  }
+}
+.readTime2 {
+  p {
+    font-size: 26px;
+    color: rgba(153, 153, 153, 1);
+  }
+  span {
+    width: 100%;
+    display: inline-block;
+    text-align: center;
+    img {
+      width: 120px;
+      height: 60px;
+      border: 1px dashed #111;
+      border-radius: 0%;
+    }
   }
 }
 .min-h120 {
@@ -243,5 +289,9 @@ export default {
 .readPostTime {
   font-size: 26px;
   color: rgba(153, 153, 153, 1);
+}
+.magnify{
+  width: 400px!important;
+  height: 250px!important;
 }
 </style>

@@ -144,3 +144,11 @@ export function remarks(params, config = {
     .then(res => res.data)
     .catch(e => console.log(e));
 }
+//已坚持习惯天数
+export function queryUserDay(params, config = {
+  showLoading: false
+}) {
+  return ax.post('/qxiao-mp/action/mod-xiaojiao/expression/queryUserDay.do', params, config)
+    .then(res => res.data)
+    .catch(e => console.log(e));
+}
