@@ -1,23 +1,17 @@
   <template>
   <div class="page">
     <div class="page-bd">
-      <div class="dialogData" style="z-index:1000" v-if="show">
+      <div class="dialogData" style="z-index:1000" v-if="showName">
         <div>
           <van-circle v-model="currentRate" :rate="100" :speed="speed" :text="text" />
           <p>{{tip}}</p>
         </div>
       </div>
       <!-- dialog 图片生成分享 -->
-      <van-dialog
-        v-model="dialogImage"
-        close-on-click-overlay
-        :show-confirm-button="false"
-      >
+      <van-dialog v-model="dialogImage" close-on-click-overlay :show-confirm-button="false">
         <div class="cells">
           <img :src="shareImgUrl" />
-          <p class="text-center pt-30 pb-30 share-desctext">
-            长按图片保存或发给朋友
-          </p>
+          <p class="text-center pt-30 pb-30 share-desctext">长按图片保存或发给朋友</p>
         </div>
       </van-dialog>
       <!-- dialog 1 -->
@@ -30,20 +24,13 @@
           <div class>
             <strong>评价标准:</strong>
             <ul class="ml-20 disc font-color">
-              <li v-for="(item, index) in actionView.rules" :key="index">
-                {{ item.ruleText }}
-              </li>
+              <li v-for="(item, index) in actionView.rules" :key="index">{{ item.ruleText }}</li>
             </ul>
           </div>
         </div>
       </van-dialog>
       <!-- dialog 1 -->
-      <van-dialog
-        v-model="dialogNote"
-        title="添加备注"
-        show-cancel-button
-        :before-close="handleSubmit"
-      >
+      <van-dialog v-model="dialogNote" title="添加备注" show-cancel-button :before-close="handleSubmit">
         <div class="cells" style="padding:15px 0 15px 0;">
           <div class="cell">
             <div class="cell-bd">
@@ -63,21 +50,9 @@
           <div class="flex a-i-c">
             <template v-if="name">
               <div class="avatar-circle flex a-i-c j-c-c">
-                <img
-                  :src="photo"
-                  width="60"
-                  height="60"
-                  radius="50"
-                  v-if="photo"
-                />
+                <img :src="photo" width="60" height="60" radius="50" v-if="photo" />
                 <!-- 如果用户没有上传头像 -->
-                <img
-                  src="@/assets/child-default@2x.png"
-                  width="60"
-                  height="60"
-                  radius="50"
-                  v-else
-                />
+                <img src="@/assets/child-default@2x.png" width="60" height="60" radius="50" v-else />
               </div>
               <div class="js-user-change">
                 <h3 class="mb-20" size-18>
@@ -89,12 +64,7 @@
             </template>
             <template v-else>
               <div class="avatar-circle">
-                <img
-                  src="@/assets/child-default@2x.png"
-                  width="60"
-                  height="60"
-                  radius="50"
-                />
+                <img src="@/assets/child-default@2x.png" width="60" height="60" radius="50" />
               </div>
               <p class="ml-20">尚未有关注孩子，点击添加。</p>
             </template>
@@ -106,19 +76,10 @@
           <van-tab title="在家表现">
             <div class="container">
               <!-- 蒙版 -->
-              <div
-                class="overlay"
-                v-if="studentId == 0"
-                style="z-index: 500"
-                @click="overlay"
-              ></div>
+              <div class="overlay" v-if="studentId == 0" style="z-index: 500" @click="overlay"></div>
               <div class="mod">
                 <!-- 今天的 -->
-                <router-link
-                  :to="{ path: '/actionHistory' }"
-                  tag="div"
-                  class="action-today flex"
-                >
+                <router-link :to="{ path: '/actionHistory' }" tag="div" class="action-today flex">
                   <div class="cell-bd">
                     <time size-16>{{ query.day }}</time>
                     <span>日获得Q星{{ start }}颗</span>
@@ -183,19 +144,11 @@
                 </div>
                 <div class="dhole flex">
                   <router-link to="/action">
-                    <img
-                      src="@/assets/action-icon-1@2x.png"
-                      width="20"
-                      height="20"
-                    />
+                    <img src="@/assets/action-icon-1@2x.png" width="20" height="20" />
                     <span class="ml-10">行为管理</span>
                   </router-link>
                   <router-link to="/prize">
-                    <img
-                      src="@/assets/prize-icon-1@2x.png"
-                      width="20"
-                      height="20"
-                    />
+                    <img src="@/assets/prize-icon-1@2x.png" width="20" height="20" />
                     <span class="ml-10">奖励兑换</span>
                   </router-link>
                 </div>
@@ -204,11 +157,7 @@
               <div class="mod">
                 <div class="share-image flex a-i-c j-c-s-b min-h100 mt-30">
                   <p>晒一晒我的表现</p>
-                  <van-icon
-                    name="share"
-                    size="20px"
-                    @click="shareActionImage(1)"
-                  ></van-icon>
+                  <van-icon name="share" size="20px" @click="shareActionImage(1)"></van-icon>
                 </div>
               </div>
             </div>
@@ -219,7 +168,7 @@
               <!-- <div class="statement" @click="showPopup">
                 <van-icon name="share" size="15px" color="#FF9933"></van-icon>
                 <span>行为报表</span>
-              </div> -->
+              </div>-->
               <van-popup v-model="show" @close="onClose">
                 <div class="flex a-i-c" @click="popupOne = true">
                   <time size-16>{{ query1.startDate }}</time>
@@ -227,12 +176,7 @@
                   <time class="mr-20" size-16>{{ query1.endDate }}</time>
                 </div>
                 <div style="textAlign:center">
-                  <van-button
-                    type="primary"
-                    size="small"
-                    @click="statementPopup"
-                    >查询</van-button
-                  >
+                  <van-button type="primary" size="small" @click="statementPopup">查询</van-button>
                 </div>
               </van-popup>
               <!-- 角色选择 -->
@@ -279,24 +223,15 @@
             <!-- <div class="container" ref="imageDom">
               反馈等会撒九分裤黑色大健康法华师大
             </div>
-            <img :src="imgUrl" alt="" /> -->
+            <img :src="imgUrl" alt="" />-->
             <statement></statement>
           </van-popup>
           <van-tab title="在校表现">
             <div class="container">
               <!-- 蒙版 -->
-              <div
-                class="overlay"
-                v-if="studentId == 0"
-                style="z-index: 500"
-                @click="overlay"
-              ></div>
+              <div class="overlay" v-if="studentId == 0" style="z-index: 500" @click="overlay"></div>
               <div class="mod">
-                <router-link
-                  :to="{ path: '/course/history' }"
-                  tag="div"
-                  class="action-today flex"
-                >
+                <router-link :to="{ path: '/course/history' }" tag="div" class="action-today flex">
                   <div class="cell-bd">
                     <time size-16>{{ query.day }}</time>
                     <span>日获得Q星{{ inSchool }}颗</span>
@@ -315,14 +250,12 @@
                       <div class="action-cell-label">
                         <div>{{ item.title }}</div>
                         <!-- 课堂时间 -->
-                        <span size-12 v-show="item.startTime"
-                          >{{ item.startTime }}-{{ item.endTime }}</span
-                        >
+                        <span
+                          size-12
+                          v-show="item.startTime"
+                        >{{ item.startTime }}-{{ item.endTime }}</span>
                       </div>
-                      <div
-                        class="action-cell-rate"
-                        @click="jumpCourseView(item)"
-                      >
+                      <div class="action-cell-rate" @click="jumpCourseView(item)">
                         <van-rate
                           v-model="item.starCount"
                           :count="5"
@@ -340,11 +273,7 @@
               <div class="mod">
                 <div class="share-image flex a-i-c j-c-s-b min-h100 mt-30">
                   <p @click="popupShow = true">晒一晒我的表现</p>
-                  <van-icon
-                    name="share"
-                    size="20px"
-                    @click="shareActionImage(2)"
-                  ></van-icon>
+                  <van-icon name="share" size="20px" @click="shareActionImage(2)"></van-icon>
                 </div>
               </div>
             </div>
@@ -358,7 +287,7 @@
                   class="screen-item"
                   :class="[lessonIndex == index ? 'curr' : '']"
                   v-for="(item, index) in lessonsList"
-                  :key="item.title"
+                  :key="index"
                   @click="handleScreen(item, index)"
                 >
                   <i style="width:12px;height:12px;margin-right:4px;"></i>
@@ -379,7 +308,7 @@
 </template>
 <script>
 import html2canvas from "html2canvas";
-import statement from "./statement"
+import statement from "./statement";
 import calendar from "@/components/calendar";
 import Cookies from "js-cookie";
 import { urlSearch } from "@/utils/urlSearch";
@@ -470,7 +399,26 @@ export default {
         endDate: dayjs().format("YYYY-MM-DD")
       },
       statementShow: false, //报表的出现与隐藏
-      imgUrl: ""
+      imgUrl: "",
+
+      showName: false,
+      tip: "数据导入中....",
+      currentRate: 0,
+      text: 0 + "%",
+      speed: 2,
+      // 获取活跃度目录条数20191101
+      deviceArr: [],
+      deviceIndex: 0,
+      delBag: [],
+      utcValue: "",
+      utc: "1",
+      delBagIndex: 0,
+      // 睡眠部分20191101
+      sleepList: [],
+      sleepIndex: 0,
+      sleepUTC: [],
+      sleepUTCIndex: 0,
+      utcSleep: 1
     };
   },
   computed: {
@@ -802,7 +750,7 @@ export default {
             // this.$toast(`数据已发送`);
           } else {
             this.$toast(`数据发送失败`);
-            this.show = false;
+            this.showName = false;
           }
         }
       );
@@ -905,7 +853,7 @@ export default {
                 ) {
                   // let _this = this;
                   // setTimeout(function() {
-                  this.show = true;
+                  this.showName = true;
                   // }, 100);
                   let getLocalTime = [0x23, 0x02, 0x02, 0x02, 0x25];
                   this.sendDataToWXDevice(
@@ -913,7 +861,7 @@ export default {
                     bytesArrayToBase64(getLocalTime)
                   );
                 } else {
-                  this.show = false;
+                  this.showName = false;
                 }
               } else {
                 this.state = "disconnected";
@@ -1355,7 +1303,7 @@ export default {
                   this.tip = "数据导入完成";
                   let _this = this;
                   setTimeout(function() {
-                    _this.show = false;
+                    _this.showName = false;
                   }, 2000);
                 } else {
                   let xiao;
@@ -1945,6 +1893,32 @@ export default {
       font-weight: 500;
       color: rgba(255, 153, 51, 1);
       margin-left: 9px;
+    }
+  }
+}
+
+//20191101
+.dialogData {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  > div {
+    width: 400px;
+    height: 300px;
+    background: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    > p {
+      width: 100%;
+      text-align: center;
     }
   }
 }
