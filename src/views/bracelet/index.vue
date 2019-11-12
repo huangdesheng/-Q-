@@ -111,7 +111,9 @@ export default {
         yAxis: {
           type: "value",
           name: "专心度",
-          interval: 50
+          max: 6,
+          min: 1,
+          data: [1, 2, 3, 4, 5, 6]
         },
         series: [
           {
@@ -139,7 +141,8 @@ export default {
         studentId: this.studentId,
         day: this.date,
         startTime: this.$route.query.startTime,
-        endTime: this.$route.query.endTime
+        endTime: this.$route.query.endTime,
+        type: this.$route.query.type
       };
 
       let res = await service.StudentLessonActive(data);

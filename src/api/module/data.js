@@ -210,3 +210,13 @@ export function getDeviceIdList(params, config = {
     .then(res => res.data)
     .catch(e => console.log(e));
 }
+
+
+//查询设备是否绑定学生
+export function queryBindStudent(params, config = {
+  showLoading: false
+}) {
+  return ax.post('/qxiao-mp/action/mod-xiaojiao/device/queryBindStudent.do', params, config)
+    .then(res => res.data)
+    .catch(e => console.log(e));
+}

@@ -17,9 +17,12 @@
         </div>
       </div>-->
       <!-- 用户 -->
-      <div class="empty" v-if="isBindBracelet == 0">
+      <div class="empty">
         <img src="@/assets/kong.png" alt />
-        <p class="mt-30">小Q手环智能连接课堂动态...开发中,期待~~</p>
+        <p class="mt-30" style="line-height:30px;">
+          你目前的角色是老师
+          <br />请先切换到家长角色绑定小孩
+        </p>
       </div>
     </div>
     <!-- <div class="page-ft">

@@ -10,6 +10,8 @@ const actions = {
     state,
     dispatch
   }, info) {
+    console.log(info)
+
     return new Promise(async resolve => {
       state.info = Object.assign({}, info);
       //设置Cookie

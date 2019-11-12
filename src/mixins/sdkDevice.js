@@ -111,9 +111,9 @@ export default {
           res => {
             if (res.err_msg === "disConnectWXDevice:ok") {
               this.deviceId = "";
-              this.$dialog({
-                message: "使用前请先打开手机蓝牙"
-              });
+              // this.$dialog({
+              //   message: "使用前请先打开手机蓝牙"
+              // });
             }
           }
         );

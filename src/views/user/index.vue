@@ -185,7 +185,7 @@ export default {
       switched: false,
       visibility: false,
       roleList: [],
-      hasBind: true,
+      hasBind: false,
       teacherMenu: [
         {
           title: "学生作品",
@@ -262,7 +262,8 @@ export default {
       id: state => state.info.id,
       studentId: state => state.info.studentId,
       roleType: state => state.info.roleType,
-      isOpen: state => state.info.isOpen
+      isOpen: state => state.info.isOpen,
+      isBindBracelet: state => state.info.isBindBracelet
     })
   },
   methods: {
@@ -346,13 +347,31 @@ export default {
     },
 
     // 获取当前孩子列表
-    async queryOpenStudentList() {
-      let res = await service.queryOpenStudentList({
+    // async queryOpenStudentList() {
+    //   let res = await service.queryOpenStudentList({
+    //     openId: this.$store.state.user.info.openId
+    //   });
+    //   console.log(res);
+    //   if (res.errorCode === 0) {
+    //     // let lists = res.data.filter(item => item.isBindBracelet === 1);
+    //     // console.log(lists);
+    //     if (res.data.length === 1) {
+    //       console.log(1111);
+    //       this.hasBind = true;
+    //     } else {
+    //       console.log(2222);
+    //       this.hasBind = false;
+    //     }
+    //   }
+    // },
+
+    async getDeviceIdList() {
+      let data = {
         openId: this.$store.state.user.info.openId
-      });
+      };
+      let res = await service.getDeviceIdList(data);
       if (res.errorCode === 0) {
-        let lists = res.data.filter(item => item.isBindBracelet === 1);
-        if (lists.length === 1) {
+        if (res.data != null) {
           this.hasBind = true;
         } else {
           this.hasBind = false;
@@ -392,9 +411,9 @@ export default {
               //使用前请先打开手机蓝牙
               if (res.bluetoothState === "off") {
                 this.bluetooth = false;
-                this.$dialog({
-                  message: "使用前请先打开手机蓝牙"
-                });
+                // this.$dialog({
+                //   message: "使用前请先打开手机蓝牙"
+                // });
               }
               //用户没有授权微信使用蓝牙功能
               if (res.bluetoothState === "unauthorized") {
@@ -409,9 +428,9 @@ export default {
               }
             } else {
               this.bluetooth = false; //微信蓝牙打开失败
-              this.$dialog({
-                message: "微信蓝牙打开失败"
-              });
+              // this.$dialog({
+              //   message: "微信蓝牙打开失败"
+              // });
             }
           }
         );
@@ -453,15 +472,16 @@ export default {
               this.list = [];
               this.deviceId = "";
             }
-            if (this.bluetooth === true) {
-              this.$router.push({
-                path: "/device/studentList",
-                query: {
-                  deviceId: this.deviceId,
-                  hasBind: this.hasBind
-                }
-              });
-            }
+            // if (this.bluetooth === true) {
+            this.$router.push({
+              path: "/device/studentList",
+              query: {
+                deviceId: this.deviceId,
+                hasBind: this.hasBind,
+                bluetooth: this.bluetooth
+              }
+            });
+            // }
           }
         });
       });
@@ -510,6 +530,7 @@ export default {
     this.handleInitSwitch();
     wxapi.wxRegister(this.wxRegCallback);
     this.queryRole({ openId: this.openId });
+    this.getDeviceIdList();
   },
   beforeRouteLeave(to, from, next) {
     console.log("beforeRouteLeave");

@@ -50,6 +50,7 @@ export default {
       }
       let _cookie = Cookies.getJSON("info");
       let obj = Object.assign({}, _cookie, item);
+      console.log(obj);
       this.$store.dispatch("user/setInfo", obj).then(data => {
         if (data.success === "ok") {
           let params = {
@@ -65,6 +66,8 @@ export default {
     //多角色列表
     async queryRole(params = {}) {
       let res = await service.queryRole(params);
+      console.log(res);
+
       if (res.errorCode === 0) {
         this.roleList = res.data;
       }

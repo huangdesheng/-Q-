@@ -3,7 +3,7 @@
     <div class="page-bd">
       <div class="dialogData" style="z-index:1000" v-if="show">
         <div>
-          <van-loading size="24px" vertical v-if="show">加载中...</van-loading>
+          <van-circle v-model="currentRate" :rate="100" :speed="speed" :text="text" />
           <p>{{tip}}</p>
         </div>
       </div>
@@ -243,7 +243,7 @@
                   class="screen-item"
                   :class="[lessonIndex == index ? 'curr': '']"
                   v-for="(item, index) in lessonsList"
-                  :key="item.title"
+                  :key="index"
                   @click="handleScreen(item,index)"
                 >
                   <i style="width:12px;height:12px;margin-right:4px;"></i>
@@ -274,7 +274,7 @@ import echartMixin from "@/mixins/echarts";
 import dayjs from "dayjs";
 import { mapState } from "vuex";
 // 20191101
-import sdkDevice from "@/mixins/sdkDevice";
+// import sdkDevice from "@/mixins/sdkDevice";
 import { bytesArrayToBase64 } from "@/utils/arrayToBase64";
 export default {
   name: "home",
@@ -282,7 +282,7 @@ export default {
     qxFooter,
     qxChart
   },
-  mixins: [pageMixin, echartMixin, formatter, sdkDevice],
+  mixins: [pageMixin, echartMixin, formatter],
   data() {
     return {
       dialogImage: false,
@@ -336,7 +336,10 @@ export default {
       utcSleep: 1,
       //20191101
       show: false,
-      tip: "数据导入中...."
+      tip: "数据导入中....",
+      currentRate: 0,
+      text: 0 + "%",
+      speed: 2
     };
   },
   computed: {
@@ -460,7 +463,6 @@ export default {
             .then(() => {
               this.rateReadonly = false;
               this.actionListQuery();
-              //window.location.reload();
             });
         }
       }
@@ -495,15 +497,19 @@ export default {
     jumpCourseView(params) {
       //如果没有绑定手环
       if (this.isBindBracelet == 1) {
-        this.$router.push({
-          path: "/bracelet",
-          // path: "/device",
-          query: {
-            title: params.title,
-            startTime: params.startTime,
-            endTime: params.endTime
-          }
-        });
+        if (params.title === "运动" || params.title === "午睡") {
+        } else {
+          this.$router.push({
+            path: "/bracelet",
+            // path: "/device",
+            query: {
+              title: params.title,
+              startTime: params.startTime,
+              endTime: params.endTime,
+              type: params.type
+            }
+          });
+        }
       } else {
         this.$router.push({
           path: "/course/view",
@@ -515,7 +521,6 @@ export default {
     },
     //筛选在家表现行为图表
     handleScreen(params = {}, index) {
-      console.log(this.deviceId);
       if (this.active == 0) {
         let { actionType, actionId } = params;
         this.screenIndex = index;
@@ -527,21 +532,8 @@ export default {
         this.lessonIndex = index;
         this.schoolQuery.lessonId = lessonId;
         this.stateMentList(this.schoolQuery);
-        // console.log(this.deviceId);
       }
     },
-    // // 20191101
-    // onClick() {
-    //   let entryData = sessionStorage.getItem("entryData");
-    //   if (
-    //     this.active === 1 &&
-    //     this.deviceId != "" &&
-    //     this.isBindBracelet == 1 &&
-    //     entryData === null
-    //   ) {
-    //     console.log(true);
-    //   }
-    // },
     //行为列表查询
     async actionListQuery() {
       let obj = {
@@ -550,6 +542,7 @@ export default {
         openId: this.$store.state.user.info.openId
       };
       let res = await service.actionListQuery(obj);
+      console.log(res);
       if (res.errorCode === 0) {
         this.myActions = res.data.myActions;
         this.showNumber = this.myActions.length;
@@ -611,27 +604,13 @@ export default {
       }
     },
 
-    //20191101
+    //切换在校表现20191109
     onClick() {
-      let entryData = sessionStorage.getItem("entryData");
-      if (
-        this.active === 1 &&
-        this.deviceId != "" &&
-        this.isBindBracelet == 1 &&
-        entryData === null
-      ) {
-        let _this = this;
-        setTimeout(function() {
-          _this.show = true;
-        }, 1000);
-        let getLocalTime = [0x23, 0x02, 0x02, 0x02, 0x25];
-        this.sendDataToWXDevice(
-          this.deviceId,
-          bytesArrayToBase64(getLocalTime)
-        );
+      if (this.active === 1) {
+        this.getDeviceIdList();
       }
     },
-    // 发送数据给设备
+    // 发送数据给设备20191109
     sendDataToWXDevice(deviceId, base64Data = "") {
       console.log("send data");
       WeixinJSBridge.invoke(
@@ -646,11 +625,171 @@ export default {
             // this.$toast(`数据已发送`);
           } else {
             this.$toast(`数据发送失败`);
+            this.show = false;
           }
         }
       );
     },
 
+    // 初始化20191109
+    init() {
+      // 初始化蓝牙状态
+      this.openWXDeviceLib();
+      // 设备连接状态
+      this.getWXDeviceInfos();
+      // 手机蓝牙监听开启事件
+      this.onWXDeviceBluetoothStateChange();
+      // 设备连接状态
+      this.onWXDeviceStateChange();
+      // 接收到设备数据
+      this.onReceiveDataFromWXDevice();
+    },
+    // 初始化设备库20191109
+    openWXDeviceLib() {
+      wx.ready(() => {
+        WeixinJSBridge.invoke(
+          "openWXDeviceLib",
+          {
+            connType: "blue"
+          },
+          res => {
+            if (res.err_msg === "openWXDeviceLib:ok") {
+              //使用前请先打开手机蓝牙
+              if (res.bluetoothState === "off") {
+                this.bluetooth = false;
+                this.$dialog({
+                  message: "使用前请先打开手机蓝牙"
+                });
+              }
+              //用户没有授权微信使用蓝牙功能
+              if (res.bluetoothState === "unauthorized") {
+                this.bluetooth = false;
+                this.$dialog({
+                  message: "请授权微信蓝牙功能并打开蓝牙"
+                });
+              }
+              //蓝牙已打开
+              if (res.bluetoothState === "on") {
+                this.bluetooth = true;
+              }
+            } else {
+              this.bluetooth = false; //微信蓝牙打开失败
+              this.$dialog({
+                message: "微信蓝牙打开失败"
+              });
+            }
+          }
+        );
+      });
+    },
+
+    //设备连接状态变化20191109
+    onWXDeviceStateChange() {
+      wx.ready(() => {
+        WeixinJSBridge.on("onWXDeviceStateChange", res => {
+          console.log(res);
+          console.log("设备连接状态变化");
+          let { state } = res;
+          if (state === "connecting") {
+            console.log("已连接");
+            this.$dialog.close();
+          } else if (state === "connected") {
+            console.log("连接断开");
+          } else {
+            console.log("连接断开");
+          }
+          this.getWXDeviceInfos();
+        });
+      });
+    },
+
+    // 获取设备信息20191109
+    getWXDeviceInfos() {
+      wx.ready(() => {
+        WeixinJSBridge.invoke("getWXDeviceInfos", {}, res => {
+          console.log(res);
+          if (res.err_msg === "getWXDeviceInfos:ok") {
+            //绑定设备总数量
+            if (res.deviceInfos.length) {
+              let arr = res.deviceInfos.filter(
+                item => item.state === "connected"
+              );
+              if (arr.length > 0) {
+                this.state = arr[0].state;
+                this.deviceId = arr[0].deviceId;
+                let entryData = sessionStorage.getItem("entryData");
+                console.log(this.active);
+                if (
+                  this.active === 1 &&
+                  this.deviceId != "" &&
+                  this.isBindBracelet == 1 &&
+                  entryData === null &&
+                  this.bluetooth == true
+                ) {
+                  // let _this = this;
+                  // setTimeout(function() {
+                  this.show = true;
+                  // }, 100);
+                  let getLocalTime = [0x23, 0x02, 0x02, 0x02, 0x25];
+                  this.sendDataToWXDevice(
+                    this.deviceId,
+                    bytesArrayToBase64(getLocalTime)
+                  );
+                } else {
+                  this.show = false;
+                }
+              } else {
+                this.state = "disconnected";
+                this.deviceId = "";
+              }
+            } else {
+              this.list = [];
+              this.deviceId = "";
+            }
+          }
+        });
+      });
+    },
+
+    //断开设备连接20191109
+    disconnectWXDevice() {
+      wx.ready(() => {
+        WeixinJSBridge.invoke(
+          "disconnectWXDevice",
+          {
+            deviceId: this.deviceId,
+            connType: "blue"
+          },
+          res => {
+            if (res.err_msg === "disConnectWXDevice:ok") {
+              this.deviceId = "";
+              this.$dialog({
+                message: "使用前请先打开手机蓝牙"
+              });
+            }
+          }
+        );
+      });
+    },
+
+    //手机蓝牙状态改变事件20191109
+    onWXDeviceBluetoothStateChange() {
+      wx.ready(() => {
+        WeixinJSBridge.on("onWXDeviceBluetoothStateChange", res => {
+          let { state } = res;
+          if (state === "on") {
+            this.$toast(`蓝牙打开`);
+            this.bluetooth = true;
+          } else {
+            this.$toast(`蓝牙已关闭`);
+            this.bluetooth = false;
+            this.disconnectWXDevice();
+          }
+        });
+      });
+    },
+
+    //  获取Q星值20191109
     async getStarTotal() {
       var now = new Date();
       var year = now.getFullYear(); //年
@@ -665,13 +804,12 @@ export default {
       };
       let res = await service.getStarTotal(data);
       if (res.errorCode === 0) {
-        // console.log(res.data);
         this.setStart(res.data);
       }
     },
 
+    // 设置Q星值20191109
     setStart(value) {
-      // console.log(1);
       let num = parseInt(value);
       let start;
       let end;
@@ -690,24 +828,21 @@ export default {
         end = `0x${data.slice(2, 4)}`;
       }
       let setStartVlue = [0x23, 0x04, 0x01, 0x04, start, end, 0x00];
-      // let getStartVlue = [0x23, 0x02, 0x02, 0x04, 0x00];
       this.sendDataToWXDevice(this.deviceId, bytesArrayToBase64(setStartVlue));
     },
-    // 20191101
+    // 接收数据20191109
     onReceiveDataFromWXDevice() {
       wx.ready(() => {
         WeixinJSBridge.on("onReceiveDataFromWXDevice", res => {
           console.log("接收数据onReceiveDataFromWXDevice");
-          //设备id
-          //base64编码过的设备发到H5的数据
           let { deviceId, base64Data } = res;
-          //调用后台接口进行base64解码
           service.decoder({ content: base64Data }).then(res => {
+            this.currentRate += 1;
+            this.text = this.currentRate + "%";
             if (res.errorCode === 0) {
               let obj = res.data[0];
-              console.log(obj);
-              // return false;
               let len = parseInt(obj[5]);
+
               if (obj[1] === "08" && obj[2] === "04" && obj[3] === "02") {
                 // 获取本地时间日期结束，开始电量信息
                 console.log("获取本地时间日期结束，开始电量信息");
@@ -729,6 +864,7 @@ export default {
                 // 获取电量信息结束，开始获取当前步数
                 console.log("获取电量信息结束，开始获取当前步数");
                 let getCurrentNumberOfSteps = [0x23, 0x02, 0x02, 0x05, 0x00];
+                // let getCurrentNumberOfSteps = [0x23, 0x02, 0x02, 0x13, 0x00];
                 this.sendDataToWXDevice(
                   deviceId,
                   bytesArrayToBase64(getCurrentNumberOfSteps)
@@ -742,6 +878,42 @@ export default {
                 obj[1] === "04" &&
                 obj[2] === "04" &&
                 obj[3] === "05"
+              ) {
+                // 获取电量信息结束，开始获取当前步数
+                console.log("获取电量信息结束，开始获取当前步数");
+                // let getCurrentNumberOfSteps = [0x23, 0x02, 0x02, 0x05, 0x00];
+                let getCurrentNumberOfSteps = [0x23, 0x02, 0x02, 0x13, 0x00];
+                this.sendDataToWXDevice(
+                  deviceId,
+                  bytesArrayToBase64(getCurrentNumberOfSteps)
+                );
+                this.parsePackets({
+                  studentId: this.studentId,
+                  deviceId,
+                  content: base64Data
+                });
+              } else if (
+                obj[1] === "11" &&
+                obj[2] === "04" &&
+                obj[3] === "13"
+              ) {
+                // 获取当前步数结束，开始获取获取最近睡眠
+                console.log("获取当前步数结束，开始获取获运动目标");
+                let MoveStaget = [0x23, 0x02, 0x02, 0x06, 0x00];
+
+                this.sendDataToWXDevice(
+                  deviceId,
+                  bytesArrayToBase64(MoveStaget)
+                );
+                this.parsePackets({
+                  studentId: this.studentId,
+                  deviceId,
+                  content: base64Data
+                });
+              } else if (
+                obj[1] === "04" &&
+                obj[2] === "04" &&
+                obj[3] === "06"
               ) {
                 // 获取当前步数结束，开始获取获取最近睡眠
                 console.log("获取当前步数结束，开始获取获取最近睡眠");
@@ -863,6 +1035,8 @@ export default {
                   } else {
                     console.log(this.sleepUTC);
                     console.log("请求数据包第一个目录包结束,开始删除睡眠数据");
+
+                    // 关删除开启
                     // console.log("开始获取活跃度");
                     // let getAcquisitionActivity = [
                     //   0x23,
@@ -883,6 +1057,8 @@ export default {
                     //   deviceId,
                     //   content: base64Data
                     // });
+
+                    // 开删除开启
                     let xiao =
                       0x23 ^
                       (0 + 0x07) ^
@@ -924,6 +1100,7 @@ export default {
                 obj[3] === "F0" &&
                 obj[1] === "08"
               ) {
+                // 开删除开启
                 this.parsePackets({
                   studentId: this.studentId,
                   deviceId,
@@ -995,6 +1172,8 @@ export default {
                   console.log("获取活跃度分包目录数调用结束");
                   this.lessonList();
                   this.getStarTotal();
+                  this.currentRate = 100;
+                  this.text = this.currentRate + "%";
                   sessionStorage.setItem("entryData", 1);
                   this.tip = "数据导入完成";
                   let _this = this;
@@ -1121,12 +1300,16 @@ export default {
                     );
                   } else {
                     // 请求数据包第一个目录包结束,开始按UTC删除数据
+
+                    // 关删除开启
                     // console.log("请求数据包第一个目录包结束,开始按UTC删除数据");
                     // this.lessonList();
                     // this.getStarTotal();
                     // sessionStorage.setItem("entryData", 1);
                     // this.show = false;
                     // this.tip = "数据导入完成";
+
+                    // 开删除开启
                     let xiao =
                       0x23 ^
                       (0 + 0x09) ^
@@ -1173,12 +1356,16 @@ export default {
               ) {
                 if (obj[5] === "02") {
                   // 请求数据包请求失败，无效记录序号,开始按UTC删除数据
+
+                  // 关删除开启
                   // console.log("请求数据包第一个目录包结束,开始按UTC删除数据");
                   // this.lessonList();
                   // this.getStarTotal();
                   // sessionStorage.setItem("entryData", 1);
                   // this.show = false;
                   // this.tip = "数据导入完成";
+
+                  // 开删除开启
                   let xiao =
                     0x23 ^
                     (0 + 0x09) ^
@@ -1218,6 +1405,7 @@ export default {
                   });
                 }
               } else if (obj[2] === "10" && obj[3] === "F1") {
+                // 开删除开启
                 let index = this.delBagIndex;
                 index++;
                 if (this.delBag.length > index) {
@@ -1278,55 +1466,34 @@ export default {
                     studentId: this.studentId
                   });
                 }
-              } else if (
-                obj[1] === "03" &&
-                obj[2] === "01" &&
-                obj[3] === "01" &&
-                obj[4] === "00"
-              ) {
-                let getMovingGoals = [0x23, 0x02, 0x02, 0x06, 0x00];
-                this.sendDataToWXDevice(
-                  this.deviceId,
-                  bytesArrayToBase64(getMovingGoals)
-                );
-              } else if (
-                obj[1] === "04" &&
-                obj[2] === "04" &&
-                obj[3] === "06"
-              ) {
-                this.parsePackets({
-                  deviceId,
-                  content: base64Data,
-                  studentId: this.studentId
-                });
               }
             }
           });
         });
       });
     },
-    //解析数据包20191101
+    //解析数据包20191109
     async parsePackets(params = {}) {
       let res = await service.parsePackets(params);
       if (res.errorCode === 0) {
         console.log("解析数据包");
       }
     },
-    // 活跃度解析数据包20191101
+    // 活跃度解析数据包20191109
     async parsePacketActive(params = {}) {
       let res = await service.parsePacketActive(params);
       if (res.errorCode === 0) {
         console.log("活跃度解析数据包");
       }
     },
-    // 睡眠解析数据包20191101
+    // 睡眠解析数据包20191109
     async parsePacketSleep(params = {}) {
       let res = await service.parsePacketSleep(params);
       if (res.errorCode === 0) {
         console.log("睡眠解析数据包");
       }
     },
-    // 获取用户绑定设备20191101
+    // 获取用户绑定设备20191109
     async getDeviceIdList() {
       let data = {
         openId: this.$store.state.user.info.openId
@@ -1345,13 +1512,10 @@ export default {
       //查询最新Q星数
       this.queryStar({ studentId: this.studentId });
     }
-    this.getDeviceIdList();
   },
   activated() {
     this.actionListQuery();
     this.lessonList();
-    this.getDeviceIdList();
-    // this.init();
   },
   //导航离开该组件的对应路由时调用
   beforeRouteLeave(to, from, next) {
