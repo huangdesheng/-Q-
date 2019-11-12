@@ -20,7 +20,10 @@
             clickable
             @click="selectChild(item)"
           >
-            <template v-if="hasBind">
+            <template v-if="!hasBind && item.isBindBracelet == 0">
+              <van-radio :name="item.studentId" checked-color="#a2e14e" />
+            </template>
+            <template v-else>
               <van-radio
                 :name="item.studentId"
                 checked-color="#a2e14e"
@@ -28,9 +31,6 @@
                 v-if="item.isBindBracelet == 0"
               />
               <span v-else class="binded">已绑定</span>
-            </template>
-            <template v-else>
-              <van-radio :name="item.studentId" checked-color="#a2e14e" />
             </template>
           </van-cell>
         </van-cell-group>
@@ -45,7 +45,7 @@
     <button class="connectStatus" v-else-if="state == 'connecting'">连接中</button>-->
 
     <p class="tip">注释：如若设备长时间未连接请重新开启蓝牙并让手机与 手环设备贴合</p>
-    <div class="page-ft" v-if="!hasBind && state === 'connected'">
+    <div class="page-ft" v-if="!hasBind && state === 'connected' && studentLength">
       <div class="fixed-bottom" style="z-index: 100;">
         <van-button type="info" size="large" class="no-radius" @click="handleBang">确认绑定</van-button>
       </div>
@@ -57,7 +57,7 @@ import service from "@/api";
 import { bytesArrayToBase64 } from "@/utils/arrayToBase64";
 import Cookies from "js-cookie";
 import { mapState } from "vuex";
-import sdkDevice from "@/mixins/sdkDevice";
+// import sdkDevice from "@/mixins/sdkDevice";
 // import wx from "weixin-js-sdk";
 export default {
   data() {
@@ -66,7 +66,10 @@ export default {
       studentList: [],
       isBindBracelet: "",
       itemObj: {},
-      hasBind: true
+      hasBind: false,
+      state: "",
+      bindStudentList: [],
+      studentLength: false
     };
   },
 
@@ -83,7 +86,7 @@ export default {
     this.onWXDeviceBluetoothStateChange();
   },
 
-  mixins: [sdkDevice],
+  // mixins: [sdkDevice],
   methods: {
     // 获取关联学生
     async queryOpenStudentList() {
@@ -93,13 +96,17 @@ export default {
       if (res.errorCode === 0) {
         this.studentList = res.data;
         let lists = res.data.filter(item => item.isBindBracelet === 1);
+        this.bindStudentList = lists;
+        if (this.bindStudentList.length != this.studentList.length) {
+          this.studentLength = true;
+        }
         if (lists.length === 1) {
-          this.hasBind = true;
+          // this.hasBind = true;
           this.isBindBracelet = lists[0].isBindBracelet;
           this.radio = lists[0].studentId;
           this.itemObj = lists[0];
         } else {
-          this.hasBind = false;
+          // this.hasBind = false;
           this.isBindBracelet = res.data[0].isBindBracelet;
           this.radio = res.data[0].studentId;
           this.itemObj = res.data[0];
@@ -122,6 +129,11 @@ export default {
       };
       if (this.deviceId === "") {
         this.$toast(`暂无搜索到手环设备`);
+        return false;
+      }
+
+      if (this.bindStudentList.length === this.studentList.length) {
+        this.$toast(`当前所有孩子已绑定手环`);
         return false;
       }
       let res = await service.bindStudent(data);
@@ -170,6 +182,148 @@ export default {
       console.log(res);
       if (res.errorCode === 0) {
       }
+    },
+
+    //  查询设备是否绑定学生
+    async queryBindStudent(device) {
+      let res = await service.queryBindStudent({
+        deviceId: device
+      });
+      console.log(res);
+      if (res.errorCode === 0) {
+        this.hasBind = false;
+        if (this.bindStudentList.length === this.studentList.length) {
+          this.$toast("当前所有孩子已被绑定");
+        }
+      } else {
+        this.hasBind = true;
+        this.$toast(res.errorMsg);
+      }
+    },
+
+    // 初始化设备库
+    openWXDeviceLib() {
+      wx.ready(() => {
+        WeixinJSBridge.invoke(
+          "openWXDeviceLib",
+          {
+            connType: "blue"
+          },
+          res => {
+            if (res.err_msg === "openWXDeviceLib:ok") {
+              //使用前请先打开手机蓝牙
+              if (res.bluetoothState === "off") {
+                this.bluetooth = false;
+                this.$dialog({
+                  message: "使用前请先打开手机蓝牙"
+                });
+              }
+              //用户没有授权微信使用蓝牙功能
+              if (res.bluetoothState === "unauthorized") {
+                this.bluetooth = false;
+                this.$dialog({
+                  message: "请授权微信蓝牙功能并打开蓝牙"
+                });
+              }
+              //蓝牙已打开
+              if (res.bluetoothState === "on") {
+                this.bluetooth = true;
+              }
+            } else {
+              this.bluetooth = false; //微信蓝牙打开失败
+              this.$dialog({
+                message: "微信蓝牙打开失败"
+              });
+            }
+          }
+        );
+      });
+    },
+
+    //设备连接状态变化
+    onWXDeviceStateChange() {
+      wx.ready(() => {
+        WeixinJSBridge.on("onWXDeviceStateChange", res => {
+          console.log(res);
+          console.log("设备连接状态变化");
+          let { state } = res;
+          if (state === "connecting") {
+            console.log("已连接");
+            this.$dialog.close();
+          } else if (state === "connected") {
+            console.log("连接断开");
+          } else {
+            console.log("连接断开");
+          }
+          this.getWXDeviceInfos();
+        });
+      });
+    },
+
+    // 获取设备信息
+    getWXDeviceInfos() {
+      wx.ready(() => {
+        WeixinJSBridge.invoke("getWXDeviceInfos", {}, res => {
+          console.log(res);
+          if (res.err_msg === "getWXDeviceInfos:ok") {
+            //绑定设备总数量
+            if (res.deviceInfos.length) {
+              let arr = res.deviceInfos.filter(
+                item => item.state === "connected"
+              );
+              if (arr.length > 0) {
+                this.state = arr[0].state;
+                this.deviceId = arr[0].deviceId;
+                this.queryBindStudent(this.deviceId);
+              } else {
+                this.state = "disconnected";
+                this.deviceId = "";
+              }
+            } else {
+              this.list = [];
+              this.deviceId = "";
+            }
+          }
+        });
+      });
+    },
+
+    //断开设备连接
+    disconnectWXDevice() {
+      wx.ready(() => {
+        WeixinJSBridge.invoke(
+          "disconnectWXDevice",
+          {
+            deviceId: this.deviceId,
+            connType: "blue"
+          },
+          res => {
+            if (res.err_msg === "disConnectWXDevice:ok") {
+              this.deviceId = "";
+              // this.$dialog({
+              //   message: "使用前请先打开手机蓝牙"
+              // });
+            }
+          }
+        );
+      });
+    },
+
+    //手机蓝牙状态改变事件
+    onWXDeviceBluetoothStateChange() {
+      wx.ready(() => {
+        WeixinJSBridge.on("onWXDeviceBluetoothStateChange", res => {
+          let { state } = res;
+          if (state === "on") {
+            this.$toast(`蓝牙打开`);
+            this.bluetooth = true;
+          } else {
+            this.$toast(`蓝牙已关闭`);
+            this.bluetooth = false;
+            this.disconnectWXDevice();
+          }
+        });
+      });
     }
   }
 };
