@@ -302,6 +302,7 @@ export default {
 .magnify {
   width: 100% !important;
   height: 100% !important;
+  border-radius:0!important;
 }
 .van-popup {
   width: 600px;

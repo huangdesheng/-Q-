@@ -1,26 +1,15 @@
 <template>
   <div class="container">
     <div id="canvasBox" :style="getHorizontalStyle" v-show="!showBox">
-      <div class="greet">
-        <span>{{ msg }}</span>
-        <!-- <input
-          type="button"
-          value="清屏"
-          @touchstart="clear"
-          @mousedown="clear"
-        /> -->
-         <input
-          type="button"
-          value="清空"
-          @click="clear"
-        />
-        <input
-          type="button"
-          value="确定"
-          @click="savePNG"
-        />
-      </div>
+      <!-- <div class="greet">
+        <input type="button" value="清空" @click="clear" />
+        <input type="button" value="确定" @click="savePNG" />
+      </div> -->
       <canvas></canvas>
+      <div class="greet">
+        <input type="button" value="清空" @click="clear" />
+        <input type="button" value="确定" @click="savePNG" />
+      </div>
     </div>
     <div class="image-box" v-show="showBox">
       <header>
@@ -43,12 +32,12 @@ export default {
       degree: 90,
       signImage: null,
       showBox: false,
-        params:{
-        openId:this.$route.query.openId,
-        noticeId:this.$route.query.noticeId,
-        studentId:this.$route.query.studentId,
-        file: "", //生成的图片
-      },
+      params: {
+        openId: this.$route.query.openId,
+        noticeId: this.$route.query.noticeId,
+        studentId: this.$route.query.studentId,
+        file: "" //生成的图片
+      }
     };
   },
   components: {
@@ -114,18 +103,18 @@ export default {
     },
     savePNG() {
       this.params.file = this.draw.getPNGImage();
-      // console.log(this.signImage);
-       this.saveSignature()
+      // console.log(this.params.file);
+      this.saveSignature();
       // this.showBox = true;
     },
     //上传
     async saveSignature() {
-      let res = await service.saveSignature(this.params)
-        if (res.errorCode === 0) {
-           this.$router.go(-1)
-        }else{
-          this.$toast(`${res.errorMsg}`)
-        }
+      let res = await service.saveSignature(this.params);
+      if (res.errorCode === 0) {
+        this.$router.go(-1);
+      } else {
+        this.$toast(`${res.errorMsg}`);
+      }
     },
     upload() {
       const image = this.draw.getPNGImage();
@@ -158,9 +147,12 @@ export default {
   padding: 20px;
   font-size: 20px;
   user-select: none;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
 }
 input {
-  font-size: 20px;
+  font-size: 30px;
 }
 .greet select {
   font-size: 18px;

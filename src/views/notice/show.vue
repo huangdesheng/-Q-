@@ -128,7 +128,7 @@ export default {
       needConfirm: parseInt(this.$route.query.needConfirm), //0 不用确认
       info: {
         confirmFlag: -1,
-        signature:-1
+        signature: -1
       },
       signature: "", //签名图片
       show: false //是否放大签名图片
@@ -362,7 +362,11 @@ export default {
   }
 }
 .magnify {
-  width: 400px !important;
-  height: 250px !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+.van-popup {
+  width: 600px;
+  height: 300px;
 }
 </style>

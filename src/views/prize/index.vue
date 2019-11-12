@@ -150,7 +150,7 @@ export default {
         openId: this.$store.state.user.info.openId
       },
       form: {
-        openId: this.$store.state.user.info.openId,
+        studentId: this.$store.state.user.info.studentId,
         textContent: "",
         starCount: ""
       },

@@ -210,10 +210,10 @@
               <div class="echarts-head flex a-i-c j-c-c mb-30">
                 <span>近一周在家表现</span>
               </div>
-              <div class="statement" @click="showPopup">
+              <!-- <div class="statement" @click="showPopup">
                 <van-icon name="share" size="15px" color="#FF9933"></van-icon>
                 <span>行为报表</span>
-              </div>
+              </div> -->
               <van-popup v-model="show" @close="onClose">
                 <div class="flex a-i-c" @click="popupOne = true">
                   <time size-16>{{ query1.startDate }}</time>
@@ -269,9 +269,12 @@
             </div>
           </van-tab>
           <!-- 报表 -->
-          <van-popup v-model="statementShow" @close="statementOnClose"
-            >内容</van-popup
-          >
+          <van-popup v-model="statementShow" @close="statementOnClose">
+            <div class="container" ref="imageDom">
+              反馈等会撒九分裤黑色大健康法华师大
+            </div>
+            <img :src="imgUrl" alt="" />
+          </van-popup>
           <van-tab title="在校表现">
             <div class="container">
               <!-- 蒙版 -->
@@ -368,6 +371,7 @@
   </div>
 </template>
 <script>
+import html2canvas from "html2canvas";
 import calendar from "@/components/calendar";
 import Cookies from "js-cookie";
 import { urlSearch } from "@/utils/urlSearch";
@@ -456,7 +460,8 @@ export default {
         startDate: dayjs().format("YYYY-MM-DD"),
         endDate: dayjs().format("YYYY-MM-DD")
       },
-      statementShow: false //报表的出现与隐藏
+      statementShow: false, //报表的出现与隐藏
+      imgUrl: ""
     };
   },
   computed: {
@@ -489,9 +494,23 @@ export default {
     }
   },
   methods: {
+    clickGeneratePicture() {
+      this.$nextTick(function() {
+        window.scrollTo(0, 0);
+        html2canvas(this.$refs.imageDom).then(canvas => {
+          // 转成图片，生成图片地址
+          this.imgUrl = canvas.toDataURL("image/png");
+          console.log(this.imgUrl);
+          this.$refs.imageDom.style.display = "none";
+        });
+      });
+    },
     //查询报表
     statementPopup() {
       this.statementShow = true;
+      setTimeout(() => {
+        this.clickGeneratePicture();
+      }, 2000);
     },
     //关闭报表
     statementOnClose() {
@@ -503,6 +522,7 @@ export default {
       if (begin && end) {
         this.query1.startDate = begin.join("-");
         this.query1.endDate = end.join("-");
+        this.popupOne = false;
       }
     },
     //在校表现选择日期范围
