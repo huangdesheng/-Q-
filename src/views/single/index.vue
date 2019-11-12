@@ -270,10 +270,11 @@
           </van-tab>
           <!-- 报表 -->
           <van-popup v-model="statementShow" @close="statementOnClose">
-            <div class="container" ref="imageDom">
+            <!-- <div class="container" ref="imageDom">
               反馈等会撒九分裤黑色大健康法华师大
             </div>
-            <img :src="imgUrl" alt="" />
+            <img :src="imgUrl" alt="" /> -->
+            <statement></statement>
           </van-popup>
           <van-tab title="在校表现">
             <div class="container">
@@ -372,6 +373,7 @@
 </template>
 <script>
 import html2canvas from "html2canvas";
+import statement from "./statement"
 import calendar from "@/components/calendar";
 import Cookies from "js-cookie";
 import { urlSearch } from "@/utils/urlSearch";
@@ -390,7 +392,8 @@ export default {
   components: {
     qxFooter,
     qxChart,
-    calendar
+    calendar,
+    statement
   },
 
   mixins: [pageMixin, echartMixin, formatter, sdkDevice],

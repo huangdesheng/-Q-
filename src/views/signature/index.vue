@@ -7,8 +7,10 @@
       </div> -->
       <canvas></canvas>
       <div class="greet">
-        <input type="button" value="清空" @click="clear" />
-        <input type="button" value="确定" @click="savePNG" />
+        <!-- <input type="button" value="清空" @click="clear" />
+        <input type="button" value="确定" @click="savePNG" /> -->
+        <van-button type="primary" size="small" color="red" @click="clear">清空</van-button>
+        <van-button type="primary" size="small" color="#84CE09" @click="savePNG">确定</van-button>
       </div>
     </div>
     <div class="image-box" v-show="showBox">
@@ -153,6 +155,8 @@ export default {
 }
 input {
   font-size: 30px;
+  background: #84CE09;
+  color:#fff;
 }
 .greet select {
   font-size: 18px;
