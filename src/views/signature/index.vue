@@ -5,10 +5,13 @@
         <input type="button" value="清空" @click="clear" />
         <input type="button" value="确定" @click="savePNG" />
       </div> -->
+      <span class="title">{{ msg }}</span>
       <canvas></canvas>
       <div class="greet">
-        <input type="button" value="清空" @click="clear" />
-        <input type="button" value="确定" @click="savePNG" />
+        <van-button type="primary" @click="clear" size="small">清空</van-button>
+        <van-button type="primary" @click="savePNG" size="small"
+          >确定</van-button
+        >
       </div>
     </div>
     <div class="image-box" v-show="showBox">
@@ -137,6 +140,7 @@ export default {
 .container {
   width: 100%;
   height: 100%;
+  margin-bottom:-10px;
 }
 #canvasBox {
   display: flex;
@@ -174,5 +178,12 @@ canvas {
   max-height: 80%;
   margin-top: 50px;
   border: 1px solid gray;
+}
+.greet /deep/ .van-button--primary {
+  background-color: #9cd248;
+  border: 1px solid #9cd248;
+}
+.title {
+  padding: 10px;
 }
 </style>

@@ -39,12 +39,12 @@
     </div>
     <div class="ParentsSignature" v-if="signature">
       <span>家长签名:</span>
-      <!-- <img src="@/assets/action-icon-1@2x.png" alt="" /> -->
-      <!-- <van-cell title="展示弹出层" is-link @click="showPopup" /> -->
-      <img :src="signature" @click="showPopup" alt="" />
-      <van-popup v-model="show" @close="onClose">
+      <div>
+        <img :src="signature" @click="showPopup" alt="" />
+      </div>
+      <!-- <van-popup v-model="show" @close="onClose">
         <img :src="signature" alt="" class="magnify" />
-      </van-popup>
+      </van-popup> -->
     </div>
     <div class="page-ft" v-show="!parseInt(info.isDel)">
       <div class="fixed-bottom" style="z-index: 100;">
@@ -368,5 +368,16 @@ export default {
 .van-popup {
   width: 600px;
   height: 300px;
+}
+.ParentsSignature{
+  div{
+    width: 400px;
+    height: 150px;
+    margin-left:150px;
+    img{
+      width: 100%;
+      height: 100%;
+    }
+  }
 }
 </style>
