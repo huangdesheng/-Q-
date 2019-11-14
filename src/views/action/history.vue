@@ -3,14 +3,10 @@
     <div class="page-hd">
       <div class="share-image flex a-i-c j-c-s-b min-h100">
         <p>
-          {{ name }}已经坚持习惯培养 <time style="color:#f44;">{{ days }}</time
-          >天
+          {{ name }}已经坚持习惯培养
+          <time style="color:#f44;">{{ days }}</time>天
         </p>
-        <div
-          class="text-center"
-          style="color:#ff9933"
-          @click="shareHistoryImage(1)"
-        >
+        <div class="text-center" style="color:#ff9933" @click="shareHistoryImage(1)">
           <van-icon name="share" size="16px"></van-icon>
           <div size-12>晒一晒</div>
         </div>
@@ -18,30 +14,19 @@
     </div>
     <div class="page-bd">
       <!-- dialog 图片生成分享 -->
-      <van-dialog
-        v-model="dialogImage"
-        close-on-click-overlay
-        :show-confirm-button="false"
-      >
+      <van-dialog v-model="dialogImage" close-on-click-overlay :show-confirm-button="false">
         <div class="cells">
           <img :src="shareImgUrl" />
-          <p class="text-center pt-30 pb-30 share-desctext">
-            长按图片保存或发给朋友
-          </p>
+          <p class="text-center pt-30 pb-30 share-desctext">长按图片保存或发给朋友</p>
         </div>
       </van-dialog>
-      <van-collapse v-model="activeNames" accordion>
-        <van-collapse-item
-          :name="item.id"
-          v-for="(item, indexs) in list"
-          :key="indexs"
-        >
-          <div class="flex" size-16 slot="title" @click="acquireStarNum(item)">
+      <van-collapse v-model="activeNames">
+        <van-collapse-item :name="item.id" v-for="(item,indexs) in list" :key="indexs">
+          <div class="flex" size-16 slot="title">
             <time>{{ item.day }}</time>
             <div class="ml-20 mr-20 flex">
               <span>获得</span>
-              <span style="color:#f44;">{{ item.starCount }}</span
-              >颗Q星
+              <span style="color:#f44;">{{ item.starCount }}</span>颗Q星
             </div>
             <span v-show="item.comment === 0" style="color:#f44">补评价</span>
           </div>
@@ -65,7 +50,7 @@
                     disabled-color="#febf56"
                     :readonly="rateReadonly"
                     :disabled="action.comment === 1"
-                    @change="handleChangeRate(action, indexs)"
+                    @change="handleChangeRate(action)"
                   ></van-rate>
                 </div>
                 <div class="action-cell-edit" @click="handleNote(action)">
@@ -97,13 +82,8 @@ export default {
         page: 1,
         pageSize: 20
       },
-      query2: {
-        studentId: this.$store.state.user.info.studentId
-      },
       activeNames: [],
-      list: [],
-      dayNum: "", //坚持天数
-      starNumList: [] //每天总星数
+      list: []
     };
   },
   computed: {
@@ -111,20 +91,12 @@ export default {
       name: state => state.info.name
     }),
     days() {
-      return this.dayNum;
-    },
-    starNum() {
-      let n = 0;
-      this.starNumList.forEach(item => (n += item.starCount));
-      return n;
+      if (this.list.length) {
+        return this.list[0].days;
+      }
     }
   },
   methods: {
-    //获取星星总数
-    acquireStarNum(item) {
-      console.log(item);
-      this.starNumList = item.actions;
-    },
     //备注打星
     handleNote(params) {
       let { remarks } = params;
@@ -140,11 +112,7 @@ export default {
       }
     },
     //rate事件
-    handleChangeRate(params = {}, index) {
-      // console.log(this.starNum);
-      // console.log(index);
-      // console.log(params);
-      this.list[index].starCount = this.starNum;
+    handleChangeRate(params = {}) {
       if (params) {
         let { comment, title, remarks, ...args } = params;
         let obj = Object.assign({}, args, {
@@ -160,13 +128,6 @@ export default {
         this.list = res.data.data || [];
       }
     },
-    //已坚持习惯天数
-    async queryUserDay(params = {}) {
-      let res = await service.queryUserDay(params);
-      if (res.errorCode === 0) {
-        this.dayNum = res.data;
-      }
-    },
     //行为打星
     async actionStrike(params = {}) {
       this.rateReadonly = true;
@@ -174,9 +135,7 @@ export default {
       if (res.errorCode === 0) {
         this.rateReadonly = false;
         let { totalStarCount } = res.data;
-        // this.historyStrikeQuery(this.query);
-
-        this.queryUserDay(this.query2);
+        this.historyStrikeQuery(this.query);
         //更新星星数量
         let _cookie = Cookies.getJSON("info");
         let obj = Object.assign({}, _cookie, { totalStarCount });
@@ -202,7 +161,6 @@ export default {
   },
   mounted() {
     this.historyStrikeQuery(this.query);
-    this.queryUserDay(this.query2);
   }
 };
 </script>
