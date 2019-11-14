@@ -106,9 +106,19 @@ export default {
     },
     savePNG() {
       this.params.file = this.draw.getPNGImage();
-      // console.log(this.params.file);
-      this.saveSignature();
-      // this.showBox = true;
+      this.$dialog
+        .alert({
+          message: "确定提交吗", //改变弹出框的内容
+          showCancelButton: true //展示取水按钮
+        })
+        .then(() => {
+          //点击确认按钮后的调用
+          this.saveSignature();
+        })
+        .catch(() => {
+          //点击取消按钮后的调用
+          // console.log("点击了取消按钮噢");
+        });
     },
     //上传
     async saveSignature() {
@@ -140,7 +150,7 @@ export default {
 .container {
   width: 100%;
   height: 100%;
-  margin-bottom:-10px;
+  margin-bottom: -10px;
 }
 #canvasBox {
   display: flex;
