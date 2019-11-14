@@ -165,20 +165,25 @@
               <div class="echarts-head flex a-i-c j-c-c mb-30">
                 <span>近一周在家表现</span>
               </div>
-              <!-- <div class="statement" @click="showPopup">
+              <!-- <div class="statement" @click="popupOne = true">
                 <van-icon name="share" size="15px" color="#FF9933"></van-icon>
                 <span>行为报表</span>
-              </div>-->
-              <van-popup v-model="show" @close="onClose">
-                <div class="flex a-i-c" @click="popupOne = true">
+              </div> -->
+              <!-- <van-popup v-model="show" @close="onClose" class="inquireTime">
+                <div @click="popupOne = true">
                   <time size-16>{{ query1.startDate }}</time>
                   <span style="padding:0 4px;">至</span>
                   <time class="mr-20" size-16>{{ query1.endDate }}</time>
                 </div>
-                <div style="textAlign:center">
-                  <van-button type="primary" size="small" @click="statementPopup">查询</van-button>
+                <div style="textAlign:center;marginTop:5px;">
+                  <van-button
+                    type="primary"
+                    size="small"
+                    @click="statementPopup"
+                    >查询</van-button
+                  >
                 </div>
-              </van-popup>
+              </van-popup> -->
               <!-- 角色选择 -->
               <!-- 日期选择 1 -->
               <van-popup v-model="popupOne" position="bottom">
@@ -219,12 +224,12 @@
             </div>
           </van-tab>
           <!-- 报表 -->
-          <van-popup v-model="statementShow" @close="statementOnClose">
+          <van-popup v-model="statementShow" @close="statementOnClose" class="statementScreenshot">
             <!-- <div class="container" ref="imageDom">
               反馈等会撒九分裤黑色大健康法华师大
-            </div>
-            <img :src="imgUrl" alt="" />-->
-            <statement></statement>
+            </div> -->
+            <report></report>
+            <!-- <img :src="imgUrl" alt="" /> -->
           </van-popup>
           <van-tab title="在校表现">
             <div class="container">
@@ -307,6 +312,7 @@
   </div>
 </template>
 <script>
+import report from "./report";
 import html2canvas from "html2canvas";
 import statement from "./statement";
 import calendar from "@/components/calendar";
@@ -329,7 +335,7 @@ export default {
     qxFooter,
     qxChart,
     calendar,
-    statement
+    report
   },
   mixins: [pageMixin, echartMixin, formatter],
   data() {
@@ -452,15 +458,25 @@ export default {
   },
   methods: {
     clickGeneratePicture() {
-      this.$nextTick(function() {
-        window.scrollTo(0, 0);
-        html2canvas(this.$refs.imageDom).then(canvas => {
-          // 转成图片，生成图片地址
-          this.imgUrl = canvas.toDataURL("image/png");
-          console.log(this.imgUrl);
-          this.$refs.imageDom.style.display = "none";
-        });
-      });
+      console.log(this.$refs.imageDom.Width);
+      // this.$nextTick(function() {
+      //   window.scrollTo(0, 0);
+      //   html2canvas(this.$refs.imageDom, {
+      //     width:
+      //       window.innerWidth ||
+      //       document.documentElement.clientWidth ||
+      //       document.body.clientWidth,
+      //     height:
+      //       window.innerHeight ||
+      //       document.documentElement.clientHeight ||
+      //       document.body.clientHeight
+      //   }).then(canvas => {
+      //     // 转成图片，生成图片地址
+      //     this.imgUrl = canvas.toDataURL("image/png");
+      //     // console.log(this.imgUrl);
+      //     this.$refs.imageDom.style.display = "none";
+      //   });
+      // });
     },
     //查询报表
     statementPopup() {
@@ -480,6 +496,7 @@ export default {
         this.query1.startDate = begin.join("-");
         this.query1.endDate = end.join("-");
         this.popupOne = false;
+        this.statementShow=true;
       }
     },
     //在校表现选择日期范围
@@ -1896,30 +1913,17 @@ export default {
     }
   }
 }
-
-//20191101
-.dialogData {
-  width: 100vw;
-  height: 100vh;
-  position: fixed;
-  left: 0;
-  top: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  > div {
-    width: 400px;
-    height: 300px;
-    background: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    > p {
-      width: 100%;
-      text-align: center;
-    }
+.inquireTime {
+  width: 500px;
+  text-align: center;
+  padding: 20px 0;
+  .van-button--primary {
+    color: #fff;
+    background-color: #84CE09;
+    border: 1px solid #84CE09;
   }
+}
+.statementScreenshot{
+  width:90%;
 }
 </style>

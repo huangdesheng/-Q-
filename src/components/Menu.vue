@@ -1,7 +1,7 @@
 <template>
   <nav class="nav">
     <router-link
-      :to="{path: menu.url}"
+      :to="{ path: menu.url }"
       class="langur"
       v-for="(menu, index) in computedMenu"
       :key="index"
@@ -75,7 +75,12 @@ export default {
               ? "/feed/teacher"
               : "/feed",
           icon: require("../assets/men-icon-11@2x.png")
-        }
+        },
+        // {
+        //   name: "园长专栏",
+        //   url: "/specialColumn",
+        //   icon: require("../assets/specialColumn.png")
+        // }
       ],
       //共用的菜单
       menuList: [
