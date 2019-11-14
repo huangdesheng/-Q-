@@ -168,7 +168,7 @@
               <!-- <div class="statement" @click="popupOne = true">
                 <van-icon name="share" size="15px" color="#FF9933"></van-icon>
                 <span>行为报表</span>
-              </div> -->
+              </div>-->
               <!-- <van-popup v-model="show" @close="onClose" class="inquireTime">
                 <div @click="popupOne = true">
                   <time size-16>{{ query1.startDate }}</time>
@@ -183,7 +183,7 @@
                     >查询</van-button
                   >
                 </div>
-              </van-popup> -->
+              </van-popup>-->
               <!-- 角色选择 -->
               <!-- 日期选择 1 -->
               <van-popup v-model="popupOne" position="bottom">
@@ -227,7 +227,7 @@
           <van-popup v-model="statementShow" @close="statementOnClose" class="statementScreenshot">
             <!-- <div class="container" ref="imageDom">
               反馈等会撒九分裤黑色大健康法华师大
-            </div> -->
+            </div>-->
             <report></report>
             <!-- <img :src="imgUrl" alt="" /> -->
           </van-popup>
@@ -496,7 +496,7 @@ export default {
         this.query1.startDate = begin.join("-");
         this.query1.endDate = end.join("-");
         this.popupOne = false;
-        this.statementShow=true;
+        this.statementShow = true;
       }
     },
     //在校表现选择日期范围
@@ -640,7 +640,7 @@ export default {
       //如果没有绑定手环
       if (this.isBindBracelet == 0) {
         this.$router.push({
-          // path: "/bracelet"
+          // path: "/bracelet",
           path: "/device"
           // query: {
           //   title: params.title,
@@ -648,18 +648,19 @@ export default {
           //   endTime: params.endTime,
           //   type: params.type
           // }
-          // if (params.title === "运动" || params.title === "午睡") {
-          // } else {
-          //   this.$router.push({
-          //     path: "/bracelet",
-          //     // path: "/device",
-          //     query: {
-          //       title: params.title,
-          //       startTime: params.startTime,
-          //       endTime: params.endTime,
-          //       type: params.type
-          //     }
         });
+        // if (params.title === "运动" || params.title === "午睡") {
+        // } else {
+        //   this.$router.push({
+        //     path: "/bracelet",
+        //     // path: "/device",
+        //     query: {
+        //       title: params.title,
+        //       startTime: params.startTime,
+        //       endTime: params.endTime,
+        //       type: params.type
+        //     }
+        //   });
         // }
       } else {
         this.$router.push({
@@ -1928,11 +1929,11 @@ export default {
   padding: 20px 0;
   .van-button--primary {
     color: #fff;
-    background-color: #84CE09;
-    border: 1px solid #84CE09;
+    background-color: #84ce09;
+    border: 1px solid #84ce09;
   }
 }
-.statementScreenshot{
-  width:90%;
+.statementScreenshot {
+  width: 90%;
 }
 </style>
