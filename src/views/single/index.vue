@@ -638,20 +638,29 @@ export default {
     },
     jumpCourseView(params) {
       //如果没有绑定手环
-      if (this.isBindBracelet == 1) {
-        if (params.title === "运动" || params.title === "午睡") {
-        } else {
-          this.$router.push({
-            path: "/bracelet",
-            // path: "/device",
-            query: {
-              title: params.title,
-              startTime: params.startTime,
-              endTime: params.endTime,
-              type: params.type
-            }
-          });
-        }
+      if (this.isBindBracelet == 0) {
+        this.$router.push({
+          // path: "/bracelet"
+          path: "/device"
+          // query: {
+          //   title: params.title,
+          //   startTime: params.startTime,
+          //   endTime: params.endTime,
+          //   type: params.type
+          // }
+          // if (params.title === "运动" || params.title === "午睡") {
+          // } else {
+          //   this.$router.push({
+          //     path: "/bracelet",
+          //     // path: "/device",
+          //     query: {
+          //       title: params.title,
+          //       startTime: params.startTime,
+          //       endTime: params.endTime,
+          //       type: params.type
+          //     }
+        });
+        // }
       } else {
         this.$router.push({
           path: "/course/view",

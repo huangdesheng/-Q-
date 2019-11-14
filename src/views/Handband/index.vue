@@ -1,5 +1,14 @@
 <template>
   <div>
+    <div class="dialogDeviceId" v-if="dialog">
+      <ul>
+        <li
+          v-for="(item, index) in deviceList"
+          :key="index"
+          @click="deviceIdClick(item.deviceId)"
+        >{{item.deviceId}}</li>
+      </ul>
+    </div>
     <div class="cells-title studentList">选择需要绑定手环的小孩</div>
     <div class="list">
       <div class="flex title">
@@ -36,7 +45,7 @@
         </van-cell-group>
       </van-radio-group>
     </div>
-    <div class="addChild" @click="addChild" v-if="!hasBind">
+    <div class="addChild" @click="addChild" v-if="hasBind">
       <van-icon name="add-o" />
       <span>点击新增小孩</span>
     </div>
@@ -69,7 +78,10 @@ export default {
       hasBind: false,
       state: "",
       bindStudentList: [],
-      studentLength: false
+      studentLength: false,
+      deviceList: [],
+      dialog: false,
+      deviceId: ""
     };
   },
 
@@ -157,7 +169,7 @@ export default {
       let { sex, ...args } = params;
       let _cookie = Cookies.getJSON("info");
       let obj = Object.assign({}, _cookie, args);
-      console.log(obj);
+      obj.deviceId = this.deviceId;
       this.$store.dispatch("user/setInfo", obj).then(data => {
         if (data.success === "ok") {
           let param = {
@@ -272,12 +284,18 @@ export default {
                 item => item.state === "connected"
               );
               if (arr.length > 0) {
+                // if (this.deviceId === "") {
+                //   this.dialog = true;
+                // }
+                // this.deviceList = arr;
+                // this.dialog = true;
                 this.state = arr[0].state;
                 this.deviceId = arr[0].deviceId;
                 this.queryBindStudent(this.deviceId);
               } else {
                 this.state = "disconnected";
                 this.deviceId = "";
+                this.dialog = false;
               }
             } else {
               this.list = [];
@@ -324,6 +342,11 @@ export default {
           }
         });
       });
+    },
+    deviceIdClick(deviceId) {
+      console.log(deviceId);
+      this.dialog = false;
+      this.deviceId = deviceId;
     }
   }
 };
@@ -406,5 +429,26 @@ export default {
   color: #666;
   padding: 0 10vw;
   margin: 20px 0;
+}
+
+.dialogDeviceId {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.6);
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  ul {
+    // padding: 30px 0px;
+    background: #fff;
+    li {
+      padding: 40px 20px;
+      border-bottom: 1px solid #eee;
+    }
+  }
 }
 </style>

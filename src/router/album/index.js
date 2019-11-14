@@ -38,4 +38,24 @@ export default [{
       title: '相册上传',
     }
   },
+  {
+    path: '/album/sampling',
+    name: 'sampling',
+    component: () => import('@/views/album/sampling'),
+    meta: {
+      keepAlive: true,
+      isShare: false,
+      title: '采样详细',
+    }
+  },
+  {
+    path: '/album/addSampling',
+    name: 'addSampling',
+    component: () => import('@/views/album/addSampling'),
+    meta: {
+      keepAlive: false,
+      isShare: false,
+      title: '添加照片',
+    }
+  },
 ]

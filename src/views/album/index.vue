@@ -42,15 +42,16 @@ export default {
       let res = await service.albumClassQuery(params);
       if (res.errorCode === 0) {
         this.list = res.data;
-      }
-      // ============================
-      if (this.list.length <= 1) {
-        this.$router.push({
-          path: "/album/view?classId=" + this.list[0].classId
-        });
-      } else {
         this.$router.push({ path: "/album" });
       }
+      // // ============================
+      // if (this.list.length <= 1) {
+      //   this.$router.push({
+      //     path: "/album/view?classId=" + this.list[0].classId
+      //   });
+      // } else {
+
+      // }
     }
   },
   mounted() {
