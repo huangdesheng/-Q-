@@ -122,7 +122,7 @@
             <van-cell title="版本" value="V1.0" size="large" />
             <van-cell title="品牌" value="小Q手环学校版" size="large" />
           </div>
-          <!-- <button @click="run" v-if="isBindBracelet == 1">发送数据</button> -->
+          <button @click="run" v-if="isBindBracelet == 1">发送数据</button>
         </template>
       </div>
       <div class="backIndex" @click="backIndex">
@@ -428,7 +428,7 @@ export default {
                     // let _this = this;
                     // setTimeout(function() {
                     this.show = true;
-                    // }, 1000);
+                    // // }, 1000);
                     let getLocalTime = [0x23, 0x02, 0x02, 0x02, 0x25];
                     this.sendDataToWXDevice(
                       this.deviceId,
@@ -721,6 +721,36 @@ export default {
       //   deviceId,
       //   bytesArrayToBase64(getAcquisitionActivity)
       // );
+
+      // let xiao =
+      //   0x23 ^
+      //   (0 + 0x09) ^
+      //   (1 + 0x08) ^
+      //   (2 + 0xf1) ^
+      //   (3 + 0x04) ^
+      //   (4 + 0x00) ^
+      //   (5 + 0x03) ^
+      //   (6 + 0x60) ^
+      //   (7 + 0x1e) ^
+      //   (8 + 0x00) ^
+      //   (9 + 0x09) ^
+      //   10;
+      // let lenXiao = [
+      //   0x23,
+      //   0x09,
+      //   0x08,
+      //   0xf1,
+      //   0x04,
+      //   0x00,
+      //   0x03,
+      //   0x60,
+      //   0x1e,
+      //   0x00,
+      //   0x09,
+      //   xiao
+      // ];
+
+      // this.sendDataToWXDevice(deviceId, bytesArrayToBase64(lenXiao));
     },
 
     // 发送数据给设备
@@ -1355,7 +1385,45 @@ export default {
                     studentId: this.studentId
                   });
                 } else if (obj[5] === "03") {
-                  this.$$toast("请求失败，无效的UTC");
+                  console.log(this.delBag);
+                  console.log("请求失败，无效的UTC");
+                  // let xiao =
+                  //   0x23 ^
+                  //   (0 + 0x09) ^
+                  //   (1 + 0x08) ^
+                  //   (2 + 0xf1) ^
+                  //   (3 + 0x04) ^
+                  //   (4 + 0x00) ^
+                  //   (5 + 0x03) ^
+                  //   (6 + this.delBag[0].n5) ^
+                  //   (7 + this.delBag[0].n6) ^
+                  //   (8 + this.delBag[0].n7) ^
+                  //   (9 + this.delBag[0].n8) ^
+                  //   10;
+                  // let lenXiao = [
+                  //   0x23,
+                  //   0x09,
+                  //   0x08,
+                  //   0xf1,
+                  //   0x04,
+                  //   0x00,
+                  //   0x03,
+                  //   this.delBag[0].n5,
+                  //   this.delBag[0].n6,
+                  //   this.delBag[0].n7,
+                  //   this.delBag[0].n8,
+                  //   xiao
+                  // ];
+                  // console.log("开始按UTC删除数据0");
+                  // this.sendDataToWXDevice(
+                  //   this.deviceId,
+                  //   bytesArrayToBase64(lenXiao)
+                  // );
+                  // this.parsePackets({
+                  //   deviceId,
+                  //   content: base64Data,
+                  //   studentId: this.studentId
+                  // });
                 }
               } else if (obj[2] === "10" && obj[3] === "F1") {
                 // 开删除开启

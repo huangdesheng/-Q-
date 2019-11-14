@@ -8,7 +8,6 @@ export default {
   methods: {
     //选图
     handleChooseImage(count = 9) {
-
       wx.chooseImage({
         count, //选择9张
         sizeType: ["compressed"], // 可以指定是原图还是压缩图，默认二者都有

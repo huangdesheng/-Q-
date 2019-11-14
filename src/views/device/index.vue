@@ -20,8 +20,9 @@
       <div class="empty">
         <img src="@/assets/kong.png" alt />
         <p class="mt-30" style="line-height:30px;">
-          你目前的角色是老师
-          <br />请先切换到家长角色绑定小孩
+          <!-- 你目前的角色是老师
+          <br />请先切换到家长角色绑定小孩-->
+          手环设备正在努力开始发中....
         </p>
       </div>
     </div>
