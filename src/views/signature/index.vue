@@ -120,6 +120,22 @@ export default {
           // console.log("点击了取消按钮噢");
         });
     },
+    //验证canvas画布是否为空函数
+    isCanvasBlank(canvas) {
+      var blank = document.createElement("canvas"); //系统获取一个空canvas对象
+      blank.width = canvas.width;
+      blank.height = canvas.height;
+      return canvas.toDataURL() == blank.toDataURL(); //比较值相等则为空
+    },
+    //调用
+    //表单非空验证
+    checkEmpty() {
+      var c = document.getElementById("canvasBox"); // 获取html的canvas对象，我这个id="canvas"
+      if (isCanvasBlank(c)) {
+        alert("请绘制草图后再上传！");
+        return;
+      }
+    },
     //上传
     async saveSignature() {
       let res = await service.saveSignature(this.params);
