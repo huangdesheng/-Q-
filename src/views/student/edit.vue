@@ -9,7 +9,12 @@
               <label class="label">学生姓名</label>
             </div>
             <div class="cell-bd">
-              <input class="input" placeholder="请输入学生姓名" maxlength="10" v-model="form.studentName" />
+              <input
+                class="input"
+                placeholder="请输入学生姓名"
+                maxlength="10"
+                v-model="form.studentName"
+              />
             </div>
           </div>
           <div class="cell cell-select cell-select-after">
@@ -20,9 +25,10 @@
               <select class="select" name dir="rtl" v-model="form.sex">
                 <option
                   :value="option.id"
-                  v-for="(option,index) in sexList"
+                  v-for="(option, index) in sexList"
                   :key="index"
-                >{{ option.name }}</option>
+                  >{{ option.name }}</option
+                >
               </select>
             </div>
           </div>
@@ -36,9 +42,10 @@
                 <optgroup disabled hidden></optgroup>
                 <option
                   :value="option.classId"
-                  v-for="(option,index) in classList"
+                  v-for="(option, index) in classList"
                   :key="index"
-                >{{ option.className }}</option>
+                  >{{ option.className }}</option
+                >
               </select>
             </div>
           </div>
@@ -85,7 +92,7 @@
           </div>
         </div>-->
         <div class="cells-title">家长信息</div>
-        <div class="cells" v-for="(link,index) in form.linkMan" :key="index">
+        <div class="cells" v-for="(link, index) in form.linkMan" :key="index">
           <div class="cell">
             <div class="cell-hd">
               <label class="label">家长手机号</label>
@@ -108,9 +115,10 @@
               <select class="select" name dir="rtl" v-model="link.relation">
                 <option
                   :value="option.id"
-                  v-for="(option,index) in relationList"
+                  v-for="(option, index) in relationList"
                   :key="index"
-                >{{ option.name }}</option>
+                  >{{ option.name }}</option
+                >
               </select>
             </div>
           </div>
@@ -120,8 +128,9 @@
                 native-type="button"
                 type="danger"
                 size="small"
-                @click="handleDelLinkMan(index)"
-              >删除</van-button>
+                @click="handleDelLinkMan(form, index)"
+                >删除</van-button
+              >
             </div>
           </div>
         </div>
@@ -134,15 +143,28 @@
             native-type="button"
             @click="handleAddLinkMan"
             class="add"
-          >点击添加更多家长</van-button>
+            >点击添加更多家长</van-button
+          >
         </div>
       </form>
     </div>
     <div class="page-ft">
       <div class="fixed-bottom" style="z-index: 100;">
         <div class="flex">
-          <van-button size="large" type="danger" class="no-radius" @click="handleDel">移除</van-button>
-          <van-button size="large" type="info" class="no-radius" @click="handleSubmit">保存</van-button>
+          <van-button
+            size="large"
+            type="danger"
+            class="no-radius"
+            @click="handleDel"
+            >移除</van-button
+          >
+          <van-button
+            size="large"
+            type="info"
+            class="no-radius"
+            @click="handleSubmit"
+            >保存</van-button
+          >
         </div>
       </div>
     </div>
@@ -167,15 +189,47 @@ export default {
       },
       form: {},
       classList: [],
-      studentList: []
+      studentList: [],
+      deleteButton: false //控制删除按钮的出现
     };
   },
   methods: {
     handleAddLinkMan() {
       this.form.linkMan.push({ relation: 1, tel: "", id: 0 });
     },
-    handleDelLinkMan(index) {
-      return this.form.linkMan.splice(index, 1);
+    //删除学生的家长电话
+    handleDelLinkMan(form, index) {
+      // return this.form.linkMan.splice(index, 1);
+      // console.log(form.linkMan[index].tel);
+      console.log(form);
+      this.$dialog
+        .confirm({
+          title: "提示",
+          message: "确定要删除家长信息吗？"
+        })
+        .then(() => {
+          let params = {
+            studentId: form.studentId,
+            tel: form.linkMan[index].tel
+          };
+          let tel = form.linkMan[index].id;
+          if (tel === 0) {
+            this.form.linkMan.splice(index, 1);
+          } else {
+            this.deletePatriarchPhone(params);
+          }
+        })
+        .catch(() => {});
+    },
+    async deletePatriarchPhone(params = {}) {
+      let res = await service.deletePatriarchPhone(params);
+      if (res.errorCode === 0) {
+        // console.log("删除成功");
+        this.$toast("删除成功");
+        this.queryUpdateStudnetInfo({ studentId: this.querys.studentId });
+      } else {
+        this.$toast(res.errorMsg);
+      }
     },
     handleDel() {
       let { studentId } = this.form;
@@ -229,6 +283,11 @@ export default {
       console.log(res);
       if (res.errorCode === 0) {
         this.form = res.data;
+        if (res.data.linkMan.length > 1) {
+          this.deleteButton = true;
+        } else {
+          this.deleteButton = false;
+        }
       }
     },
 

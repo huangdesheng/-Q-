@@ -75,15 +75,26 @@
       <div v-if="studentStatus">
         <div class="cells-title">已加入学生列表({{ studentCounted }})</div>
         <div class="cells">
-          <div class="cell min-h120" v-for="(student, index) in studentListed" :key="index">
-            <div class="num" v-if="studentListed.length<9">0{{index+1}}</div>
-            <div class="num" v-else>{{index+1}}</div>
+          <div
+            class="cell min-h120"
+            v-for="(student, index) in studentListed"
+            :key="index"
+          >
+            <div class="num" v-if="studentListed.length < 9">
+              0{{ index + 1 }}
+            </div>
+            <div class="num" v-else>{{ index + 1 }}</div>
             <div class="cell-hd">
               <template v-if="student.photo">
                 <img :src="student.photo" width="35" height="35" radius="50" />
               </template>
               <template v-else>
-                <img src="@/assets/child-default@2x.png" width="35" height="35" radius="50" />
+                <img
+                  src="@/assets/child-default@2x.png"
+                  width="35"
+                  height="35"
+                  radius="50"
+                />
               </template>
             </div>
             <div class="cell-bd pl-20">
@@ -107,15 +118,24 @@
         </div>
         <div class="cells-title">未加入学生列表({{ studentCounting }})</div>
         <div class="cells">
-          <div class="cell min-h120" v-for="(student, index) in studentListing" :key="index">
-            <div v-if="index<9">0{{index+1}}</div>
-            <div v-else>{{index+1}}</div>
+          <div
+            class="cell min-h120"
+            v-for="(student, index) in studentListing"
+            :key="index"
+          >
+            <div v-if="index < 9">0{{ index + 1 }}</div>
+            <div v-else>{{ index + 1 }}</div>
             <div class="cell-hd">
               <template v-if="student.photo">
                 <img :src="student.photo" width="50" height="50" radius="50" />
               </template>
               <template v-else>
-                <img src="@/assets/child-default@2x.png" width="50" height="50" radius="50" />
+                <img
+                  src="@/assets/child-default@2x.png"
+                  width="50"
+                  height="50"
+                  radius="50"
+                />
               </template>
             </div>
             <div class="cell-bd pl-20">
@@ -153,26 +173,31 @@
           <van-cell-group>
             <template>
               <van-cell
-                v-for="(item,index) in parentInfo.phone"
+                v-for="(item, index) in parentInfo.phone"
                 :key="index"
-                :title="item.studentName+':'+item.tel"
+                :title="item.studentName + ':' + item.tel"
                 clickable
                 @click="parentInfo.radio = item.tel"
                 class="select"
               >
-                <van-radio :name="item.tel" />
+                <van-radio checked-color="#93DB21" :name="item.tel" />
               </van-cell>
             </template>
           </van-cell-group>
         </van-radio-group>
         <div class="cell-ft flex btnPhone">
-          <p @click="phoneStatus=false">取消</p>
+          <p @click="phoneStatus = false">取消</p>
           <a :href="'tel:' + parentInfo.radio">确定</a>
         </div>
       </div>
       <div class="centerPhone" v-if="status === 2">
         <van-cell-group>
-          <van-field v-model="title" type="textarea" placeholder="请输入您想对家长说的话" rows="3" />
+          <van-field
+            v-model="title"
+            type="textarea"
+            placeholder="请输入您想对家长说的话"
+            rows="3"
+          />
         </van-cell-group>
         <div class="selectContent">
           <p>选择发送家长</p>
@@ -181,15 +206,17 @@
               :value="radio"
               @change="onChange"
               v-model="radio"
-              v-for="(item,index) in checkBoxList"
+              v-for="(item, index) in checkBoxList"
               :key="index"
             >
-              <van-radio :name="item.patriarchId" checked-color="#ccc">{{item.studentName}}</van-radio>
+              <van-radio :name="item.patriarchId" checked-color="#93DB21">{{
+                item.studentName
+              }}</van-radio>
             </van-radio-group>
           </div>
         </div>
         <div class="cell-ft flex btnPhone">
-          <p @click="phoneStatus=false">取消</p>
+          <p @click="leaveWordOff">取消</p>
           <a @click="sendWord">发送</a>
         </div>
       </div>
@@ -198,7 +225,13 @@
     <!-- 修改结束部分20191006 -->
     <div class="page-ft">
       <div class="fixed-bottom" style="z-index: 100;">
-        <van-button type="info" size="large" class="no-radius" @click="handleJumpRoute">录入新学生</van-button>
+        <van-button
+          type="info"
+          size="large"
+          class="no-radius"
+          @click="handleJumpRoute"
+          >录入新学生</van-button
+        >
         <!-- <van-button
           type="info"
           size="large"
@@ -230,8 +263,8 @@ export default {
   },
   data() {
     return {
-      studentId:"",
-      patriarchId:"",
+      studentId: "",
+      patriarchId: "",
       checkBoxList: [
         // { id: 1, name: "复选框1" },
         // { id: 2, name: "复选框2" },
@@ -281,9 +314,14 @@ export default {
     })
   },
   methods: {
+    //留言-取消
+    leaveWordOff() {
+      this.title="";
+      this.phoneStatus = false;
+    },
     onChange(event) {
       console.log(event);
-      this.patriarchId=event
+      this.patriarchId = event;
     },
     handleConfirm(value, index) {
       this.className = value.className;
@@ -370,6 +408,7 @@ export default {
     },
     // 查询学生家长电话(20191006)
     async handlePhone(student) {
+      this.status = 1;
       let data = {
         studentId: student.studentId,
         openId: this.$store.state.user.info.openId
@@ -390,15 +429,15 @@ export default {
       this.status = 2;
       this.parentInfo.name = student.studentName;
       this.studentInfo = student;
-      this.studentId=student.studentId;
-      this.queryStduentpar(this.studentId)
+      this.studentId = student.studentId;
+      this.queryStduentpar(this.studentId);
     },
 
     //查询学生家长的关系
     async queryStduentpar(studentId) {
       let res = await service.queryStduentpar({ studentId });
       if (res.errorCode === 0) {
-        this.checkBoxList=res.data
+        this.checkBoxList = res.data;
       }
     },
     // 发送留言(20191006)
@@ -406,8 +445,8 @@ export default {
       let data = {
         studentId: this.studentId,
         teacherId: this.$store.state.user.info.id,
-        patriarchId:this.patriarchId,
-        textContent:this.title,
+        patriarchId: this.patriarchId,
+        textContent: this.title,
         type: 1
       };
       let res = await service.teacherReplyStudent(data);
@@ -490,7 +529,7 @@ export default {
     margin: 30px 0 50px 30px;
   }
 }
-.num{
-  margin-right:20px;
+.num {
+  margin-right: 20px;
 }
 </style>

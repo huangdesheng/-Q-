@@ -29,6 +29,8 @@
         </div>
         <div size-16 class="article-bd">
           <p v-html="info.textContent"></p>
+          <!-- <img src="@/assets/welcome-slide-3@2x.png" alt="">
+           <img src="@/assets/welcome-slide-3@2x.png" alt=""> -->
           <template v-if="info.images">
             <p v-for="(img, index) in info.images" :key="index">
               <img :src="img.imageUrl" />
@@ -369,12 +371,12 @@ export default {
   width: 600px;
   height: 300px;
 }
-.ParentsSignature{
-  div{
+.ParentsSignature {
+  div {
     width: 400px;
     height: 150px;
-    margin-left:150px;
-    img{
+    margin-left: 150px;
+    img {
       width: 100%;
       height: 100%;
     }
