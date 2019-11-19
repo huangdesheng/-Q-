@@ -1,13 +1,30 @@
 <template>
   <div>
-    <div class="dialogDeviceId" v-if="dialog">
-      <ul>
+    <div class="dialogDeviceId" v-if="dialog" style="z-index:1000">
+      <!-- <ul>
+
         <li
           v-for="(item, index) in deviceList"
           :key="index"
           @click="deviceIdClick(item.deviceId)"
         >{{item.deviceId}}</li>
-      </ul>
+      </ul>-->
+      <div>
+        <p>
+          已连接
+          <span>{{num}}</span>手环设备
+        </p>
+        <!-- <p>中国暂时实现一夫一妻制！所以暂时只针对单手环进行处理！将多出的手环移开</p> -->
+        <p>温馨提示：发现多个设备，请先关闭其他手环设备或将其他手环挪开。</p>
+        <van-radio-group v-model="radioDevice" class="radio-btn">
+          <van-radio
+            v-for="(item, index) in deviceList"
+            :key="index"
+            :name="item.deviceId"
+          >手环:{{item.deviceId}}</van-radio>
+        </van-radio-group>
+        <!-- <button @click="dialog=false">确认</button> -->
+      </div>
     </div>
     <div class="cells-title studentList">选择需要绑定手环的小孩</div>
     <div class="list">
@@ -45,7 +62,7 @@
         </van-cell-group>
       </van-radio-group>
     </div>
-    <div class="addChild" @click="addChild" v-if="hasBind">
+    <div class="addChild" @click="addChild" v-if="!hasBind">
       <van-icon name="add-o" />
       <span>点击新增小孩</span>
     </div>
@@ -81,7 +98,9 @@ export default {
       studentLength: false,
       deviceList: [],
       dialog: false,
-      deviceId: ""
+      deviceId: "",
+      radioDevice: "",
+      num: 0
     };
   },
 
@@ -96,6 +115,17 @@ export default {
     this.onWXDeviceStateChange();
     //手机蓝牙状态改变事件;
     this.onWXDeviceBluetoothStateChange();
+  },
+
+  activated() {
+    // 获取关联学生
+    this.queryOpenStudentList();
+  },
+
+  computed: {
+    ...mapState("user", {
+      device: state => state.info.deviceId
+    })
   },
 
   // mixins: [sdkDevice],
@@ -178,12 +208,19 @@ export default {
             type: 1
           };
           this.switchingState(param);
-          this.$router.push({
-            path: "/device/studentList",
-            query: {
-              deviceId: this.deviceId,
-              hasBind: true
-            }
+          this.$dialog({
+            title: "设备绑定成功",
+            message: `手环设备的后6位字符为${this.deviceId.substr(
+              this.deviceId.length - 6
+            )}`
+          }).then(() => {
+            this.$router.push({
+              path: "/device/studentList",
+              query: {
+                deviceId: this.deviceId,
+                hasBind: true
+              }
+            });
           });
         }
       });
@@ -280,22 +317,48 @@ export default {
           if (res.err_msg === "getWXDeviceInfos:ok") {
             //绑定设备总数量
             if (res.deviceInfos.length) {
-              let arr = res.deviceInfos.filter(
-                item => item.state === "connected"
-              );
-              if (arr.length > 0) {
-                // if (this.deviceId === "") {
-                //   this.dialog = true;
-                // }
-                // this.deviceList = arr;
-                // this.dialog = true;
+              // let arr = [];
+              let deviceIdArr = [];
+              this.studentList.forEach(element => {
+                deviceIdArr.push(element.deviceId);
+              });
+              let arr = res.deviceInfos.filter(item => {
+                return (
+                  item.state === "connected" &&
+                  !deviceIdArr.includes(item.deviceId)
+                );
+              });
+              console.log(arr);
+              if (arr.length > 1) {
+                this.dialog = true;
+                this.num = arr.length;
+                // this.state = arr[0].state;
+                // this.deviceId = arr[0].deviceId;
+                // this.queryBindStudent(this.deviceId);
+                // this.$dialog.alert({
+                //   message: "已接入多个设备！请先移除剩一个"
+                // });
+              } else if (arr.length === 1) {
+                console.log(1);
+                this.dialog = false;
                 this.state = arr[0].state;
                 this.deviceId = arr[0].deviceId;
                 this.queryBindStudent(this.deviceId);
               } else {
-                this.state = "disconnected";
-                this.deviceId = "";
+                console.log(2);
+                let singleArr = res.deviceInfos.filter(
+                  item => item.deviceId == this.device
+                );
+                // console.log(singleArr);
                 this.dialog = false;
+                this.state = singleArr[0].state;
+                this.deviceId = singleArr[0].deviceId;
+                this.queryBindStudent(this.deviceId);
+                // this.state = "disconnected";
+                // this.deviceId = "";
+                // this.$dialog.alert({
+                //   message: "已接入多个设备！请先移除剩一个"
+                // });
               }
             } else {
               this.list = [];
@@ -344,7 +407,6 @@ export default {
       });
     },
     deviceIdClick(deviceId) {
-      console.log(deviceId);
       this.dialog = false;
       this.deviceId = deviceId;
     }
@@ -432,22 +494,51 @@ export default {
 }
 
 .dialogDeviceId {
-  position: fixed;
-  left: 0;
-  top: 0;
-  z-index: 100;
   background: rgba(0, 0, 0, 0.6);
   height: 100vh;
   width: 100vw;
   display: flex;
   justify-content: center;
   align-items: center;
-  ul {
-    // padding: 30px 0px;
+  position: fixed;
+  left: 0;
+  top: 0;
+
+  > div {
     background: #fff;
-    li {
-      padding: 40px 20px;
-      border-bottom: 1px solid #eee;
+    border-radius: 20px;
+    width: 90%;
+    p {
+      &:nth-of-type(1) {
+        text-align: center;
+        // color: #93db21;
+        font-size: 35px;
+        padding-top: 40px;
+        span {
+          color: red;
+        }
+      }
+      &:nth-of-type(2) {
+        color: #666;
+        font-size: 32px;
+        padding: 40px;
+        line-height: 50px;
+      }
+    }
+    button {
+      padding: 30px 0px;
+      width: 100%;
+      border: none;
+      outline: none;
+      text-align: center;
+      color: #93db21;
+      font-size: 35px;
+    }
+    .radio-btn {
+      .van-radio {
+        padding: 40px 20px;
+        border-bottom: 1px solid #eee;
+      }
     }
   }
 }

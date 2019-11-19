@@ -221,7 +221,7 @@ export default {
         {
           title: "佩戴方式",
           to: "/read-recommend",
-          value: "左手-竖显",
+          value: "左手-横显",
           icon: require("../../assets/user-icon-9@2x.png")
         },
         {
@@ -271,7 +271,8 @@ export default {
       studentId: state => state.info.studentId,
       roleType: state => state.info.roleType,
       isOpen: state => state.info.isOpen,
-      isBindBracelet: state => state.info.isBindBracelet
+      isBindBracelet: state => state.info.isBindBracelet,
+      device: state => state.info.deviceId
     })
   },
   mounted() {
@@ -398,7 +399,8 @@ export default {
             //绑定设备总数量
             if (res.deviceInfos.length) {
               let arr = res.deviceInfos.filter(
-                item => item.state === "connected"
+                item =>
+                  item.state === "connected" && item.deviceId == this.device
               );
 
               if (arr.length > 0) {
@@ -422,13 +424,42 @@ export default {
                   this.deviceId != ""
                 ) {
                   this.handStatus = 3;
-                  let entryData = sessionStorage.getItem("entryData");
-
-                  if (!entryData) {
+                  // let entryData = sessionStorage.getItem("entryData");
+                  let timestamp = new Date().getTime();
+                  let b = window.localStorage.getItem("data");
+                  if (b) {
                     // let _this = this;
                     // setTimeout(function() {
+                    // this.show = true;
+                    // // // }, 1000);
+                    // let getLocalTime = [0x23, 0x02, 0x02, 0x02, 0x25];
+                    // this.sendDataToWXDevice(
+                    //   this.deviceId,
+                    //   bytesArrayToBase64(getLocalTime)
+                    // );
+
+                    let c = JSON.parse(b);
+                    let time = c.time;
+                    let date = c.date;
+
+                    if (parseInt(time) + parseInt(date) < timestamp) {
+                      // 存在localStorage的时间过期了
+                      this.show = true;
+                      let getLocalTime = [0x23, 0x02, 0x02, 0x02, 0x25];
+                      this.sendDataToWXDevice(
+                        this.deviceId,
+                        bytesArrayToBase64(getLocalTime)
+                      );
+                    } else {
+                      console.log("还没有到导入数据时间");
+                    }
+                  } else {
+                    let obj = new Object();
+                    obj.time = 1800000;
+                    obj.date = timestamp;
+                    let objString = JSON.stringify(obj);
+                    window.localStorage.setItem("data", objString);
                     this.show = true;
-                    // // }, 1000);
                     let getLocalTime = [0x23, 0x02, 0x02, 0x02, 0x25];
                     this.sendDataToWXDevice(
                       this.deviceId,
@@ -1128,6 +1159,12 @@ export default {
                   setTimeout(function() {
                     _this.show = false;
                   }, 1000);
+                  let timestamp = new Date().getTime();
+                  let obj = new Object();
+                  obj.time = 1800000;
+                  obj.date = timestamp;
+                  let objString = JSON.stringify(obj);
+                  window.localStorage.setItem("data", objString);
                 } else {
                   let xiao;
                   let lenXiao;
@@ -1564,11 +1601,17 @@ export default {
       });
       console.log(res);
       if (res.errorCode === 0) {
-        this.getWear = `${res.data.wear === 0 ? "左右" : "右手"}-${
-          res.data.screen === 0 ? "横屏" : "竖屏"
-        }`;
-        this.wear = res.data.wear;
-        this.screen = res.data.screen;
+        if (res.data === null) {
+          this.wear = 0;
+          this.screen = 0;
+          this.getWear = `左手-横屏`;
+        } else {
+          this.getWear = `${res.data.wear === 0 ? "左右" : "右手"}-${
+            res.data.screen === 0 ? "横屏" : "竖屏"
+          }`;
+          this.wear = res.data.wear;
+          this.screen = res.data.screen;
+        }
       } else {
         this.wear = 0;
         this.screen = 0;

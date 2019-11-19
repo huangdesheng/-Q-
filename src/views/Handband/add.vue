@@ -145,7 +145,7 @@ export default {
       startDate: new Date(),
       imageUrl: "",
       filesObj: null,
-      deviceId: "gh_0d6d4aa4b57b_05430824aeb67970",
+      deviceId: this.$route.query.deviceId,
       studentId: "",
       form: {
         openId: this.$store.state.user.info.openId,
