@@ -425,6 +425,7 @@ export default {
       sleepUTC: [],
       sleepUTCIndex: 0,
       utcSleep: 1
+      // deviceId: ""
     };
   },
   computed: {
@@ -441,7 +442,8 @@ export default {
       isBindBracelet: state => state.info.isBindBracelet, // 0未绑定手环 1绑定
       experience: state => state.info.experience,
       tel: state => state.info.tel,
-      push: state => state.info.push
+      push: state => state.info.push,
+      deviceId: state => state.info.deviceId
     }),
     //计算在家表现已选择的星星数
     start() {
@@ -638,30 +640,30 @@ export default {
     },
     jumpCourseView(params) {
       //如果没有绑定手环
-      if (this.isBindBracelet == 0) {
-        this.$router.push({
-          // path: "/bracelet",
-          path: "/device"
-          // query: {
-          //   title: params.title,
-          //   startTime: params.startTime,
-          //   endTime: params.endTime,
-          //   type: params.type
-          // }
-        });
-        // if (params.title === "运动" || params.title === "午睡") {
-        // } else {
-        //   this.$router.push({
-        //     path: "/bracelet",
-        //     // path: "/device",
-        //     query: {
-        //       title: params.title,
-        //       startTime: params.startTime,
-        //       endTime: params.endTime,
-        //       type: params.type
-        //     }
-        //   });
-        // }
+      if (this.isBindBracelet == 1) {
+        // this.$router.push({
+        //   // path: "/bracelet",
+        //   path: "/device"
+        //   // query: {
+        //   //   title: params.title,
+        //   //   startTime: params.startTime,
+        //   //   endTime: params.endTime,
+        //   //   type: params.type
+        //   // }
+        // });
+        if (params.title === "运动" || params.title === "午睡") {
+        } else {
+          this.$router.push({
+            path: "/bracelet",
+            // path: "/device",
+            query: {
+              title: params.title,
+              startTime: params.startTime,
+              endTime: params.endTime,
+              type: params.type
+            }
+          });
+        }
       } else {
         this.$router.push({
           path: "/course/view",
@@ -864,31 +866,60 @@ export default {
             //绑定设备总数量
             if (res.deviceInfos.length) {
               let arr = res.deviceInfos.filter(
-                item => item.state === "connected"
+                item =>
+                  item.state === "connected" && item.deviceId == this.deviceId
               );
               if (arr.length > 0) {
                 this.state = arr[0].state;
                 this.deviceId = arr[0].deviceId;
-                let entryData = sessionStorage.getItem("entryData");
-                console.log(this.active);
-                if (
-                  this.active === 1 &&
-                  this.deviceId != "" &&
-                  this.isBindBracelet == 1 &&
-                  entryData === null &&
-                  this.bluetooth == true
-                ) {
-                  // let _this = this;
-                  // setTimeout(function() {
-                  this.showName = true;
-                  // }, 100);
-                  let getLocalTime = [0x23, 0x02, 0x02, 0x02, 0x25];
-                  this.sendDataToWXDevice(
-                    this.deviceId,
-                    bytesArrayToBase64(getLocalTime)
-                  );
+                let timestamp3 = new Date().getTime();
+                let b = window.localStorage.getItem("data");
+                if (b) {
+                  let c = JSON.parse(b);
+                  let time = c.time;
+                  let date = c.date;
+                  if (parseInt(time) + parseInt(date) < timestamp3) {
+                    // 存在localStorage的时间过期了
+                    if (
+                      this.active === 1 &&
+                      this.deviceId != "" &&
+                      this.isBindBracelet == 1 &&
+                      this.bluetooth == true
+                    ) {
+                      this.showName = true;
+                      let getLocalTime = [0x23, 0x02, 0x02, 0x02, 0x25];
+                      this.sendDataToWXDevice(
+                        this.deviceId,
+                        bytesArrayToBase64(getLocalTime)
+                      );
+                    } else {
+                      this.showName = false;
+                    }
+                  } else {
+                    // this.$toast("还没有到导入数据时间");
+                  }
                 } else {
-                  this.showName = false;
+                  // 第一次进来设置localStorage,导入一下数据
+                  let obj = new Object();
+                  obj.time = 1800000;
+                  obj.date = timestamp3;
+                  let objString = JSON.stringify(obj);
+                  window.localStorage.setItem("data", objString);
+                  if (
+                    this.active === 1 &&
+                    this.deviceId != "" &&
+                    this.isBindBracelet == 1 &&
+                    this.bluetooth == true
+                  ) {
+                    this.showName = true;
+                    let getLocalTime = [0x23, 0x02, 0x02, 0x02, 0x25];
+                    this.sendDataToWXDevice(
+                      this.deviceId,
+                      bytesArrayToBase64(getLocalTime)
+                    );
+                  } else {
+                    this.showName = false;
+                  }
                 }
               } else {
                 this.state = "disconnected";
@@ -994,7 +1025,7 @@ export default {
             if (res.errorCode === 0) {
               let obj = res.data[0];
               let len = parseInt(obj[5]);
-
+              console.log(obj);
               if (obj[1] === "08" && obj[2] === "04" && obj[3] === "02") {
                 // 获取本地时间日期结束，开始电量信息
                 console.log("获取本地时间日期结束，开始电量信息");
@@ -1332,6 +1363,13 @@ export default {
                   setTimeout(function() {
                     _this.showName = false;
                   }, 2000);
+                  // 获取完数据之后重新设置localStorage时间
+                  let timestamp3 = new Date().getTime();
+                  let obj = new Object();
+                  obj.time = 1800000;
+                  obj.date = timestamp3;
+                  let objString = JSON.stringify(obj);
+                  window.localStorage.setItem("data", objString);
                 } else {
                   let xiao;
                   let lenXiao;
@@ -1935,5 +1973,31 @@ export default {
 }
 .statementScreenshot {
   width: 90%;
+}
+
+//20191101
+.dialogData {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  > div {
+    width: 400px;
+    height: 300px;
+    background: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    > p {
+      width: 100%;
+      text-align: center;
+    }
+  }
 }
 </style>

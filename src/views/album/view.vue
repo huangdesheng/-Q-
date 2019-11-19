@@ -22,7 +22,7 @@
           </div>
         </div>
       </van-dialog>
-      <div class="album-show">
+      <div class="album-show" v-show="memuActive==2 && !empty">
         <van-swipe-cell
           ref="swipeCell"
           :right-width="60"
@@ -50,9 +50,8 @@
           <span slot="right" style="line-height: 100px;">删除</span>
         </van-swipe-cell>
       </div>
-      <!-- <div v-show="memuActive==2 && !empty">
+      <div v-show="memuActive==2 && !empty">
         <div class="album-content">
-         
           <van-list v-model="loading" :finished="finished" :immediate-check="false" :offset="100">
             <div class="article-cell">
               <time style="color:#8d8d8d;">2019-10-30 22:30</time>
@@ -65,25 +64,24 @@
                 @click="handlePreviewImage(pic.imageUrl, index)"
               >
                 <div class="suni">
-                
                   <img :src="pic.smallUrl" />
                 </div>
               </div>
             </div>
           </van-list>
         </div>
-      </div>-->
+      </div>
       <div class="empty" v-if="empty">
-        <div>
+        <div v-if="memuActive==1">
           <img src="@/assets/kong.png" alt />
           <p>暂无相册</p>
         </div>
-        <!-- <div v-if="memuActive==2">
+        <div v-if="memuActive==2">
           <img src="@/assets/kong.png" alt />
           <p>您小孩还没有采样照片</p>
           <p style="margin-top:0">请先去添加照片</p>
           <van-button type="info" size="large" class="no-radius addPic" @click="addSampling">去添加</van-button>
-        </div>-->
+        </div>
       </div>
     </div>
     <div class="page-ft">
@@ -92,7 +90,7 @@
           <van-button type="info" size="large" class="no-radius" @click="dialogVisible = true">新增栏目</van-button>
         </div>
       </template>
-      <!-- <template v-if="roleType == 3">
+      <template v-if="roleType == 3">
         <div class="fixed-bottom" style="z-index: 100;">
           <div class="flex">
             <van-button
@@ -109,7 +107,7 @@
             >我的小孩</van-button>
           </div>
         </div>
-      </template>-->
+      </template>
     </div>
   </div>
 </template>

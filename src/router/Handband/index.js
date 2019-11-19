@@ -4,7 +4,7 @@ export default [{
     component: () => import('@/views/Handband'),
     meta: {
       title: "手环绑定",
-      keepAlive: false,
+      keepAlive: true,
       isShare: false,
     }
   },
