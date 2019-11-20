@@ -767,24 +767,22 @@ export default {
     // 发送数据给设备20191109
     sendDataToWXDevice(deviceId, base64Data = "") {
       console.log("send data");
-      wx.ready(() => {
-        WeixinJSBridge.invoke(
-          "sendDataToWXDevice",
-          {
-            deviceId,
-            connType: "blue",
-            base64Data
-          },
-          res => {
-            if (res.err_msg === "sendDataToWXDevice:ok") {
-              // this.$toast(`数据已发送`);
-            } else {
-              this.$toast(`数据发送失败`);
-              this.showName = false;
-            }
+      WeixinJSBridge.invoke(
+        "sendDataToWXDevice",
+        {
+          deviceId,
+          connType: "blue",
+          base64Data
+        },
+        res => {
+          if (res.err_msg === "sendDataToWXDevice:ok") {
+            // this.$toast(`数据已发送`);
+          } else {
+            this.$toast(`数据发送失败`);
+            this.showName = false;
           }
-        );
-      });
+        }
+      );
     },
 
     // 初始化20191109
@@ -1685,7 +1683,7 @@ export default {
         console.log("睡眠解析数据包");
       }
     },
-    // 获取用户绑定设备20191120
+    // 获取用户绑定设备20191109
     async getDeviceIdList() {
       let data = {
         openId: this.$store.state.user.info.openId

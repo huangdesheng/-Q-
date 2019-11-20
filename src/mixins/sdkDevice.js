@@ -77,28 +77,7 @@ export default {
       });
     },
 
-    // 获取设备信息
-    getWXDeviceInfos() {
-      wx.ready(() => {
-        WeixinJSBridge.invoke("getWXDeviceInfos", {}, res => {
-          console.log(res)
-          if (res.err_msg === "getWXDeviceInfos:ok") {
 
-            //绑定设备总数量
-            if (
-              res.deviceInfos.length
-            ) {
-              this.state = res.deviceInfos[0].state;
-              this.deviceId = res.deviceInfos[0].deviceId;
-              console.log(this.deviceId);
-            } else {
-              this.list = [];
-              this.deviceId = "";
-            }
-          }
-        });
-      });
-    },
 
     //断开设备连接
     disconnectWXDevice() {

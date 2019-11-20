@@ -156,7 +156,7 @@ export default {
         sex: 1,
         tel: "",
         relation: 1
-        // verifyCode: ""
+        // verifyCode
       }
     };
   },
@@ -177,6 +177,8 @@ export default {
       this.imageUrl = file.content;
       this.filesObj = file.file;
     },
+
+    // 点击添加触发事件20191120
     async handleSubmit() {
       let { studentName, tel } = this.form;
       if (studentName == "") {
@@ -199,24 +201,7 @@ export default {
           let res = await service.addImage(formData, config);
           if (res.errorCode === 0) {
             this.form.photo = res.data.url;
-            //添加孩子
-            let result = await service.addStudentWithOpen(this.form);
-            if (result.errorCode === 0) {
-              let { first, ...args } = result.data;
-              if (first) {
-                let _cookie = Cookies.getJSON("info");
-                let obj = Object.assign({}, _cookie, args);
-                this.$store.dispatch("user/setInfo", obj).then(data => {
-                  if (data.success === "ok") {
-                    this.$router.go(-1);
-                  }
-                });
-              } else {
-                this.$router.go(-1);
-              }
-            } else {
-              this.$toast(`${res.errorMsg}`);
-            }
+            this.addStudentWithOpen(this.form);
           }
         } else {
           this.addStudentWithOpen(this.form);
@@ -229,55 +214,73 @@ export default {
     async addStudentWithOpen(params = {}) {
       let res = await service.addStudentWithOpen(params);
       if (res.errorCode === 0) {
+        // 添加孩子成功先清理数据20191120
+        this.imageUrl = "";
+        this.form = {
+          openId: this.$store.state.user.info.openId,
+          studentName: "",
+          photo: "",
+          birthday: "",
+          address: "",
+          sex: 1,
+          tel: "",
+          relation: 1
+        };
+
         let { first, ...args } = res.data;
         this.studentId = res.data.studentId;
-        this.$dialog
-          .confirm({
-            message: "手环是否与该孩子进行绑定？"
-          })
-          .then(() => {
-            this.handleBang(args);
-          })
-          .catch(() => {
-            if (first) {
-              let _cookie = Cookies.getJSON("info");
-              let obj = Object.assign({}, _cookie, args);
-              this.$store.dispatch("user/setInfo", obj).then(data => {
-                if (data.success === "ok") {
-                  this.$router.go(-1);
-                }
-              });
-            } else {
-              this.$router.go(-1);
-            }
-          });
+
+        if (this.deviceId === "") {
+          // 没有设备ID直接添加孩子20191120
+          if (first) {
+            let _cookie = Cookies.getJSON("info");
+            let obj = Object.assign({}, _cookie, args);
+            this.$store.dispatch("user/setInfo", obj).then(data => {
+              if (data.success === "ok") {
+                this.$router.go(-1);
+              }
+            });
+          } else {
+            this.$router.go(-1);
+          }
+        } else {
+          // 提示添加孩子是否需要绑定孩子20191120
+          this.$dialog
+            .confirm({
+              message: "手环是否与该孩子进行绑定？"
+            })
+            .then(() => {
+              this.handleBang(args);
+            })
+            .catch(() => {
+              if (first) {
+                let _cookie = Cookies.getJSON("info");
+                let obj = Object.assign({}, _cookie, args);
+                this.$store.dispatch("user/setInfo", obj).then(data => {
+                  if (data.success === "ok") {
+                    this.$router.go(-1);
+                  }
+                });
+              } else {
+                this.$router.go(-1);
+              }
+            });
+        }
       } else {
         this.$toast(`${res.errorMsg}`);
       }
     },
 
-    // 确认绑定
+    // 确认绑定设备20191120
     async handleBang(arg) {
-      console.log(arg);
       let data = {
         deviceId: this.deviceId,
         studentId: this.studentId
       };
-      // console.log(data);
-      // return false;
-      if (this.deviceId === "") {
-        this.$toast(`暂无搜索到手环设备`);
-        return false;
-      }
-      // if (this.isBindBracelet === 1) {
-      //   this.$toast(`该孩子已经绑定手环`);
-      //   return false;
-      // }
       let res = await service.bindStudent(data);
-      console.log(res);
-
       if (res.errorCode === 0) {
         arg.isBindBracelet = 1;
+        arg.deviceId = this.deviceId;
         this.setStudentInfo(arg);
       }
     },
