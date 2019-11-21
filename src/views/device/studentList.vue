@@ -29,7 +29,6 @@
                 <div class="avatar flex a-i-c">
                   <template>
                     <img src="@/assets/child-default@2x.png" width="60" height="60" radius="50" />
-                    <!-- <img :src="photo" width="60" height="60" radius="50" /> -->
                   </template>
                 </div>
                 <div class="js-user-change">
@@ -39,23 +38,11 @@
                   </template>
                 </div>
               </div>
-              <!-- <button class="connectStatus">已连接</button> -->
               <button class="connectStatus" v-if="state == 'connected'" @click="getStarTotal">设备已连接</button>
               <button class="connectStatus" v-else-if="state == 'disconnected'">设备未连接</button>
               <button class="connectStatus" v-else-if="state == 'connecting'">设备未连接</button>
             </div>
             <div class="myAttr">
-              <!-- <van-cell
-              class="a-i-c"
-              size="large"
-              title="活跃度"
-              :value="dataValue.activeValue"
-              to="/checkActive"
-            >
-              <template slot="icon">
-                <img src="@/assets/user-icon-5@2x.png" class="user-icon" />
-              </template>
-              </van-cell>-->
               <van-cell
                 class="a-i-c"
                 size="large"
@@ -122,7 +109,7 @@
             <van-cell title="版本" value="V1.0" size="large" />
             <van-cell title="品牌" value="小Q手环学校版" size="large" />
           </div>
-          <button @click="run" v-if="isBindBracelet == 1">发送数据</button>
+          <button @click="run" v-if="isBindBracelet == 1">同步当前时间</button>
         </template>
       </div>
       <div class="backIndex" @click="backIndex">
@@ -279,7 +266,6 @@ export default {
     this.deviceId = this.$route.query.deviceId;
     this.hasBind = this.$route.query.hasBind;
     console.log(this.$route.query.hasBind);
-    // console.log(this.hasBind);
     this.bluetooth = this.$route.query.bluetooth;
     this.init();
     if (this.hasBind == false) {
@@ -314,6 +300,7 @@ export default {
         path: "/single"
       });
     },
+    // 解除当初绑定
 
     async unBindDevice(ticket) {
       let data = {
@@ -395,7 +382,6 @@ export default {
         WeixinJSBridge.invoke("getWXDeviceInfos", {}, res => {
           console.log(res);
           if (res.err_msg === "getWXDeviceInfos:ok") {
-            // this.state = res.deviceInfos[0].state;
             //绑定设备总数量
             if (res.deviceInfos.length) {
               let arr = res.deviceInfos.filter(
@@ -424,20 +410,9 @@ export default {
                   this.deviceId != ""
                 ) {
                   this.handStatus = 3;
-                  // let entryData = sessionStorage.getItem("entryData");
                   let timestamp = new Date().getTime();
                   let b = window.localStorage.getItem("data");
                   if (b) {
-                    // let _this = this;
-                    // setTimeout(function() {
-                    // this.show = true;
-                    // // // }, 1000);
-                    // let getLocalTime = [0x23, 0x02, 0x02, 0x02, 0x25];
-                    // this.sendDataToWXDevice(
-                    //   this.deviceId,
-                    //   bytesArrayToBase64(getLocalTime)
-                    // );
-
                     let c = JSON.parse(b);
                     let time = c.time;
                     let date = c.date;
@@ -597,13 +572,11 @@ export default {
       };
       let res = await service.getStarTotal(data);
       if (res.errorCode === 0) {
-        // console.log(res.data);
         this.setStart(res.data);
       }
     },
 
     setStart(value) {
-      // console.log(1);
       let num = parseInt(value);
       let start;
       let end;
@@ -622,7 +595,6 @@ export default {
         end = `0x${data.slice(2, 4)}`;
       }
       let setStartVlue = [0x23, 0x04, 0x01, 0x04, start, end, 0x00];
-      // let getStartVlue = [0x23, 0x02, 0x02, 0x04, 0x00];
       this.sendDataToWXDevice(this.deviceId, bytesArrayToBase64(getStartVlue));
     },
 
@@ -643,21 +615,6 @@ export default {
         done(false);
         return false;
       }
-
-      // let n;
-      // if (this.stepValue > 10) {
-      //   n = `0x${this.stepValue}`;
-      // } else {
-      //   n = `0x0${this.stepValue}`;
-      // }
-      // 设置运动目标
-      // let setMovingGoals = [0x23, 0x04, 0x01, 0x06, 0x00, 0x80, 0x00];
-      // this.sendDataToWXDevice(deviceId, "IwQBBgAQPw==");
-      // let getMovingGoals = [0x23, 0x02, 0x02, 0x06, 0x29];
-      // var _this = this;
-      // setTimeout(function() {
-      //   _this.sendDataToWXDevice(deviceId, "IwICBik=");
-      // }, 1000);
     },
 
     run() {
@@ -700,88 +657,7 @@ export default {
         parseInt(`0x${week}`),
         0x00
       ];
-
-      // let getAcquisitionActivity = [
-      //   0x23,
-      //   0x05,
-      //   0x02,
-      //   0xf1,
-      //   0x01,
-      //   0x00,
-      //   0x03,
-      //   0x00
-      // ];
       this.sendDataToWXDevice(deviceId, bytesArrayToBase64(setLocalTime));
-      // 获取本地时间
-      // let getLocalTime = [0x23, 0x02, 0x02, 0x02, 0x25];
-      // this.sendDataToWXDevice(deviceId, bytesArrayToBase64(getLocalTime));
-      // 获取设备电量
-      // let getDeviceSoc = [0x23, 0x02, 0x02, 0x03, 0x00];
-      // 设置Q星值
-      // let setStartVlue = [0x23, 0x04, 0x01, 0x04, 0x00, 0x50, 0x00];
-      // 设置Q星值
-      // let getStartValue = [0x23, 0x02, 0x02, 0x04, 0x00];
-      // 设置闹钟
-      // let timer = [0x23, 0x07, 0x01, 0x07, 0x02, 0x20, 0x58, 0x3e, 0x01, 0x00];
-
-      // let getAlarmClock = [0x23, 0x03, 0x02, 0x07, 0x01, 0x00];
-
-      // this.sendDataToWXDevice(deviceId, bytesArrayToBase64(timer));
-      // this.sendDataToWXDevice(deviceId, bytesArrayToBase64(setLocalTime));
-      // var _this = this;
-      // setTimeout(function() {
-      // this.sendDataToWXDevice(deviceId, bytesArrayToBase64(getLocalTime));
-      // }, 500);
-      // setTimeout(function() {
-      //   _this.sendDataToWXDevice(deviceId, bytesArrayToBase64(timer));
-      // }, 1000);
-      // setTimeout(function() {
-      //   _this.sendDataToWXDevice(deviceId, bytesArrayToBase64(setStartVlue));
-      // }, 3000);
-      // setTimeout(function() {
-      //   _this.sendDataToWXDevice(deviceId, bytesArrayToBase64(getStartValue));
-      // }, 4000);
-
-      // let getMostRecentSleepEntry = [0x23, 0x03, 0x02, 0xf0, 0x01, 0x00];
-      // this.sendDataToWXDevice(
-      //   deviceId,
-      //   bytesArrayToBase64(getMostRecentSleepEntry)
-      // );
-      // let getAcquisitionActivity = [0x23, 0x03, 0x08, 0x12, 0x02, 0x00];
-      // this.sendDataToWXDevice(
-      //   deviceId,
-      //   bytesArrayToBase64(getAcquisitionActivity)
-      // );
-
-      // let xiao =
-      //   0x23 ^
-      //   (0 + 0x09) ^
-      //   (1 + 0x08) ^
-      //   (2 + 0xf1) ^
-      //   (3 + 0x04) ^
-      //   (4 + 0x00) ^
-      //   (5 + 0x03) ^
-      //   (6 + 0x60) ^
-      //   (7 + 0x1e) ^
-      //   (8 + 0x00) ^
-      //   (9 + 0x09) ^
-      //   10;
-      // let lenXiao = [
-      //   0x23,
-      //   0x09,
-      //   0x08,
-      //   0xf1,
-      //   0x04,
-      //   0x00,
-      //   0x03,
-      //   0x60,
-      //   0x1e,
-      //   0x00,
-      //   0x09,
-      //   xiao
-      // ];
-
-      // this.sendDataToWXDevice(deviceId, bytesArrayToBase64(lenXiao));
     },
 
     // 发送数据给设备
