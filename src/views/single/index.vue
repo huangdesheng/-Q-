@@ -876,10 +876,11 @@ export default {
                 this.deviceId = arr[0].deviceId;
                 let timestamp3 = new Date().getTime();
                 let b = window.localStorage.getItem("data");
-                if (b) {
-                  let c = JSON.parse(b);
-                  let time = c.time;
-                  let date = c.date;
+                let c = JSON.parse(b) === null ? [] : JSON.parse(b);
+                let data = c.filter(item => item.deviceId === this.deviceId);
+                if (data.length > 0) {
+                  let time = data[0].time;
+                  let date = data[0].date;
                   if (parseInt(time) + parseInt(date) < timestamp3) {
                     // 存在localStorage的时间过期了
                     if (
@@ -898,14 +899,16 @@ export default {
                       this.showName = false;
                     }
                   } else {
-                    // this.$toast("还没有到导入数据时间");
+                    this.$toast("还没有到导入数据时间");
                   }
                 } else {
                   // 第一次进来设置localStorage,导入一下数据
                   let obj = new Object();
-                  obj.time = 1800000;
+                  obj.time = 60000;
                   obj.date = timestamp3;
-                  let objString = JSON.stringify(obj);
+                  obj.deviceId = this.deviceId;
+                  c.push(obj);
+                  let objString = JSON.stringify(c);
                   window.localStorage.setItem("data", objString);
                   if (
                     this.active === 1 &&
@@ -1359,7 +1362,7 @@ export default {
                   this.getStarTotal();
                   this.currentRate = 100;
                   this.text = this.currentRate + "%";
-                  sessionStorage.setItem("entryData", 1);
+                  // sessionStorage.setItem("entryData", 1);
                   this.tip = "数据导入完成";
                   let _this = this;
                   setTimeout(function() {
@@ -1367,10 +1370,18 @@ export default {
                   }, 2000);
                   // 获取完数据之后重新设置localStorage时间
                   let timestamp3 = new Date().getTime();
-                  let obj = new Object();
-                  obj.time = 1800000;
-                  obj.date = timestamp3;
-                  let objString = JSON.stringify(obj);
+                  // let obj = new Object();
+                  let b = window.localStorage.getItem("data");
+                  let c = JSON.parse(b) === null ? [] : JSON.parse(b);
+                  let data = c.filter(item => item.deviceId === this.deviceId);
+                  let dataStorage = c.filter(
+                    item => item.deviceId != this.deviceId
+                  );
+                  data[0].time = 60000;
+                  data[0].date = timestamp3;
+                  data[0].deviceId = this.deviceId;
+                  dataStorage.push(data[0]);
+                  let objString = JSON.stringify(dataStorage);
                   window.localStorage.setItem("data", objString);
                 } else {
                   let xiao;
