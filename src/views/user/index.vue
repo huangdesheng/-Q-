@@ -384,6 +384,7 @@ export default {
       // this.$router.push({
       //   path: "/device"
       // });
+
       this.init();
     },
     init() {

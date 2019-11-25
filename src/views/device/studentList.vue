@@ -65,7 +65,7 @@
                   <img src="@/assets/nightSleep.png" class="user-icon" />
                 </template>
               </van-cell>
-              <van-cell
+              <!-- <van-cell
                 class="a-i-c"
                 size="large"
                 title="午睡"
@@ -75,14 +75,14 @@
                 <template slot="icon">
                   <img src="@/assets/launchSleep.png" class="user-icon" />
                 </template>
-              </van-cell>
+              </van-cell>-->
             </div>
           </div>
           <div class="setAttr">
             <van-cell
               class="a-i-c"
               size="large"
-              title="目标设定"
+              title="目标步数"
               is-link
               :value="`${dataValue.setStep}步`"
               @click="stepTip"
@@ -161,7 +161,7 @@ export default {
         electricPercent: "0%"
       },
       show: false,
-      tip: "数据导入中....",
+      tip: "数据导入中,请勿断开设备或关闭蓝牙",
       currentRate: 0,
       text: 0 + "%",
       speed: 2,
@@ -194,7 +194,7 @@ export default {
       ],
       teacherMenu: [
         {
-          title: "目标设定",
+          title: "目标步数",
           to: "/works/teacher",
           value: "8000步",
           icon: require("../../assets/user-icon-5@2x.png")
@@ -244,8 +244,10 @@ export default {
       hasBind: true,
       handStatus: 0,
       // 设置的状态
-      setStatus: 0
-      // bluetooth: false
+      setStatus: 0,
+      // bluetooth: false,
+
+      timestamp: ""
     };
   },
   computed: {
@@ -301,7 +303,6 @@ export default {
       });
     },
     // 解除当初绑定
-
     async unBindDevice(ticket) {
       let data = {
         deviceId: this.deviceId,
@@ -309,8 +310,20 @@ export default {
         ticket: ticket
       };
       let res = await service.unBindDevice(data);
+      console.log(res);
       if (res.errorCode === 0) {
         this.$store.state.user.info.isBindBracelet = 0;
+        let b = window.localStorage.getItem("data");
+        let c;
+        if (b === "") {
+          c = [];
+        } else {
+          c = JSON.parse(b) === null ? [] : JSON.parse(b);
+        }
+        let data = c.filter(item => item.deviceId != this.deviceId);
+        window.localStorage.setItem("data", data);
+      } else {
+        this.$toast("手环解绑失败");
       }
     },
     // 初始化设备库
@@ -368,8 +381,6 @@ export default {
           res => {
             if (res.err_msg === "getWXDeviceTicket:ok") {
               this.unBindDevice(res.ticket);
-            } else {
-              this.$toast("获取凭证失败");
             }
           }
         );
@@ -411,12 +422,19 @@ export default {
                 ) {
                   this.handStatus = 3;
                   let timestamp = new Date().getTime();
+                  this.timestamp = timestamp;
                   let b = window.localStorage.getItem("data");
-                  if (b) {
-                    let c = JSON.parse(b);
-                    let time = c.time;
-                    let date = c.date;
+                  let c;
+                  if (b === "") {
+                    c = [];
+                  } else {
+                    c = JSON.parse(b) === null ? [] : JSON.parse(b);
+                  }
 
+                  let data = c.filter(item => item.deviceId === this.deviceId);
+                  if (data.length) {
+                    let time = data[0].time;
+                    let date = data[0].date;
                     if (parseInt(time) + parseInt(date) < timestamp) {
                       // 存在localStorage的时间过期了
                       this.show = true;
@@ -430,9 +448,11 @@ export default {
                     }
                   } else {
                     let obj = new Object();
-                    obj.time = 1800000;
+                    obj.time = 3600000;
                     obj.date = timestamp;
-                    let objString = JSON.stringify(obj);
+                    obj.deviceId = this.deviceId;
+                    c.push(obj);
+                    let objString = JSON.stringify(c);
                     window.localStorage.setItem("data", objString);
                     this.show = true;
                     let getLocalTime = [0x23, 0x02, 0x02, 0x02, 0x25];
@@ -525,7 +545,7 @@ export default {
       this.dataValue.setStep = this.stepValue;
       let number = parseInt(this.stepValue);
       if (action === "confirm") {
-        if (number < 65535) {
+        if (number < 30001) {
           let start;
           let end;
           let data = number.toString(16);
@@ -544,6 +564,9 @@ export default {
             end = `0x${data.slice(2, 4)}`;
           }
 
+          console.log(start);
+          console.log(end);
+
           let setMovingGoals = [0x23, 0x04, 0x01, 0x06, start, end, 0x00];
           this.sendDataToWXDevice(
             this.deviceId,
@@ -551,7 +574,7 @@ export default {
           );
           done();
         } else {
-          this.$toast("上限为65535步");
+          this.$toast("上限为30000步");
           done(false);
           return false;
         }
@@ -567,10 +590,10 @@ export default {
       var day = now.getDate(); //日
       let date = `${year}-${month}-${day}`;
       let data = {
-        studentId: this.studentId,
-        day: date
+        studentId: this.studentId
       };
-      let res = await service.getStarTotal(data);
+      let res = await service.queryStar(data);
+      console.log(res);
       if (res.errorCode === 0) {
         this.setStart(res.data);
       }
@@ -595,7 +618,7 @@ export default {
         end = `0x${data.slice(2, 4)}`;
       }
       let setStartVlue = [0x23, 0x04, 0x01, 0x04, start, end, 0x00];
-      this.sendDataToWXDevice(this.deviceId, bytesArrayToBase64(getStartVlue));
+      this.sendDataToWXDevice(this.deviceId, bytesArrayToBase64(setStartVlue));
     },
 
     sumbitStep() {
@@ -695,21 +718,32 @@ export default {
             if (res.errorCode === 0) {
               let obj = res.data[0];
               console.log(obj);
-              // return false;
               let len = parseInt(obj[5]);
               if (obj[1] === "08" && obj[2] === "04" && obj[3] === "02") {
+                console.log(this.timestamp);
+                let getTimeOut = `20${obj[4]}/${obj[5]}/${obj[6]} ${obj[7]}:${
+                  obj[8]
+                }:${obj[9]}`;
+                let times = new Date(getTimeOut).getTime();
+                // let times = Number(getTimeOut);
+                console.log(this.timestamp - times);
+                if (this.timestamp - times > 60000) {
+                  console.log("同步时间，开始获取本地时间");
+                  this.run();
+                } else {
+                  console.log("获取本地时间日期结束，开始电量信息");
+                  let getDeviceSoc = [0x23, 0x02, 0x02, 0x03, 0x00];
+                  this.sendDataToWXDevice(
+                    deviceId,
+                    bytesArrayToBase64(getDeviceSoc)
+                  );
+                  this.parsePackets({
+                    studentId: this.studentId,
+                    deviceId,
+                    content: base64Data
+                  });
+                }
                 // 获取本地时间日期结束，开始电量信息
-                console.log("获取本地时间日期结束，开始电量信息");
-                let getDeviceSoc = [0x23, 0x02, 0x02, 0x03, 0x00];
-                this.sendDataToWXDevice(
-                  deviceId,
-                  bytesArrayToBase64(getDeviceSoc)
-                );
-                this.parsePackets({
-                  studentId: this.studentId,
-                  deviceId,
-                  content: base64Data
-                });
               } else if (
                 obj[1] === "04" &&
                 obj[2] === "04" &&
@@ -1035,11 +1069,21 @@ export default {
                   setTimeout(function() {
                     _this.show = false;
                   }, 1000);
-                  let timestamp = new Date().getTime();
-                  let obj = new Object();
-                  obj.time = 1800000;
-                  obj.date = timestamp;
-                  let objString = JSON.stringify(obj);
+                  // 获取完数据之后重新设置localStorage时间
+                  let timestamp3 = new Date().getTime();
+                  // let obj = new Object();
+                  let b = window.localStorage.getItem("data");
+
+                  let c = JSON.parse(b) === null ? [] : JSON.parse(b);
+                  let data = c.filter(item => item.deviceId === this.deviceId);
+                  let dataStorage = c.filter(
+                    item => item.deviceId != this.deviceId
+                  );
+                  data[0].time = 3600000;
+                  data[0].date = timestamp3;
+                  data[0].deviceId = this.deviceId;
+                  dataStorage.push(data[0]);
+                  let objString = JSON.stringify(dataStorage);
                   window.localStorage.setItem("data", objString);
                 } else {
                   let xiao;
@@ -1300,43 +1344,43 @@ export default {
                 } else if (obj[5] === "03") {
                   console.log(this.delBag);
                   console.log("请求失败，无效的UTC");
-                  // let xiao =
-                  //   0x23 ^
-                  //   (0 + 0x09) ^
-                  //   (1 + 0x08) ^
-                  //   (2 + 0xf1) ^
-                  //   (3 + 0x04) ^
-                  //   (4 + 0x00) ^
-                  //   (5 + 0x03) ^
-                  //   (6 + this.delBag[0].n5) ^
-                  //   (7 + this.delBag[0].n6) ^
-                  //   (8 + this.delBag[0].n7) ^
-                  //   (9 + this.delBag[0].n8) ^
-                  //   10;
-                  // let lenXiao = [
-                  //   0x23,
-                  //   0x09,
-                  //   0x08,
-                  //   0xf1,
-                  //   0x04,
-                  //   0x00,
-                  //   0x03,
-                  //   this.delBag[0].n5,
-                  //   this.delBag[0].n6,
-                  //   this.delBag[0].n7,
-                  //   this.delBag[0].n8,
-                  //   xiao
-                  // ];
-                  // console.log("开始按UTC删除数据0");
-                  // this.sendDataToWXDevice(
-                  //   this.deviceId,
-                  //   bytesArrayToBase64(lenXiao)
-                  // );
-                  // this.parsePackets({
-                  //   deviceId,
-                  //   content: base64Data,
-                  //   studentId: this.studentId
-                  // });
+                  let xiao =
+                    0x23 ^
+                    (0 + 0x09) ^
+                    (1 + 0x08) ^
+                    (2 + 0xf1) ^
+                    (3 + 0x04) ^
+                    (4 + 0x00) ^
+                    (5 + 0x03) ^
+                    (6 + this.delBag[0].n5) ^
+                    (7 + this.delBag[0].n6) ^
+                    (8 + this.delBag[0].n7) ^
+                    (9 + this.delBag[0].n8) ^
+                    10;
+                  let lenXiao = [
+                    0x23,
+                    0x09,
+                    0x08,
+                    0xf1,
+                    0x04,
+                    0x00,
+                    0x03,
+                    this.delBag[0].n5,
+                    this.delBag[0].n6,
+                    this.delBag[0].n7,
+                    this.delBag[0].n8,
+                    xiao
+                  ];
+                  console.log("开始按UTC删除数据0");
+                  this.sendDataToWXDevice(
+                    this.deviceId,
+                    bytesArrayToBase64(lenXiao)
+                  );
+                  this.parsePackets({
+                    deviceId,
+                    content: base64Data,
+                    studentId: this.studentId
+                  });
                 }
               } else if (obj[2] === "10" && obj[3] === "F1") {
                 // 开删除开启
@@ -1400,6 +1444,24 @@ export default {
                     studentId: this.studentId
                   });
                 }
+              } else if (
+                obj[3] === "01" &&
+                obj[4] === "06" &&
+                obj[5] === "00" &&
+                obj[6] === "00"
+              ) {
+                this.addOrUpdateTarget();
+              } else if (
+                obj[3] === "01" &&
+                obj[4] === "02" &&
+                obj[5] === "00" &&
+                obj[6] === "00"
+              ) {
+                let getLocalTime = [0x23, 0x02, 0x02, 0x02, 0x25];
+                this.sendDataToWXDevice(
+                  this.deviceId,
+                  bytesArrayToBase64(getLocalTime)
+                );
               }
             }
           });
@@ -1462,7 +1524,11 @@ export default {
         studentId: this.studentId
       });
       if (res.errorCode === 0) {
-        this.dataValue.nightTime = res.data[0].sleepDuration;
+        if (res.data.length === 0) {
+          this.dataValue.nightTime = "0小时0分钟";
+        } else {
+          this.dataValue.nightTime = res.data[0].sleepDuration;
+        }
         this.dataValue.lunchTime = "0小时0分钟";
       } else {
         this.dataValue.nightTime = "0小时0分钟";
@@ -1507,6 +1573,17 @@ export default {
         } else {
           this.hasBind = false;
         }
+      }
+    },
+
+    // 设置或者编辑运动目标
+    async addOrUpdateTarget() {
+      let res = await service.addOrUpdateTarget({
+        studentId: this.studentId,
+        stepTarget: this.stepValue
+      });
+      if (res.errorCode === 0) {
+        this.getStepNumber();
       }
     }
   }
@@ -1553,7 +1630,8 @@ export default {
 }
 
 .myhand {
-  height: 600px;
+  height: 500px;
+  // height:600px;
   position: relative;
   width: 100%;
   .myAttr {

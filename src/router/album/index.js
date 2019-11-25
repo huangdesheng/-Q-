@@ -53,7 +53,7 @@ export default [{
     name: 'addSampling',
     component: () => import('@/views/album/addSampling'),
     meta: {
-      keepAlive: false,
+      keepAlive: true,
       isShare: false,
       title: '添加照片',
     }

@@ -408,7 +408,7 @@ export default {
       imgUrl: "",
 
       showName: false,
-      tip: "数据导入中....",
+      tip: "数据导入中,请勿断开设备或关闭蓝牙",
       currentRate: 0,
       text: 0 + "%",
       speed: 2,
@@ -424,8 +424,9 @@ export default {
       sleepIndex: 0,
       sleepUTC: [],
       sleepUTCIndex: 0,
-      utcSleep: 1
+      utcSleep: 1,
       // deviceId: ""
+      timestamp: ""
     };
   },
   computed: {
@@ -651,7 +652,14 @@ export default {
         //   //   type: params.type
         //   // }
         // });
-        if (params.title === "运动" || params.title === "午睡") {
+        if (params.title === "运动") {
+          this.$router.push({
+            path: "/checkStep"
+          });
+        } else if (params.title === "午睡") {
+          this.$router.push({
+            path: "/checkSlepp"
+          });
         } else {
           this.$router.push({
             path: "/bracelet",
@@ -875,6 +883,7 @@ export default {
                 this.state = arr[0].state;
                 this.deviceId = arr[0].deviceId;
                 let timestamp3 = new Date().getTime();
+                this.timestamp = timestamp3;
                 let b = window.localStorage.getItem("data");
                 let c = JSON.parse(b) === null ? [] : JSON.parse(b);
                 let data = c.filter(item => item.deviceId === this.deviceId);
@@ -899,12 +908,12 @@ export default {
                       this.showName = false;
                     }
                   } else {
-                    this.$toast("还没有到导入数据时间");
+                    this.$toast("哎呀，2小时才能更新~等等再来吧~");
                   }
                 } else {
                   // 第一次进来设置localStorage,导入一下数据
                   let obj = new Object();
-                  obj.time = 60000;
+                  obj.time = 3600000;
                   obj.date = timestamp3;
                   obj.deviceId = this.deviceId;
                   c.push(obj);
@@ -990,7 +999,7 @@ export default {
         studentId: this.studentId,
         day: date
       };
-      let res = await service.getStarTotal(data);
+      let res = await service.queryStar(data);
       if (res.errorCode === 0) {
         this.setStart(res.data);
       }
@@ -1018,6 +1027,49 @@ export default {
       let setStartVlue = [0x23, 0x04, 0x01, 0x04, start, end, 0x00];
       this.sendDataToWXDevice(this.deviceId, bytesArrayToBase64(setStartVlue));
     },
+
+    run() {
+      let deviceId = this.deviceId;
+      let getDate = new Date();
+      let year = getDate
+        .getFullYear()
+        .toString()
+        .substr(2, 2);
+      let month =
+        getDate.getMonth() + 1 > 9
+          ? getDate.getMonth() + 1
+          : `0${getDate.getMonth() + 1}`;
+      let day =
+        getDate.getDate() > 9 ? getDate.getDate() : `0${getDate.getDate()}`;
+
+      let hour =
+        getDate.getHours() > 9 ? getDate.getHours() : `0${getDate.getHours()}`;
+      let minutes =
+        getDate.getMinutes() > 9
+          ? getDate.getMinutes()
+          : `0${getDate.getMinutes()}`;
+      let seconds =
+        getDate.getSeconds() > 9
+          ? getDate.getSeconds()
+          : `0${getDate.getSeconds()}`;
+      let week = `0${getDate.getDay()}`;
+      // 设置本地时间日期
+      let setLocalTime = [
+        0x23,
+        0x09,
+        0x01,
+        0x02,
+        parseInt(`0x${year}`),
+        parseInt(`0x${month}`),
+        parseInt(`0x${day}`),
+        parseInt(`0x${hour}`),
+        parseInt(`0x${minutes}`),
+        parseInt(`0x${seconds}`),
+        parseInt(`0x${week}`),
+        0x00
+      ];
+      this.sendDataToWXDevice(deviceId, bytesArrayToBase64(setLocalTime));
+    },
     // 接收数据20191109
     onReceiveDataFromWXDevice() {
       wx.ready(() => {
@@ -1032,18 +1084,40 @@ export default {
               let len = parseInt(obj[5]);
               console.log(obj);
               if (obj[1] === "08" && obj[2] === "04" && obj[3] === "02") {
-                // 获取本地时间日期结束，开始电量信息
-                console.log("获取本地时间日期结束，开始电量信息");
-                let getDeviceSoc = [0x23, 0x02, 0x02, 0x03, 0x00];
-                this.sendDataToWXDevice(
-                  deviceId,
-                  bytesArrayToBase64(getDeviceSoc)
-                );
-                this.parsePackets({
-                  studentId: this.studentId,
-                  deviceId,
-                  content: base64Data
-                });
+                let getTimeOut = `20${obj[4]}/${obj[5]}/${obj[6]} ${obj[7]}:${
+                  obj[8]
+                }:${obj[9]}`;
+                let times = new Date(getTimeOut).getTime();
+                // let times = Number(getTimeOut);
+                console.log(this.timestamp - times);
+                if (this.timestamp - times > 60000) {
+                  console.log("同步时间，开始获取本地时间");
+                  this.run();
+                } else {
+                  console.log("获取本地时间日期结束，开始电量信息");
+                  let getDeviceSoc = [0x23, 0x02, 0x02, 0x03, 0x00];
+                  this.sendDataToWXDevice(
+                    deviceId,
+                    bytesArrayToBase64(getDeviceSoc)
+                  );
+                  this.parsePackets({
+                    studentId: this.studentId,
+                    deviceId,
+                    content: base64Data
+                  });
+                }
+                // // 获取本地时间日期结束，开始电量信息
+                // console.log("获取本地时间日期结束，开始电量信息");
+                // let getDeviceSoc = [0x23, 0x02, 0x02, 0x03, 0x00];
+                // this.sendDataToWXDevice(
+                //   deviceId,
+                //   bytesArrayToBase64(getDeviceSoc)
+                // );
+                // this.parsePackets({
+                //   studentId: this.studentId,
+                //   deviceId,
+                //   content: base64Data
+                // });
               } else if (
                 obj[1] === "04" &&
                 obj[2] === "04" &&
@@ -1360,24 +1434,29 @@ export default {
                   console.log("获取活跃度分包目录数调用结束");
                   this.lessonList();
                   this.getStarTotal();
-                  this.currentRate = 100;
-                  this.text = this.currentRate + "%";
                   // sessionStorage.setItem("entryData", 1);
                   this.tip = "数据导入完成";
                   let _this = this;
                   setTimeout(function() {
                     _this.showName = false;
-                  }, 2000);
+                  }, 1000);
+                  this.currentRate = 100;
+                  this.text = this.currentRate + "%";
                   // 获取完数据之后重新设置localStorage时间
                   let timestamp3 = new Date().getTime();
                   // let obj = new Object();
                   let b = window.localStorage.getItem("data");
-                  let c = JSON.parse(b) === null ? [] : JSON.parse(b);
+                  let c;
+                  if (b === "") {
+                    c = [];
+                  } else {
+                    c = JSON.parse(b) === null ? [] : JSON.parse(b);
+                  }
                   let data = c.filter(item => item.deviceId === this.deviceId);
                   let dataStorage = c.filter(
                     item => item.deviceId != this.deviceId
                   );
-                  data[0].time = 60000;
+                  data[0].time = 3600000;
                   data[0].date = timestamp3;
                   data[0].deviceId = this.deviceId;
                   dataStorage.push(data[0]);
@@ -1669,6 +1748,17 @@ export default {
                     studentId: this.studentId
                   });
                 }
+              } else if (
+                obj[3] === "01" &&
+                obj[4] === "02" &&
+                obj[5] === "00" &&
+                obj[6] === "00"
+              ) {
+                let getLocalTime = [0x23, 0x02, 0x02, 0x02, 0x25];
+                this.sendDataToWXDevice(
+                  this.deviceId,
+                  bytesArrayToBase64(getLocalTime)
+                );
               }
             }
           });
