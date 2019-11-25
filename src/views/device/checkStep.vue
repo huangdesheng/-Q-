@@ -8,7 +8,7 @@
               <span>{{step}}</span>
               /{{setStep}}步
             </p>
-            <p>超越全国98%用户</p>
+            <!-- <p>超越全国98%用户</p> -->
           </div>
         </div>
         <div class="content">

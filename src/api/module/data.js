@@ -220,3 +220,12 @@ export function queryBindStudent(params, config = {
     .then(res => res.data)
     .catch(e => console.log(e));
 }
+
+// 设置 或者编辑 步数目标
+export function addOrUpdateTarget(params, config = {
+  showLoading: false
+}) {
+  return ax.post('/qxiao-mp/action/mod-xiaojiao/device/addOrUpdateTarget.do', params, config)
+    .then(res => res.data)
+    .catch(e => console.log(e));
+}

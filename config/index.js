@@ -12,7 +12,8 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/': {
-        target: 'http://192.168.18.200:8080/', //目标接口域名
+        // target: 'http://192.168.18.200:8080/', //目标接口域名
+        target: "http://qxiaonmq.natapp1.cc/",
         changeOrigin: true, //是否跨域
         secure: true, //允许https请求
         pathRewrite: {

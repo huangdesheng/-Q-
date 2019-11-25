@@ -94,6 +94,31 @@ export default {
       ];
       this.sendDataToWXDevice(this.deviceId, bytesArrayToBase64(setAlarmClock));
     },
+
+    // 获取设备信息
+    getWXDeviceInfos() {
+      wx.ready(() => {
+        WeixinJSBridge.invoke("getWXDeviceInfos", {}, res => {
+          console.log(res);
+          if (res.err_msg === "getWXDeviceInfos:ok") {
+            //绑定设备总数量
+            if (res.deviceInfos.length) {
+              let arr = res.deviceInfos.filter(
+                item =>
+                  item.state === "connected" && item.deviceId == this.device
+              );
+
+              if (arr.length > 0) {
+                this.deviceId = arr[0].deviceId;
+              } else {
+                this.$toast("当前设备未连接上");
+              }
+            }
+          }
+        });
+      });
+    },
+
     async getAlarmClock() {
       let res = await service.getAlarmClock({
         studentId: this.studentId
@@ -171,7 +196,8 @@ export default {
       id: state => state.info.id,
       studentId: state => state.info.studentId,
       roleType: state => state.info.roleType,
-      isOpen: state => state.info.isOpen
+      isOpen: state => state.info.isOpen,
+      device: state => state.info.deviceId
     })
   }
 };

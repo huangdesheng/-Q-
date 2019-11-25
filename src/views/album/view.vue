@@ -22,7 +22,7 @@
           </div>
         </div>
       </van-dialog>
-      <div class="album-show" v-show="memuActive==2 && !empty">
+      <div class="album-show" v-show="memuActive==1 && !empty">
         <van-swipe-cell
           ref="swipeCell"
           :right-width="60"
@@ -53,18 +53,21 @@
       <div v-show="memuActive==2 && !empty">
         <div class="album-content">
           <van-list v-model="loading" :finished="finished" :immediate-check="false" :offset="100">
-            <div class="article-cell">
-              <time style="color:#8d8d8d;">2019-10-30 22:30</time>
-            </div>
-            <div class="grid-content flex f-w-w" style="margin-left: -5px; margin-right: -5px;">
-              <div
-                class="album-img mb-20"
-                v-for="(pic, index) in myChildList"
-                :key="index"
-                @click="handlePreviewImage(pic.imageUrl, index)"
-              >
-                <div class="suni">
-                  <img :src="pic.smallUrl" />
+            <div v-for="(item,index) in myChildList" :key="index">
+              <div class="article-cell flex j-c-s-b a-i-c">
+                <time style="color:#8d8d8d;">{{item.createTime}}</time>
+                <span v-if="index === 0" class="on" @click="addFacePic">照片采样</span>
+              </div>
+              <div class="grid-content flex f-w-w" style="margin-left: -5px; margin-right: -5px;">
+                <div
+                  class="album-img mb-20"
+                  v-for="(pic, index) in item.photo"
+                  :key="index"
+                  @click="handlePreviewImage(item.photo, index)"
+                >
+                  <div class="suni">
+                    <img :src="pic" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -80,7 +83,12 @@
           <img src="@/assets/kong.png" alt />
           <p>您小孩还没有采样照片</p>
           <p style="margin-top:0">请先去添加照片</p>
-          <van-button type="info" size="large" class="no-radius addPic" @click="addSampling">去添加</van-button>
+          <van-button
+            type="info"
+            size="large"
+            class="no-radius addPic"
+            @click="addSampling"
+          >{{localData?'采样照片':'去添加'}}</van-button>
         </div>
       </div>
     </div>
@@ -129,10 +137,10 @@ export default {
       memuActive: 1,
 
       loading: false,
-      finished: false,
+      finished: true,
       totalPage: 1, //总页数
       myChildList: [],
-
+      localData: "",
       query1: {
         channelId: 9,
         openId: "oUQwt1Q2v5WE4niZ-bzP7Kj_Wxmc",
@@ -222,31 +230,89 @@ export default {
     myChild(index) {
       console.log(index);
       this.memuActive = index;
-      this.albumChannelDetail();
+      if (index === 1) {
+        this.albumChannelQuery(this.query);
+      } else {
+        this.albumChannelDetail();
+      }
+    },
+
+    // 查是否有人脸识别底图20191122
+    async checkFace() {
+      let res = await service.checkFace(this.$store.state.user.info.studentId);
+
+      if (res.errorCode === 0) {
+        this.localData = true;
+      } else if (res.errorCode === 404) {
+        this.localData = false;
+      } else {
+        this.$toast(res.errorMsg);
+      }
+      // console.log(res);
     },
 
     async albumChannelDetail() {
-      let res = await service.albumChannelDetail(this.query1);
-      console.log(res);
+      let res = await service.childFace(this.$store.state.user.info.studentId);
+
       if (res.errorCode === 0) {
-        // this.myChildList = res.data.data;
-        this.myChildList = [];
+        this.myChildList = res.data;
+        // this.myChildList = [];
         if (this.myChildList.length) {
           this.empty = false;
         } else {
           this.empty = true;
         }
+      } else if (res.errorCode === 404) {
+        this.empty = true;
+      } else {
+        this.$toast(res.errorMsg);
       }
     },
 
     addSampling() {
-      this.$router.push({
-        path: "/album/sampling"
+      if (this.localData) {
+        this.$router.push({
+          path: "/album/addSampling"
+        });
+      } else {
+        this.$router.push({
+          path: "/album/sampling"
+        });
+      }
+    },
+
+    handlePreviewImage(imgUrl, index) {
+      // let result = [];
+      // let min = index - 5 <= 0 ? 0 : index - 5;
+      // let max = index + 5;
+      // let imgArr = this.list.filter((item, i) => {
+      //   return i >= min && i <= max;
+      // });
+      // if (imgArr.length) {
+      //   for (let i = 0; i < imgArr.length; i++) {
+      //     result.push(imgArr[i].imageUrl);
+      //   }
+      // }
+      wx.previewImage({
+        current: imgUrl[index],
+        urls: imgUrl
       });
+    },
+    addFacePic() {
+      if (this.localData) {
+        this.$router.push({
+          path: "/album/addSampling"
+        });
+      } else {
+        this.$router.push({
+          path: "/album/sampling"
+        });
+      }
     }
   },
   mounted() {
     this.albumChannelQuery(this.query);
+    this.checkFace();
   }
 };
 </script>

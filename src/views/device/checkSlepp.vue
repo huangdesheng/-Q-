@@ -10,7 +10,7 @@
               分钟
               <!-- {{obj.sleepDuration}} -->
             </p>
-            <p>超越全国98%用户</p>
+            <!-- <p>超越全国98%用户</p> -->
           </div>
         </div>
         <div class="dataT flex j-c-c a-i-c">

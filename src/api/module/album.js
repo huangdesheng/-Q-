@@ -72,3 +72,41 @@ export function queryTitle(params, config = {
     .then(res => res.data)
     .catch(e => console.log(e));
 }
+
+
+//新增到人脸库
+export function face(params, config = {
+  showLoading: false
+}) {
+  return ax.post('/qxiao-mp/face', params, config)
+    .then(res => res.data)
+    .catch(e => console.log(e));
+}
+
+// 查看学生人脸
+export function checkFace(params, config = {
+  showLoading: false
+}) {
+  return ax.get(`/qxiao-mp/face/${params}`, config)
+    .then(res => res.data)
+    .catch(e => console.log(e));
+}
+
+// 更新人脸
+export function updateFace(params, config = {
+  showLoading: false
+}) {
+  return ax.put(`/qxiao-mp/face`, params, config)
+    .then(res => res.data)
+    .catch(e => console.log(e));
+}
+
+
+// 我的小孩相册
+export function childFace(params, config = {
+  showLoading: false
+}) {
+  return ax.get(`/qxiao-mp/face/my/${params}`, config)
+    .then(res => res.data)
+    .catch(e => console.log(e));
+}

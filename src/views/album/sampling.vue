@@ -94,12 +94,20 @@
 </template>
 <script>
 import service from "@/api";
+import { mapState } from "vuex";
 export default {
   data() {
     return {
       localData: "",
       serverId: ""
     };
+  },
+
+  computed: {
+    ...mapState("user", {
+      studentId: state => state.info.studentId,
+      classId: state => state.info.classId
+    })
   },
   methods: {
     addsamplPic() {
@@ -141,16 +149,13 @@ export default {
           localId: loacId, // 需要上传的图片的本地ID，由chooseImage接口获得
           isShowProgressTips: 1, // 默认为1，显示进度提示
           success: res => {
-            console.log(2);
-            console.log(res);
             let serverId = res.serverId; // 返回图片的服务器端ID
-            this.$router.push({
-              path: "/album/addSampling",
-              query: { serverId: res.serverId, localData: this.localData }
-            });
-            // this.serverId.push(serverId);
-            // i++;
-            // i < length && upload();
+            let data = {
+              mediaId: serverId,
+              studentId: this.studentId,
+              classId: this.classId
+            };
+            this.face(data);
           },
           fail: res => {
             alert("失败");
@@ -171,13 +176,25 @@ export default {
             let localData = res.localData; // localData是图片的base64数据，可以用img标签显示
             localData = localData.replace("jgp", "jpeg");
             this.localData = localData;
-            // this.imagesList.push(localData);
-            // i++;
-            // i < length && upload();
           }
         });
       };
       upload();
+    },
+
+    async face(data) {
+      let res = await service.face(data);
+      console.log(res);
+      if (res.errorCode === 0) {
+        this.$router.push({
+          path: "/album/addSampling"
+        });
+      } else {
+        this.$toast(res.errorMsg);
+        this.$router.push({
+          path: "/album/addSampling"
+        });
+      }
     }
   }
 };

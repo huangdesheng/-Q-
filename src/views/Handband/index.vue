@@ -18,6 +18,8 @@
         <!-- <button @click="dialog=false">确认</button> -->
       </div>
     </div>
+    <!-- <van-loading size="24px" vertical>加载中...</van-loading> -->
+
     <div class="cells-title studentList">选择需要绑定手环的小孩</div>
     <div class="list">
       <div class="flex title">
@@ -25,9 +27,9 @@
           <span class="tp"></span>
           <span>孩子列表</span>
         </div>
-        <button class="connectStatus" v-if="state == 'connected'">设备已连接</button>
-        <button class="connectStatus" v-else-if="state == 'disconnected'">设备未连接</button>
-        <button class="connectStatus" v-else-if="state == 'connecting'">设备连接中</button>
+        <button class="connectStatus" v-if="state === 'connected'">设备已连接</button>
+        <button class="connectStatus" v-else-if="state === 'disconnected'">设备未连接</button>
+        <button class="connectStatus" v-else-if="state === 'connecting'">设备连接中</button>
       </div>
       <van-radio-group v-model="radio">
         <van-cell-group>
@@ -159,6 +161,15 @@ export default {
       let res = await service.bindStudent(data);
       if (res.errorCode === 0) {
         this.itemObj.isBindBracelet = 1;
+        let b = window.localStorage.getItem("data");
+        let c;
+        if (b === "") {
+          c = [];
+        } else {
+          c = JSON.parse(b) === null ? [] : JSON.parse(b);
+        }
+        let data = c.filter(item => item.deviceId != this.deviceId);
+        window.localStorage.setItem("data", data);
         this.handleStudentChange(this.itemObj);
       }
     },
@@ -206,7 +217,7 @@ export default {
     //最后登录状态记录
     async switchingState(params = {}) {
       let res = await service.switchingState(params);
-      console.log(res);
+      // console.log(res);
       if (res.errorCode === 0) {
       }
     },
@@ -216,7 +227,7 @@ export default {
       let res = await service.queryBindStudent({
         deviceId: device
       });
-      console.log(res);
+      // console.log(res);
       if (res.errorCode === 0) {
         this.hasBind = false;
         if (this.bindStudentList.length === this.studentList.length) {
@@ -236,7 +247,7 @@ export default {
             //绑定设备总数量
             if (res.deviceInfos.length) {
               let deviceIdArr = [];
-              this.studentList.forEach(element => {
+              this.state = this.studentList.forEach(element => {
                 deviceIdArr.push(element.deviceId);
               });
 
@@ -247,6 +258,7 @@ export default {
                   !deviceIdArr.includes(item.deviceId)
                 );
               });
+
               if (arr.length > 1) {
                 this.dialog = true;
                 this.num = arr.length;
@@ -267,6 +279,7 @@ export default {
                   // 蓝牙关闭出现的情况
                   this.state = "disconnected";
                   this.deviceId = "";
+                  this.$toast("蓝牙断开！请重新连接");
                 }
               }
             } else {

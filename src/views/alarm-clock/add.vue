@@ -147,6 +147,10 @@ export default {
 
     submit() {
       let arr = [];
+      if (this.result.length === 0) {
+        this.$toast("请选择星期");
+        return false;
+      }
       for (let i = 0; i < 7; i++) {
         arr.push(this.result.indexOf(i) >= 0 ? 1 : 0);
       }
@@ -298,7 +302,6 @@ export default {
       WeixinJSBridge.on("onReceiveDataFromWXDevice", res => {
         console.log("接收数据onReceiveDataFromWXDevice");
         // let obj = res.data[0];
-
         service.decoder({ content: res.base64Data }).then(res => {
           if (res.errorCode === 0) {
             let obj = res.data[0];
