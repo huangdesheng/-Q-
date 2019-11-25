@@ -24,3 +24,12 @@ export function stateMentList(params, config = {
     .then(res => res.data)
     .catch(e => console.log(e));
 }
+//行为报表生成图片
+export function queryStudentActionWithDays(params, config = {
+  showLoading: false
+}) {
+  return ax.post('/qxiao-mp/action/mod-xiaojiao/expression/queryStudentActionWithDays.do', params, config)
+    .then(res => res.data)
+    .catch(e => console.log(e));
+}
+

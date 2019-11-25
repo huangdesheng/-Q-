@@ -165,25 +165,10 @@
               <div class="echarts-head flex a-i-c j-c-c mb-30">
                 <span>近一周在家表现</span>
               </div>
-              <!-- <div class="statement" @click="popupOne = true">
+              <div class="statement" @click="popupOne = true">
                 <van-icon name="share" size="15px" color="#FF9933"></van-icon>
                 <span>行为报表</span>
-              </div>-->
-              <!-- <van-popup v-model="show" @close="onClose" class="inquireTime">
-                <div @click="popupOne = true">
-                  <time size-16>{{ query1.startDate }}</time>
-                  <span style="padding:0 4px;">至</span>
-                  <time class="mr-20" size-16>{{ query1.endDate }}</time>
-                </div>
-                <div style="textAlign:center;marginTop:5px;">
-                  <van-button
-                    type="primary"
-                    size="small"
-                    @click="statementPopup"
-                    >查询</van-button
-                  >
-                </div>
-              </van-popup>-->
+              </div>
               <!-- 角色选择 -->
               <!-- 日期选择 1 -->
               <van-popup v-model="popupOne" position="bottom">
@@ -195,17 +180,7 @@
                   @select="selectOne"
                 ></calendar>
               </van-popup>
-              <!-- 日期选择 1 -->
-              <!-- 日期选择 2 -->
-              <van-popup v-model="popupTwo" position="bottom">
-                <calendar
-                  :zero="true"
-                  :value="valueTwo"
-                  :range="true"
-                  :lunar="true"
-                  @select="selectTwo"
-                ></calendar>
-              </van-popup>
+
               <!-- 筛选 -->
               <div class="screen">
                 <div
@@ -224,12 +199,13 @@
             </div>
           </van-tab>
           <!-- 报表 -->
-          <van-popup v-model="statementShow" @close="statementOnClose" class="statementScreenshot">
-            <!-- <div class="container" ref="imageDom">
-              反馈等会撒九分裤黑色大健康法华师大
-            </div>-->
-            <report></report>
-            <!-- <img :src="imgUrl" alt="" /> -->
+          <van-popup
+            v-model="statementShow"
+            @close="statementOnClose"
+            class="statementScreenshot"
+          >
+            <!-- <img src="@/assets/action-icon-1@2x.png" alt="" class="reportFormsImg "> -->
+            <img :src="imgUrl" alt="" />
           </van-popup>
           <van-tab title="在校表现">
             <div class="container">
@@ -312,7 +288,6 @@
   </div>
 </template>
 <script>
-import report from "./report";
 import html2canvas from "html2canvas";
 import statement from "./statement";
 import calendar from "@/components/calendar";
@@ -334,8 +309,7 @@ export default {
   components: {
     qxFooter,
     qxChart,
-    calendar,
-    report
+    calendar
   },
   mixins: [pageMixin, echartMixin, formatter],
   data() {
@@ -377,7 +351,6 @@ export default {
       remark: {},
       show: false, //控制日期
       popupOne: false, //控制日期选择器
-      popupTwo: false,
       valueOne: [
         dayjs()
           .format("YYYY-MM-DD")
@@ -459,34 +432,6 @@ export default {
     }
   },
   methods: {
-    clickGeneratePicture() {
-      console.log(this.$refs.imageDom.Width);
-      // this.$nextTick(function() {
-      //   window.scrollTo(0, 0);
-      //   html2canvas(this.$refs.imageDom, {
-      //     width:
-      //       window.innerWidth ||
-      //       document.documentElement.clientWidth ||
-      //       document.body.clientWidth,
-      //     height:
-      //       window.innerHeight ||
-      //       document.documentElement.clientHeight ||
-      //       document.body.clientHeight
-      //   }).then(canvas => {
-      //     // 转成图片，生成图片地址
-      //     this.imgUrl = canvas.toDataURL("image/png");
-      //     // console.log(this.imgUrl);
-      //     this.$refs.imageDom.style.display = "none";
-      //   });
-      // });
-    },
-    //查询报表
-    statementPopup() {
-      this.statementShow = true;
-      setTimeout(() => {
-        this.clickGeneratePicture();
-      }, 2000);
-    },
     //关闭报表
     statementOnClose() {
       this.statementShow = false;
@@ -497,15 +442,39 @@ export default {
       if (begin && end) {
         this.query1.startDate = begin.join("-");
         this.query1.endDate = end.join("-");
-        this.popupOne = false;
-        this.statementShow = true;
+        //开始时间的时间戳
+        let dateStr = this.query1.startDate.substring(0, 10);
+        dateStr = dateStr.replace(/-/g, "/");
+        let timeTamp = new Date(dateStr).getTime();
+        //结束时间的时间戳
+        let dateStr2 = this.query1.endDate.substring(0, 10);
+        dateStr2 = dateStr2.replace(/-/g, "/");
+        let timeTamp2 = new Date(dateStr2).getTime();
+        // 31天的时间戳
+        let thisMothDays = 1000 * 3600 * 24 * 30;
+
+        let params = {
+          studentId: this.homeQuery.studentId,
+          actionId: this.homeQuery.actionId,
+          actionType: this.homeQuery.actionType,
+          starTime: this.query1.startDate,
+          endTime: this.query1.endDate
+        };
+
+        if (timeTamp2 - timeTamp > thisMothDays) {
+          this.$toast("最多选择31天");
+        } else {
+          this.queryStudentActionWithDays(params);
+          this.statementShow = true;
+          this.popupOne = false;
+        }
       }
     },
-    //在校表现选择日期范围
-    selectTwo(begin, end) {
-      if (begin && end) {
-        this.query2.startDate = begin.join("-");
-        this.query2.endDate = end.join("-");
+    //生成报表图片
+    async queryStudentActionWithDays(params) {
+      let res = await service.queryStudentActionWithDays(params);
+      if (res.errorCode === 0) {
+        this.imgUrl = res.data;
       }
     },
     //弹出时间
@@ -1986,31 +1955,5 @@ export default {
 }
 .statementScreenshot {
   width: 90%;
-}
-
-//20191101
-.dialogData {
-  width: 100vw;
-  height: 100vh;
-  position: fixed;
-  left: 0;
-  top: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  > div {
-    width: 400px;
-    height: 300px;
-    background: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    > p {
-      width: 100%;
-      text-align: center;
-    }
-  }
 }
 </style>
