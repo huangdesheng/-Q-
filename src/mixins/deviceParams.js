@@ -85,7 +85,7 @@ export default {
           this.state = res.state;
           if (state === "connecting") {
             console.log("设备连接中");
-            this.$dialog.close();
+            // this.$dialog.close();
           } else if (state === "connected") {
             console.log("已连接");
             this.getWXDeviceInfos();

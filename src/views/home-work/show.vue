@@ -13,7 +13,7 @@
       <!-- -->
       <article class="article" v-if="!parseInt(info.isDel)">
         <h1 size-24>{{ info.title }}</h1>
-        <div class="article-hd  title2">
+        <div class="article-hd title2">
           <div class="article-cell" v-if="info.name">
             <van-icon name="user-o" size="16px"></van-icon>
             <span style="margin-left:5px;">{{ info.name }}</span>
@@ -47,7 +47,7 @@
             >班级已读{{ info.classReadCount }}人，共{{ info.totalCount }}人，查看详情</p>
           </section>
         </template>
-        <template v-if="roleType == 3"> -->
+        <template v-if="roleType == 3">-->
         <!-- 确认标志 0-无需确认 1-需要确认 -->
         <!-- <template v-if="needConfirm">
             <template v-if="experience != 1">
@@ -60,7 +60,7 @@
               >{{ info.confirmFlag ? '已确认':'确认' }}</van-button>
             </template>
           </template>
-        </template> -->
+        </template>-->
         <template v-if="roleType == 1 || roleType == 4">
           <section class="mamba">
             <p @click="handleReaders(info)">查看年级阅读详情</p>
@@ -75,11 +75,7 @@
           <template v-if="needConfirm">
             <template v-if="experience != 1">
               <div v-if="info.confirmFlag === -1"></div>
-              <div
-                 v-if="info.confirmFlag === 0"
-                class="clickRead"
-                @click="handleConfirmFlag"
-              >
+              <div v-if="info.confirmFlag === 0" class="clickRead" @click="handleConfirmFlag">
                 <p>点击确认阅读</p>
               </div>
               <div v-if="info.confirmFlag === 1" class="clickRead2">
@@ -111,7 +107,7 @@ export default {
         this.$store.state.user.info.roleType || this.$route.query.roleType,
       needConfirm: parseInt(this.$route.query.needConfirm), //0 不用确认
       info: {
-         confirmFlag: -1
+        confirmFlag: -1
       }
     };
   },
@@ -258,5 +254,8 @@ export default {
     );
     box-shadow: 0px 6px 10px 0px rgba(204, 204, 204, 0.58);
   }
+}
+.page {
+  margin-bottom: 200px;
 }
 </style>

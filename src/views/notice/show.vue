@@ -30,7 +30,7 @@
         <div size-16 class="article-bd">
           <p v-html="info.textContent"></p>
           <!-- <img src="@/assets/welcome-slide-3@2x.png" alt="">
-           <img src="@/assets/welcome-slide-3@2x.png" alt=""> -->
+          <img src="@/assets/welcome-slide-3@2x.png" alt="">-->
           <template v-if="info.images">
             <p v-for="(img, index) in info.images" :key="index">
               <img :src="img.imageUrl" />
@@ -42,11 +42,11 @@
     <div class="ParentsSignature" v-if="signature">
       <span>家长签名:</span>
       <div>
-        <img :src="signature" @click="showPopup" alt="" />
+        <img :src="signature" @click="showPopup" alt />
       </div>
       <!-- <van-popup v-model="show" @close="onClose">
         <img :src="signature" alt="" class="magnify" />
-      </van-popup> -->
+      </van-popup>-->
     </div>
     <div class="page-ft" v-show="!parseInt(info.isDel)">
       <div class="fixed-bottom" style="z-index: 100;">
@@ -64,11 +64,7 @@
           <template v-if="query.needSignature">
             <template v-if="experience != 1">
               <div v-if="info.signature === -1"></div>
-              <div
-                v-if="info.signature === 0"
-                class="clickRead"
-                @click="handleConfirmFlag"
-              >
+              <div v-if="info.signature === 0" class="clickRead" @click="handleConfirmFlag">
                 <p>家长签名</p>
               </div>
               <div
@@ -85,11 +81,7 @@
           <template v-else-if="needConfirm">
             <template v-if="experience != 1">
               <div v-if="info.confirmFlag === -1"></div>
-              <div
-                v-if="info.confirmFlag === 0"
-                class="clickRead"
-                @click="handleConfirmFlag2"
-              >
+              <div v-if="info.confirmFlag === 0" class="clickRead" @click="handleConfirmFlag2">
                 <p>点击确认阅读</p>
               </div>
               <div
@@ -103,7 +95,7 @@
             </template>
           </template>
 
-          <template v-else> </template>
+          <template v-else></template>
         </template>
       </div>
     </div>
@@ -381,5 +373,8 @@ export default {
       height: 100%;
     }
   }
+}
+.page {
+  margin-bottom: 200px;
 }
 </style>

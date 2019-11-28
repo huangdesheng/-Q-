@@ -206,8 +206,8 @@
           </van-tab>
           <!-- 报表 -->
           <van-popup v-model="statementShow" @close="statementOnClose" class="statementScreenshot">
-            <img src="@/assets/action-icon-1@2x.png" alt class="reportFormsImg" />
-            <!-- <img :src="imgUrl" alt="" /> -->
+            <!-- <img src="@/assets/action-icon-1@2x.png" alt class="reportFormsImg" /> -->
+            <img :src="imgUrl" alt />
             <div>长按图片保存相册或发送给朋友</div>
           </van-popup>
           <van-tab title="在校表现">
