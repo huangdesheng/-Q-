@@ -3,13 +3,7 @@
     <div class="page-bd">
       <div class="dialogData" style="z-index:1000" v-if="showName">
         <div>
-          <van-circle
-            v-model="currentRate"
-            :rate="100"
-            :speed="speed"
-            :text="text"
-            layer-color="#ccc"
-          />
+          <van-circle v-model="currentRate" :rate="100" :speed="speed" :text="text" />
           <p>{{tip}}</p>
         </div>
       </div>
@@ -172,7 +166,7 @@
                 <span>近一周在家表现</span>
               </div>
               <div class="statement" @click="popupOne = true">
-                <van-icon name="share" size="15px" color="#fff"></van-icon>
+                <van-icon name="share" size="15px" color="#FF9933"></van-icon>
                 <span>行为报表</span>
               </div>
               <!-- 角色选择 -->
@@ -206,9 +200,8 @@
           </van-tab>
           <!-- 报表 -->
           <van-popup v-model="statementShow" @close="statementOnClose" class="statementScreenshot">
-            <img src="@/assets/action-icon-1@2x.png" alt class="reportFormsImg" />
-            <!-- <img :src="imgUrl" alt="" /> -->
-            <div>长按图片保存相册或发送给朋友</div>
+            <!-- <img src="@/assets/action-icon-1@2x.png" alt="" class="reportFormsImg "> -->
+            <img :src="imgUrl" alt />
           </van-popup>
           <van-tab title="在校表现">
             <div class="container">
@@ -304,7 +297,6 @@ import pageMixin from "@/mixins/page";
 import echartMixin from "@/mixins/echarts";
 import dayjs from "dayjs";
 import { mapState } from "vuex";
-import deviceParams from "@/mixins/deviceParams";
 // 20191101
 // import sdkDevice from "@/mixins/sdkDevice";
 import { bytesArrayToBase64 } from "@/utils/arrayToBase64";
@@ -315,7 +307,7 @@ export default {
     qxChart,
     calendar
   },
-  mixins: [pageMixin, echartMixin, formatter, deviceParams],
+  mixins: [pageMixin, echartMixin, formatter],
   data() {
     return {
       dialogImage: false,
@@ -382,28 +374,28 @@ export default {
         endDate: dayjs().format("YYYY-MM-DD")
       },
       statementShow: false, //报表的出现与隐藏
-      imgUrl: ""
+      imgUrl: "",
 
-      // showName: false,
-      // tip: "数据导入中,请勿断开设备或关闭蓝牙",
-      // currentRate: 0,
-      // text: 0 + "%",
-      // speed: 2,
+      showName: false,
+      tip: "数据导入中,请勿断开设备或关闭蓝牙",
+      currentRate: 0,
+      text: 0 + "%",
+      speed: 2,
       // 获取活跃度目录条数20191101
-      // deviceArr: [],
-      // deviceIndex: 0,
-      // delBag: [],
-      // utcValue: "",
-      // utc: "1",
-      // delBagIndex: 0,
+      deviceArr: [],
+      deviceIndex: 0,
+      delBag: [],
+      utcValue: "",
+      utc: "1",
+      delBagIndex: 0,
       // 睡眠部分20191101
-      // sleepList: [],
-      // sleepIndex: 0,
-      // sleepUTC: [],
-      // sleepUTCIndex: 0,
-      // utcSleep: 1,
+      sleepList: [],
+      sleepIndex: 0,
+      sleepUTC: [],
+      sleepUTCIndex: 0,
+      utcSleep: 1,
       // deviceId: ""
-      // timestamp: ""
+      timestamp: ""
     };
   },
   computed: {
@@ -614,37 +606,37 @@ export default {
     },
     jumpCourseView(params) {
       //如果没有绑定手环
-      if (this.isBindBracelet == 0) {
-        this.$router.push({
-          // path: "/bracelet",
-          path: "/device"
-          // query: {
-          //   title: params.title,
-          //   startTime: params.startTime,
-          //   endTime: params.endTime,
-          //   type: params.type
-          // }
-        });
-        // if (params.title === "运动") {
-        //   this.$router.push({
-        //     path: "/checkStep"
-        //   });
-        // } else if (params.title === "午睡") {
-        //   this.$router.push({
-        //     path: "/checkSlepp"
-        //   });
-        // } else {
-        //   this.$router.push({
-        //     path: "/bracelet",
-        //     // path: "/device",
-        //     query: {
-        //       title: params.title,
-        //       startTime: params.startTime,
-        //       endTime: params.endTime,
-        //       type: params.type
-        //     }
-        //   });
-        // }
+      if (this.isBindBracelet == 1) {
+        // this.$router.push({
+        //   // path: "/bracelet",
+        //   path: "/device"
+        //   // query: {
+        //   //   title: params.title,
+        //   //   startTime: params.startTime,
+        //   //   endTime: params.endTime,
+        //   //   type: params.type
+        //   // }
+        // });
+        if (params.title === "运动") {
+          this.$router.push({
+            path: "/checkStep"
+          });
+        } else if (params.title === "午睡") {
+          this.$router.push({
+            path: "/checkSlepp"
+          });
+        } else {
+          this.$router.push({
+            path: "/bracelet",
+            // path: "/device",
+            query: {
+              title: params.title,
+              startTime: params.startTime,
+              endTime: params.endTime,
+              type: params.type
+            }
+          });
+        }
       } else {
         this.$router.push({
           path: "/course/view",
@@ -741,9 +733,9 @@ export default {
 
     //切换在校表现20191109
     onClick() {
-      // if (this.active === 1) {
-      //   this.getDeviceIdList();
-      // }
+      if (this.active === 1) {
+        this.getDeviceIdList();
+      }
     },
     // 发送数据给设备20191109
     sendDataToWXDevice(deviceId, base64Data = "") {
@@ -769,76 +761,76 @@ export default {
     },
 
     // 初始化20191109
-    // init() {
-    //   // 初始化蓝牙状态
-    //   this.openWXDeviceLib();
-    //   // 设备连接状态
-    //   this.getWXDeviceInfos();
-    //   // 手机蓝牙监听开启事件
-    //   this.onWXDeviceBluetoothStateChange();
-    //   // 设备连接状态
-    //   this.onWXDeviceStateChange();
-    //   // 接收到设备数据
-    //   this.onReceiveDataFromWXDevice();
-    // },
+    init() {
+      // 初始化蓝牙状态
+      this.openWXDeviceLib();
+      // 设备连接状态
+      this.getWXDeviceInfos();
+      // 手机蓝牙监听开启事件
+      this.onWXDeviceBluetoothStateChange();
+      // 设备连接状态
+      this.onWXDeviceStateChange();
+      // 接收到设备数据
+      this.onReceiveDataFromWXDevice();
+    },
     // 初始化设备库20191109
-    // openWXDeviceLib() {
-    //   wx.ready(() => {
-    //     WeixinJSBridge.invoke(
-    //       "openWXDeviceLib",
-    //       {
-    //         connType: "blue"
-    //       },
-    //       res => {
-    //         if (res.err_msg === "openWXDeviceLib:ok") {
-    //           //使用前请先打开手机蓝牙
-    //           if (res.bluetoothState === "off") {
-    //             this.bluetooth = false;
-    //             this.$dialog({
-    //               message: "使用前请先打开手机蓝牙"
-    //             });
-    //           }
-    //           //用户没有授权微信使用蓝牙功能
-    //           if (res.bluetoothState === "unauthorized") {
-    //             this.bluetooth = false;
-    //             this.$dialog({
-    //               message: "请授权微信蓝牙功能并打开蓝牙"
-    //             });
-    //           }
-    //           //蓝牙已打开
-    //           if (res.bluetoothState === "on") {
-    //             this.bluetooth = true;
-    //           }
-    //         } else {
-    //           this.bluetooth = false; //微信蓝牙打开失败
-    //           this.$dialog({
-    //             message: "微信蓝牙打开失败"
-    //           });
-    //         }
-    //       }
-    //     );
-    //   });
-    // },
+    openWXDeviceLib() {
+      wx.ready(() => {
+        WeixinJSBridge.invoke(
+          "openWXDeviceLib",
+          {
+            connType: "blue"
+          },
+          res => {
+            if (res.err_msg === "openWXDeviceLib:ok") {
+              //使用前请先打开手机蓝牙
+              if (res.bluetoothState === "off") {
+                this.bluetooth = false;
+                this.$dialog({
+                  message: "使用前请先打开手机蓝牙"
+                });
+              }
+              //用户没有授权微信使用蓝牙功能
+              if (res.bluetoothState === "unauthorized") {
+                this.bluetooth = false;
+                this.$dialog({
+                  message: "请授权微信蓝牙功能并打开蓝牙"
+                });
+              }
+              //蓝牙已打开
+              if (res.bluetoothState === "on") {
+                this.bluetooth = true;
+              }
+            } else {
+              this.bluetooth = false; //微信蓝牙打开失败
+              this.$dialog({
+                message: "微信蓝牙打开失败"
+              });
+            }
+          }
+        );
+      });
+    },
 
     //设备连接状态变化20191109
-    // onWXDeviceStateChange() {
-    //   wx.ready(() => {
-    //     WeixinJSBridge.on("onWXDeviceStateChange", res => {
-    //       console.log(res);
-    //       console.log("设备连接状态变化");
-    //       let { state } = res;
-    //       if (state === "connecting") {
-    //         console.log("已连接");
-    //         this.$dialog.close();
-    //       } else if (state === "connected") {
-    //         console.log("连接断开");
-    //       } else {
-    //         console.log("连接断开");
-    //       }
-    //       this.getWXDeviceInfos();
-    //     });
-    //   });
-    // },
+    onWXDeviceStateChange() {
+      wx.ready(() => {
+        WeixinJSBridge.on("onWXDeviceStateChange", res => {
+          console.log(res);
+          console.log("设备连接状态变化");
+          let { state } = res;
+          if (state === "connecting") {
+            console.log("已连接");
+            this.$dialog.close();
+          } else if (state === "connected") {
+            console.log("连接断开");
+          } else {
+            console.log("连接断开");
+          }
+          this.getWXDeviceInfos();
+        });
+      });
+    },
 
     // 获取设备信息20191109
     getWXDeviceInfos() {
@@ -921,6 +913,86 @@ export default {
       });
     },
 
+    //断开设备连接20191109
+    disconnectWXDevice() {
+      wx.ready(() => {
+        WeixinJSBridge.invoke(
+          "disconnectWXDevice",
+          {
+            deviceId: this.deviceId,
+            connType: "blue"
+          },
+          res => {
+            if (res.err_msg === "disConnectWXDevice:ok") {
+              this.deviceId = "";
+              this.$dialog({
+                message: "使用前请先打开手机蓝牙"
+              });
+            }
+          }
+        );
+      });
+    },
+
+    //手机蓝牙状态改变事件20191109
+    onWXDeviceBluetoothStateChange() {
+      wx.ready(() => {
+        WeixinJSBridge.on("onWXDeviceBluetoothStateChange", res => {
+          let { state } = res;
+          if (state === "on") {
+            this.$toast(`蓝牙打开`);
+            this.bluetooth = true;
+          } else {
+            this.$toast(`蓝牙已关闭`);
+            this.bluetooth = false;
+            this.disconnectWXDevice();
+          }
+        });
+      });
+    },
+
+    //  获取Q星值20191109
+    async getStarTotal() {
+      var now = new Date();
+      var year = now.getFullYear(); //年
+      var month = now.getMonth() + 1; //月
+      var day = now.getDate(); //日
+      let date = `${year}-${month < 10 ? "0" : ""}${month}-${
+        day < 10 ? "0" : ""
+      }${day}`;
+      let data = {
+        studentId: this.studentId,
+        day: date
+      };
+      let res = await service.queryStar(data);
+      if (res.errorCode === 0) {
+        this.setStart(res.data);
+      }
+    },
+
+    // 设置Q星值20191109
+    setStart(value) {
+      let num = parseInt(value);
+      let start;
+      let end;
+      let data = num.toString(16);
+      if (data.length === 1) {
+        start = `0x00`;
+        end = `0x0${data}`;
+      } else if (data.length === 2) {
+        start = `0x00`;
+        end = `0x${data}`;
+      } else if (data.length === 3) {
+        start = `0x0${data.slice(0, 1)}`;
+        end = `0x${data.slice(1, 3)}`;
+      } else {
+        start = `0x${data.slice(0, 2)}`;
+        end = `0x${data.slice(2, 4)}`;
+      }
+      let setStartVlue = [0x23, 0x04, 0x01, 0x04, start, end, 0x00];
+      this.sendDataToWXDevice(this.deviceId, bytesArrayToBase64(setStartVlue));
+    },
+
     run() {
       let deviceId = this.deviceId;
       let getDate = new Date();
@@ -963,130 +1035,6 @@ export default {
       ];
       this.sendDataToWXDevice(deviceId, bytesArrayToBase64(setLocalTime));
     },
-
-    // //断开设备连接20191109
-    // disconnectWXDevice() {
-    //   wx.ready(() => {
-    //     WeixinJSBridge.invoke(
-    //       "disconnectWXDevice",
-    //       {
-    //         deviceId: this.deviceId,
-    //         connType: "blue"
-    //       },
-    //       res => {
-    //         if (res.err_msg === "disConnectWXDevice:ok") {
-    //           this.deviceId = "";
-    //           this.$dialog({
-    //             message: "使用前请先打开手机蓝牙"
-    //           });
-    //         }
-    //       }
-    //     );
-    //   });
-    // },
-
-    // //手机蓝牙状态改变事件20191109
-    // onWXDeviceBluetoothStateChange() {
-    //   wx.ready(() => {
-    //     WeixinJSBridge.on("onWXDeviceBluetoothStateChange", res => {
-    //       let { state } = res;
-    //       if (state === "on") {
-    //         this.$toast(`蓝牙打开`);
-    //         this.bluetooth = true;
-    //       } else {
-    //         this.$toast(`蓝牙已关闭`);
-    //         this.bluetooth = false;
-    //         this.disconnectWXDevice();
-    //       }
-    //     });
-    //   });
-    // },
-
-    // //  获取Q星值20191109
-    // async getStarTotal() {
-    //   var now = new Date();
-    //   var year = now.getFullYear(); //年
-    //   var month = now.getMonth() + 1; //月
-    //   var day = now.getDate(); //日
-    //   let date = `${year}-${month < 10 ? "0" : ""}${month}-${
-    //     day < 10 ? "0" : ""
-    //   }${day}`;
-    //   let data = {
-    //     studentId: this.studentId,
-    //     day: date
-    //   };
-    //   let res = await service.queryStar(data);
-    //   console.log(res);
-    //   if (res.errorCode === 0) {
-    //     this.setStart(res.data);
-    //   }
-    // },
-
-    // // 设置Q星值20191109
-    // setStart(value) {
-    //   let num = parseInt(value);
-    //   let start;
-    //   let end;
-    //   let data = num.toString(16);
-    //   if (data.length === 1) {
-    //     start = `0x00`;
-    //     end = `0x0${data}`;
-    //   } else if (data.length === 2) {
-    //     start = `0x00`;
-    //     end = `0x${data}`;
-    //   } else if (data.length === 3) {
-    //     start = `0x0${data.slice(0, 1)}`;
-    //     end = `0x${data.slice(1, 3)}`;
-    //   } else {
-    //     start = `0x${data.slice(0, 2)}`;
-    //     end = `0x${data.slice(2, 4)}`;
-    //   }
-    //   let setStartVlue = [0x23, 0x04, 0x01, 0x04, start, end, 0x00];
-    //   this.sendDataToWXDevice(this.deviceId, bytesArrayToBase64(setStartVlue));
-    // },
-
-    // run() {
-    //   let deviceId = this.deviceId;
-    //   let getDate = new Date();
-    //   let year = getDate
-    //     .getFullYear()
-    //     .toString()
-    //     .substr(2, 2);
-    //   let month =
-    //     getDate.getMonth() + 1 > 9
-    //       ? getDate.getMonth() + 1
-    //       : `0${getDate.getMonth() + 1}`;
-    //   let day =
-    //     getDate.getDate() > 9 ? getDate.getDate() : `0${getDate.getDate()}`;
-
-    //   let hour =
-    //     getDate.getHours() > 9 ? getDate.getHours() : `0${getDate.getHours()}`;
-    //   let minutes =
-    //     getDate.getMinutes() > 9
-    //       ? getDate.getMinutes()
-    //       : `0${getDate.getMinutes()}`;
-    //   let seconds =
-    //     getDate.getSeconds() > 9
-    //       ? getDate.getSeconds()
-    //       : `0${getDate.getSeconds()}`;
-    //   let week = `0${getDate.getDay()}`;
-    //   // 设置本地时间日期
-    //   let setLocalTime = [
-    //     0x23,
-    //     0x09,
-    //     0x01,
-    //     0x02,
-    //     parseInt(`0x${year}`),
-    //     parseInt(`0x${month}`),
-    //     parseInt(`0x${day}`),
-    //     parseInt(`0x${hour}`),
-    //     parseInt(`0x${minutes}`),
-    //     parseInt(`0x${seconds}`),
-    //     parseInt(`0x${week}`),
-    //     0x00
-    //   ];
-    //   this.sendDataToWXDevice(deviceId, bytesArrayToBase64(setLocalTime));
-    // },
     // 接收数据20191109
     onReceiveDataFromWXDevice() {
       wx.ready(() => {
@@ -1782,27 +1730,27 @@ export default {
         });
       });
     },
-    // //解析数据包20191109
-    // async parsePackets(params = {}) {
-    //   let res = await service.parsePackets(params);
-    //   if (res.errorCode === 0) {
-    //     console.log("解析数据包");
-    //   }
-    // },
-    // // 活跃度解析数据包20191109
-    // async parsePacketActive(params = {}) {
-    //   let res = await service.parsePacketActive(params);
-    //   if (res.errorCode === 0) {
-    //     console.log("活跃度解析数据包");
-    //   }
-    // },
-    // // 睡眠解析数据包20191109
-    // async parsePacketSleep(params = {}) {
-    //   let res = await service.parsePacketSleep(params);
-    //   if (res.errorCode === 0) {
-    //     console.log("睡眠解析数据包");
-    //   }
-    // },
+    //解析数据包20191109
+    async parsePackets(params = {}) {
+      let res = await service.parsePackets(params);
+      if (res.errorCode === 0) {
+        console.log("解析数据包");
+      }
+    },
+    // 活跃度解析数据包20191109
+    async parsePacketActive(params = {}) {
+      let res = await service.parsePacketActive(params);
+      if (res.errorCode === 0) {
+        console.log("活跃度解析数据包");
+      }
+    },
+    // 睡眠解析数据包20191109
+    async parsePacketSleep(params = {}) {
+      let res = await service.parsePacketSleep(params);
+      if (res.errorCode === 0) {
+        console.log("睡眠解析数据包");
+      }
+    },
     // 获取用户绑定设备20191120
     async getDeviceIdList() {
       let data = {
@@ -2068,18 +2016,15 @@ export default {
   position: relative;
   .statement {
     position: absolute;
-    top: 20px;
+    top: 30px;
     right: 30px;
     display: flex;
     align-items: center;
-    background: #84ce09;
-    padding: 10px 15px;
-    border-radius: 30px;
     span {
       font-size: 20px;
       font-family: PingFang SC;
       font-weight: 500;
-      color: #fff;
+      color: rgba(255, 153, 51, 1);
       margin-left: 9px;
     }
   }
@@ -2096,11 +2041,5 @@ export default {
 }
 .statementScreenshot {
   width: 90%;
-  div {
-    margin-top: 10px;
-    text-align: center;
-    color: #ccc;
-    font-size: 25px;
-  }
 }
 </style>

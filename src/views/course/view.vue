@@ -1,6 +1,6 @@
 <template>
   <div class="page">
-    <div class="page-bd myHand">
+    <!-- <div class="page-bd myHand">
       <div class="page-bd no_data">
         <div class="empty">
           <img src="@/assets/kong.png" alt />
@@ -10,12 +10,12 @@
           <p class="commom">请使用微信扫描手环上面二维码进行绑定。</p>
         </div>
       </div>
-    </div>
-    <!-- <div class="page-bd">
+    </div>-->
+    <div class="page-bd">
       <div class="gazelle">
         <div class="gazelle-head">
-          <img :src="photo" width="40" height="40" radius="50" v-if="photo">
-          <img src="@/assets/child-default@2x.png" width="40" height="40" radius="50" v-else>
+          <img :src="photo" width="40" height="40" radius="50" v-if="photo" />
+          <img src="@/assets/child-default@2x.png" width="40" height="40" radius="50" v-else />
           <p size-16 class="ml-20">{{ name }}</p>
         </div>
         <div class="gazelle-body">
@@ -55,7 +55,7 @@
           <div class="cell-ft">A</div>
         </div>
       </div>
-    </div>-->
+    </div>
   </div>
 </template>
 <script>

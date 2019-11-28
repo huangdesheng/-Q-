@@ -1,8 +1,28 @@
+import service from "@/api";
 export default {
   data() {
     return {
-      deviceId: "",
-      state: "disconnected",
+      showName: false,
+      tip: "数据导入中,请勿断开设备或关闭蓝牙",
+      currentRate: 0,
+      text: 0 + "%",
+      speed: 2,
+
+      // 获取活跃度目录条数
+      deviceArr: [],
+      deviceIndex: 0,
+      delBag: [],
+      utcValue: "",
+      utc: "1",
+      delBagIndex: 0,
+      // 睡眠部分
+      sleepList: [],
+      sleepIndex: 0,
+      sleepUTC: [],
+      sleepUTCIndex: 0,
+      utcSleep: 1,
+
+      timestamp: ""
     }
   },
 
@@ -19,13 +39,12 @@ export default {
       // 接收到设备数据
       this.onReceiveDataFromWXDevice();
     },
-    // 初始化设备库
+
     openWXDeviceLib() {
       wx.ready(() => {
         WeixinJSBridge.invoke("openWXDeviceLib", {
           connType: "blue"
         }, res => {
-
           if (res.err_msg === "openWXDeviceLib:ok") {
             //使用前请先打开手机蓝牙
             if (res.bluetoothState === "off") {
@@ -55,7 +74,6 @@ export default {
       });
     },
 
-    //设备连接状态变化
     onWXDeviceStateChange() {
       wx.ready(() => {
         WeixinJSBridge.on("onWXDeviceStateChange", res => {
@@ -64,23 +82,20 @@ export default {
           let {
             state
           } = res;
-          this.state = res.state
+          this.state = res.state;
           if (state === "connecting") {
             console.log("设备连接中");
-            this.dialog = false;
+            this.$dialog.close();
           } else if (state === "connected") {
-            console.log("设备已连接");
+            console.log("已连接");
             this.getWXDeviceInfos();
             this.$dialog.close();
           } else {
-            console.log("设备连接断开");
-            this.dialog = false;
+            console.log("连接断开");
           }
         });
       });
     },
-
-
 
     //断开设备连接
     disconnectWXDevice() {
@@ -93,9 +108,9 @@ export default {
           res => {
             if (res.err_msg === "disConnectWXDevice:ok") {
               this.deviceId = "";
-              // this.$dialog({
-              //   message: "使用前请先打开手机蓝牙"
-              // });
+              this.$dialog({
+                message: "使用前请先打开手机蓝牙"
+              });
             }
           }
         );
@@ -119,6 +134,67 @@ export default {
           }
         });
       });
+    },
+
+
+
+    //解析数据包
+    async parsePackets(params = {}) {
+      let res = await service.parsePackets(params);
+      if (res.errorCode === 0) {
+        console.log("解析数据包");
+      }
+    },
+    async parsePacketActive(params = {}) {
+      let res = await service.parsePacketActive(params);
+      if (res.errorCode === 0) {
+        console.log("解析数据包");
+      }
+    },
+    async parsePacketSleep(params = {}) {
+      let res = await service.parsePacketSleep(params);
+      if (res.errorCode === 0) {
+        console.log("睡眠解析数据包");
+      }
+    },
+
+    // 设置Q星值
+    async getStarTotal() {
+      var now = new Date();
+      var year = now.getFullYear(); //年
+      var month = now.getMonth() + 1; //月
+      var day = now.getDate(); //日
+      let date = `${year}-${month}-${day}`;
+      let data = {
+        studentId: this.studentId
+      };
+      let res = await service.queryStar(data);
+      console.log(res);
+      if (res.errorCode === 0) {
+        this.setStart(res.data);
+      }
+    },
+
+    setStart(value) {
+      let num = parseInt(value);
+      let start;
+      let end;
+      let data = num.toString(16);
+      if (data.length === 1) {
+        start = `0x00`;
+        end = `0x0${data}`;
+      } else if (data.length === 2) {
+        start = `0x00`;
+        end = `0x${data}`;
+      } else if (data.length === 3) {
+        start = `0x0${data.slice(0, 1)}`;
+        end = `0x${data.slice(1, 3)}`;
+      } else {
+        start = `0x${data.slice(0, 2)}`;
+        end = `0x${data.slice(2, 4)}`;
+      }
+      let setStartVlue = [0x23, 0x04, 0x01, 0x04, start, end, 0x00];
+      this.sendDataToWXDevice(this.deviceId, bytesArrayToBase64(setStartVlue));
     },
   }
 }

@@ -37,3 +37,33 @@
   flex-grow: 1;
   overflow-y: scroll;
 }
+
+
+.dialogData {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  >div {
+    width: 600px;
+    height: 350px;
+    background: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    border-radius: 20px;
+    color: #333333;
+
+    >p {
+      width: 100%;
+      text-align: center;
+    }
+  }
+}
