@@ -12,7 +12,8 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/': {
-        target: 'http://192.168.18.200:8080/', //目标接口域名
+        // target: 'http://192.168.18.200:8080/', //目标接口域名
+        target: 'http://letsgorocket.nat300.top/', //目标接口域名
         // target: "http://qxiaonmq.natapp1.cc/",
         changeOrigin: true, //是否跨域
         secure: true, //允许https请求
@@ -23,9 +24,9 @@ module.exports = {
     },
 
     // Various Dev Server settings
-    host: '127.0.0.1', // can be overwritten by process.env.HOST
-    // host: "192.168.18.127", // can be overwritten by process.env.HOST
-    port: 8078, // can be overwritten by process.env.PORT, if port is in use, a free one will be determined
+    // host: '127.0.0.1', // can be overwritten by process.env.HOST
+    host: "192.168.18.127", // can be overwritten by process.env.HOST
+    port: 9527, // can be overwritten by process.env.PORT, if port is in use, a free one will be determined
     autoOpenBrowser: false,
     errorOverlay: true,
     notifyOnErrors: true,

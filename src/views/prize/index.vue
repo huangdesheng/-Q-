@@ -265,6 +265,7 @@ export default {
           })
           .then(() => {
             this.prizeExchange(obj);
+            this.queryTotalCountStar(this.query2);
           });
       }
     },
