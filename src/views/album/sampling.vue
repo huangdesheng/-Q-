@@ -191,9 +191,9 @@ export default {
         });
       } else {
         this.$toast(res.errorMsg);
-        this.$router.push({
-          path: "/album/addSampling"
-        });
+        // this.$router.push({
+        //   path: "/album/addSampling"
+        // });
       }
     }
   }

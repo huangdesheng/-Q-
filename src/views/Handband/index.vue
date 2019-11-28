@@ -158,18 +158,35 @@ export default {
         this.$toast(`当前所有孩子已绑定手环`);
         return false;
       }
+
+      // let b = window.localStorage.getItem("data");
+      // let c;
+      // if (b === "") {
+      //   c = [];
+      // } else {
+      //   c = JSON.parse(b) === null ? [] : JSON.parse(b);
+      // }
+      // console.log(c);
+      // let data = c.filter(item => item.deviceId != this.deviceId);
+      // window.localStorage.setItem("data", data);
+      // return false;
       let res = await service.bindStudent(data);
       if (res.errorCode === 0) {
         this.itemObj.isBindBracelet = 1;
-        let b = window.localStorage.getItem("data");
-        let c;
-        if (b === "") {
-          c = [];
-        } else {
-          c = JSON.parse(b) === null ? [] : JSON.parse(b);
-        }
-        let data = c.filter(item => item.deviceId != this.deviceId);
-        window.localStorage.setItem("data", data);
+        // let b = window.localStorage.getItem("data");
+        // console.log(b);
+        // let c;
+        // if (b === "") {
+        //   c = [];
+        // } else {
+        //   c = JSON.parse(b) === null ? [] : JSON.parse(b);
+        // }
+        // console.log(c);
+        // return false;
+        // let data = c.filter(item => item.deviceId != this.deviceId);
+        // console.log(data);
+
+        // window.localStorage.setItem("data", data);
         this.handleStudentChange(this.itemObj);
       }
     },
@@ -279,7 +296,6 @@ export default {
                   // 蓝牙关闭出现的情况
                   this.state = "disconnected";
                   this.deviceId = "";
-                  this.$toast("蓝牙断开！请重新连接");
                 }
               }
             } else {
