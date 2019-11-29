@@ -381,11 +381,11 @@ export default {
 
     // 获取绑定设备的状态
     handleHand() {
-      this.$router.push({
-        path: "/device"
-      });
+      // this.$router.push({
+      //   path: "/device"
+      // });
 
-      // this.init();
+      this.init();
     },
     init() {
       // 初始化蓝牙状态

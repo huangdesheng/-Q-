@@ -44,9 +44,9 @@
                   </template>
                 </div>
               </div>
-              <button class="connectStatus" v-if="state == 'connected'" @click="getStarTotal">设备已连接</button>
+              <!-- <button class="connectStatus" v-if="state == 'connected'" @click="getStarTotal">设备已连接</button>
               <button class="connectStatus" v-else-if="state == 'disconnected'">设备未连接</button>
-              <button class="connectStatus" v-else-if="state == 'connecting'">设备连接中</button>
+              <button class="connectStatus" v-else-if="state == 'connecting'">设备连接中</button>-->
             </div>
             <div class="myAttr">
               <van-cell
@@ -71,6 +71,7 @@
                   <img src="@/assets/nightSleep.png" class="user-icon" />
                 </template>
               </van-cell>
+
               <!-- <van-cell
                 class="a-i-c"
                 size="large"
@@ -82,6 +83,20 @@
                   <img src="@/assets/launchSleep.png" class="user-icon" />
                 </template>
               </van-cell>-->
+
+              <!-- <p class="flex a-i-c j-c-c connectStatus" v-if="state === 'disconnected'">
+                <img src="@/assets/disbraclet.png" width="3%" class="img" />设备未连接
+              </p>-->
+
+              <p class="flex a-i-c j-c-c connectStatus on" v-if="state === 'connected'">
+                <img src="@/assets/braclet.png" width="3%" class="img" />设备已连接
+              </p>
+              <p class="flex a-i-c j-c-c connectStatus" v-else-if="state === 'disconnected'">
+                <img src="@/assets/disbraclet.png" width="3%" class="img" />设备未连接
+              </p>
+              <p class="flex a-i-c j-c-c connectStatus" v-else-if="state === 'connecting'">
+                <img src="@/assets/disbraclet.png" width="3%" class="img" />设备连接中
+              </p>
             </div>
           </div>
           <div class="setAttr">
@@ -118,13 +133,16 @@
           <!-- <button @click="run" v-if="isBindBracelet == 1">同步当前时间</button> -->
         </template>
       </div>
-      <div class="backIndex" @click="backIndex">
-        <van-icon name="arrow-left" />
-        <span>返回首页</span>
+      <div
+        class="backIndex flex j-c-c"
+        @click="handleCancel"
+        v-if="isBindBracelet == 1 && state == 'connected'"
+      >
+        <span>解除绑定</span>
       </div>
-      <div class="page-ft" v-if="isBindBracelet == 1 && state == 'connected'">
+      <div class="page-ft">
         <div class="fixed-bottom" style="z-index: 100;">
-          <van-button type="info" size="large" class="no-radius" @click="handleCancel">解除绑定</van-button>
+          <van-button type="info" size="large" class="no-radius" @click="backIndex">返回首页</van-button>
         </div>
       </div>
     </template>
@@ -319,6 +337,7 @@ export default {
       let res = await service.unBindDevice(data);
       console.log(res);
       if (res.errorCode === 0) {
+        this.$toast("手环解绑成功");
         this.$store.state.user.info.isBindBracelet = 0;
         let b = window.localStorage.getItem("data");
         let c;
@@ -1683,7 +1702,7 @@ export default {
 }
 
 .myhand {
-  height: 500px;
+  height: 600px;
   // height:600px;
   position: relative;
   width: 100%;
@@ -1732,34 +1751,22 @@ export default {
 }
 
 .connectStatus {
-  position: absolute;
-  right: 0;
-  top: 40px;
-  width: 230px;
-  height: 70px;
-  border: none;
-  outline: none;
-  background: #c0e77e;
-  color: #ff4040;
-  border-radius: 80px 0 0 80px;
+  color: #fc7878;
+  padding: 30px 0px;
+}
+
+.img {
+  margin-right: 10px;
+  margin-top: -5px;
+}
+
+.on {
+  color: #84ce09;
 }
 
 .backIndex {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  width: 230px;
-  height: 70px;
-  position: fixed;
-  left: 0;
-  top: 800px;
-  background: #c0e77e;
-  color: #fff;
-  border-radius: 0px 80px 80px 0px;
-  .van-icon {
-    margin-left: 10px;
-    font-size: 40px;
-  }
+  color: #fc7878;
+  padding: 40px 0px 20px;
 }
 
 .no_data {

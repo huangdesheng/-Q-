@@ -251,6 +251,16 @@
                       </div>
                     </div>
                   </div>
+
+                  <p class="flex a-i-c j-c-c connectStatus on" v-if="state === 'connected'">
+                    <img src="@/assets/braclet.png" width="3%" class="img" />设备已连接
+                  </p>
+                  <p class="flex a-i-c j-c-c connectStatus" v-else-if="state === 'disconnected'">
+                    <img src="@/assets/disbraclet.png" width="3%" class="img" />设备未连接
+                  </p>
+                  <p class="flex a-i-c j-c-c connectStatus" v-else-if="state === 'connecting'">
+                    <img src="@/assets/disbraclet.png" width="3%" class="img" />设备连接中
+                  </p>
                 </div>
               </div>
               <!-- 分享 -->
@@ -382,7 +392,8 @@ export default {
         endDate: dayjs().format("YYYY-MM-DD")
       },
       statementShow: false, //报表的出现与隐藏
-      imgUrl: ""
+      imgUrl: "",
+      state: ""
 
       // showName: false,
       // tip: "数据导入中,请勿断开设备或关闭蓝牙",
@@ -614,37 +625,37 @@ export default {
     },
     jumpCourseView(params) {
       //如果没有绑定手环
-      if (this.isBindBracelet == 0) {
-        this.$router.push({
-          // path: "/bracelet",
-          path: "/device"
-          // query: {
-          //   title: params.title,
-          //   startTime: params.startTime,
-          //   endTime: params.endTime,
-          //   type: params.type
-          // }
-        });
-        // if (params.title === "运动") {
-        //   this.$router.push({
-        //     path: "/checkStep"
-        //   });
-        // } else if (params.title === "午睡") {
-        //   this.$router.push({
-        //     path: "/checkSlepp"
-        //   });
-        // } else {
-        //   this.$router.push({
-        //     path: "/bracelet",
-        //     // path: "/device",
-        //     query: {
-        //       title: params.title,
-        //       startTime: params.startTime,
-        //       endTime: params.endTime,
-        //       type: params.type
-        //     }
-        //   });
-        // }
+      if (this.isBindBracelet == 1) {
+        // this.$router.push({
+        //   // path: "/bracelet",
+        //   path: "/device"
+        //   // query: {
+        //   //   title: params.title,
+        //   //   startTime: params.startTime,
+        //   //   endTime: params.endTime,
+        //   //   type: params.type
+        //   // }
+        // });
+        if (params.title === "运动") {
+          this.$router.push({
+            path: "/checkStep"
+          });
+        } else if (params.title === "午睡") {
+          this.$router.push({
+            path: "/checkSlepp"
+          });
+        } else {
+          this.$router.push({
+            path: "/bracelet",
+            // path: "/device",
+            query: {
+              title: params.title,
+              startTime: params.startTime,
+              endTime: params.endTime,
+              type: params.type
+            }
+          });
+        }
       } else {
         this.$router.push({
           path: "/course/view",
@@ -741,9 +752,9 @@ export default {
 
     //切换在校表现20191109
     onClick() {
-      // if (this.active === 1) {
-      //   this.getDeviceIdList();
-      // }
+      if (this.active === 1) {
+        this.getDeviceIdList();
+      }
     },
     // 发送数据给设备20191109
     sendDataToWXDevice(deviceId, base64Data = "") {
@@ -2102,5 +2113,19 @@ export default {
     color: #ccc;
     font-size: 25px;
   }
+}
+
+.connectStatus {
+  color: #fc7878;
+  padding: 15px 0px;
+}
+
+.img {
+  margin-right: 20px;
+  margin-top: -5px;
+}
+
+.on {
+  color: #84ce09;
 }
 </style>

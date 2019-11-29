@@ -27,9 +27,15 @@
           <span class="tp"></span>
           <span>孩子列表</span>
         </div>
-        <button class="connectStatus" v-if="state === 'connected'">设备已连接</button>
-        <button class="connectStatus" v-else-if="state === 'disconnected'">设备未连接</button>
-        <button class="connectStatus" v-else-if="state === 'connecting'">设备连接中</button>
+        <p class="connectStatu on flex a-i-c j-c-s-b" v-if="state === 'connected'">
+          <img src="@/assets/braclet.png" width="10%" class="img" />设备已连接
+        </p>
+        <p class="connectStatus flex a-i-c j-c-s-b" v-else-if="state === 'disconnected'">
+          <img src="@/assets/disbraclet.png" width="10%" class="img" />设备未连接
+        </p>
+        <p class="connectStatus flex a-i-c j-c-s-b" v-else-if="state === 'connecting'">
+          <img src="@/assets/disbraclet.png" width="10%" class="img" />设备连接中
+        </p>
       </div>
       <van-radio-group v-model="radio">
         <van-cell-group>
@@ -325,11 +331,13 @@ export default {
   background: #fff;
 
   .title {
-    margin: 0 0vw 0 1vw;
+    margin: 0 1vw 0 1vw;
     align-items: center;
     padding: 4vw 0vw;
     justify-content: space-between;
+
     .title_left {
+      flex: 1;
       .tp {
         height: 30px;
         width: 6px;
@@ -341,13 +349,17 @@ export default {
 }
 
 .connectStatus {
-  width: 250px;
-  height: 60px;
-  border: none;
-  outline: none;
-  background: rgba(192, 231, 126, 1);
-  border-radius: 25px 0px 0px 25px;
-  color: #fff;
+  color: #fc7878;
+  text-align: center;
+}
+
+.img {
+  margin-right: -20px;
+  margin-top: -3px;
+}
+
+.on {
+  color: #84ce09;
 }
 
 .addChild {
