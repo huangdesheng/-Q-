@@ -317,7 +317,7 @@ export default {
         studentId: this.studentId,
         remark: this.value,
         status: 1,
-        time: `${this.hh}:${this.ff}`,
+        time: `${this.hh}:${this.ff === 0 ? "00" : this.ff}`,
         bitMap: this.weekArr.join("")
       };
       if (this.clock_id) {

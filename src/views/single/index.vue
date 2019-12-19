@@ -251,7 +251,6 @@
                       </div>
                     </div>
                   </div>
-
                   <p class="flex a-i-c j-c-c connectStatus on" v-if="state === 'connected'">
                     <img src="@/assets/braclet.png" width="3%" class="img" />设备已连接
                   </p>
@@ -642,7 +641,10 @@ export default {
           });
         } else if (params.title === "午睡") {
           this.$router.push({
-            path: "/checkSlepp"
+            path: "/checkSlepp",
+            query: {
+              status: "1"
+            }
           });
         } else {
           this.$router.push({
@@ -896,13 +898,13 @@ export default {
                   }
                 } else {
                   // 第一次进来设置localStorage,导入一下数据
-                  let obj = new Object();
-                  obj.time = 3600000;
-                  obj.date = timestamp3;
-                  obj.deviceId = this.deviceId;
-                  c.push(obj);
-                  let objString = JSON.stringify(c);
-                  window.localStorage.setItem("data", objString);
+                  // let obj = new Object();
+                  // obj.time = 3600000;
+                  // obj.date = timestamp3;
+                  // obj.deviceId = this.deviceId;
+                  // c.push(obj);
+                  // let objString = JSON.stringify(c);
+                  // window.localStorage.setItem("data", objString);
                   if (
                     this.active === 1 &&
                     this.deviceId != "" &&
@@ -1472,10 +1474,11 @@ export default {
                   this.text = this.currentRate + "%";
                   // 获取完数据之后重新设置localStorage时间
                   let timestamp3 = new Date().getTime();
-                  // let obj = new Object();
+                  let obj = new Object();
                   let b = window.localStorage.getItem("data");
+                  console.log(b);
                   let c;
-                  if (b === "") {
+                  if (b === "" || b === null) {
                     c = [];
                   } else {
                     c = JSON.parse(b) === null ? [] : JSON.parse(b);
@@ -1484,10 +1487,27 @@ export default {
                   let dataStorage = c.filter(
                     item => item.deviceId != this.deviceId
                   );
-                  data[0].time = 3600000;
-                  data[0].date = timestamp3;
-                  data[0].deviceId = this.deviceId;
-                  dataStorage.push(data[0]);
+
+                  if (data.length === 0) {
+                    let obj = new Object();
+                    obj.time = 3600000;
+                    obj.date = timestamp3;
+                    obj.deviceId = this.deviceId;
+                    dataStorage.push(obj);
+                  } else {
+                    data[0].time = 3600000;
+                    data[0].date = timestamp3;
+                    data[0].deviceId = this.deviceId;
+                    dataStorage.push(data[0]);
+                  }
+
+                  // console.log(data);
+                  // return false;
+
+                  // data[0].time = 3600000;
+                  // data[0].date = timestamp3;
+                  // data[0].deviceId = this.deviceId;
+
                   let objString = JSON.stringify(dataStorage);
                   window.localStorage.setItem("data", objString);
                 } else {

@@ -19,10 +19,16 @@
       <!-- 用户 -->
       <div class="empty">
         <img src="@/assets/kong.png" alt />
-        <p class="mt-30" style="line-height:30px;">
+
+        <p class="mt-30" style="line-height:30px;" v-if="roleType == 3">
           <!-- 你目前的角色是老师
           <br />请先切换到家长角色绑定小孩-->
           手环设备正在努力开始发中....
+        </p>
+        <p class="mt-30" style="line-height:30px;" v-else>
+          <!-- 你目前的角色是老师
+          <br />请先切换到家长角色绑定小孩-->
+          当前角色为老师，请先切换成家长角色
         </p>
       </div>
     </div>
@@ -56,7 +62,8 @@ export default {
     ...mapState("user", {
       name: state => state.info.name,
       photo: state => state.info.photo,
-      isBindBracelet: state => state.info.isBindBracelet //0表示没有绑定手环 1表示有
+      isBindBracelet: state => state.info.isBindBracelet, //0表示没有绑定手环 1表示有
+      roleType: state => state.info.roleType
     })
   },
   methods: {},

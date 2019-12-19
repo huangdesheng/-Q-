@@ -82,14 +82,19 @@
         </div>
         <div v-if="memuActive==2">
           <img src="@/assets/kong.png" alt />
-          <p>您小孩还没有采样照片</p>
-          <p style="margin-top:0">请先去添加照片</p>
+          <template v-if="localData">
+            <p>当前班级相册未识别到小孩照片</p>
+          </template>
+          <template v-else>
+            <p>您小孩还没有采样照片</p>
+            <p style="margin-top:0">请先去添加照片</p>
+          </template>
           <van-button
             type="info"
             size="large"
             class="no-radius addPic"
             @click="addSampling"
-          >{{localData?'采样照片':'去添加'}}</van-button>
+          >{{localData?'重新采样试试':'去添加'}}</van-button>
         </div>
       </div>
     </div>
@@ -223,17 +228,16 @@ export default {
     },
 
     classAlbum(index) {
-      console.log(index);
       this.memuActive = index;
       this.albumChannelQuery(this.query);
     },
 
     myChild(index) {
-      console.log(index);
       this.memuActive = index;
       if (index === 1) {
         this.albumChannelQuery(this.query);
       } else {
+        this.checkFace();
         this.albumChannelDetail();
       }
     },
@@ -241,7 +245,6 @@ export default {
     // 查是否有人脸识别底图20191122
     async checkFace() {
       let res = await service.checkFace(this.$store.state.user.info.studentId);
-
       if (res.errorCode === 0) {
         this.localData = true;
       } else if (res.errorCode === 404) {
@@ -271,6 +274,9 @@ export default {
     },
 
     addSampling() {
+      // this.$router.push({
+      //   path: "/album/addSampling"
+      // });
       if (this.localData) {
         this.$router.push({
           path: "/album/addSampling"
@@ -313,7 +319,6 @@ export default {
   },
   mounted() {
     this.albumChannelQuery(this.query);
-    this.checkFace();
   }
 };
 </script>

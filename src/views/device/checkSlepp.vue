@@ -72,6 +72,12 @@ export default {
       }
     };
   },
+  beforeCreate() {
+    if (this.$route.query.status == 1) {
+      document.title = "今日午睡";
+    }
+    console.log(this.$route.meta);
+  },
   mounted() {
     this.getSleepTime();
     this.getWeekSleep();

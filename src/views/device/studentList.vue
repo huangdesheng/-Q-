@@ -150,7 +150,7 @@
     <van-dialog v-model="stepStatus" title="标题" show-cancel-button :beforeClose="chargeBtn">
       <van-field
         v-model="stepValue"
-        placeholder="目标步数上限65535"
+        placeholder="目标步数上限30000"
         style="width: 90%;
         margin: 10px auto;
         background: rgba(46,46,46,0.1);"
@@ -347,7 +347,7 @@ export default {
           c = JSON.parse(b) === null ? [] : JSON.parse(b);
         }
         let data = c.filter(item => item.deviceId != this.deviceId);
-        window.localStorage.setItem("data", data);
+        window.localStorage.setItem("data", JSON.stringify(data));
       } else {
         this.$toast("手环解绑失败");
       }
@@ -520,13 +520,13 @@ export default {
                       this.$toast("哎呀，2小时才能更新~等等再来吧~");
                     }
                   } else {
-                    let obj = new Object();
-                    obj.time = 3600000;
-                    obj.date = timestamp;
-                    obj.deviceId = this.deviceId;
-                    c.push(obj);
-                    let objString = JSON.stringify(c);
-                    window.localStorage.setItem("data", objString);
+                    // let obj = new Object();
+                    // obj.time = 3600000;
+                    // obj.date = timestamp;
+                    // obj.deviceId = this.deviceId;
+                    // c.push(obj);
+                    // let objString = JSON.stringify(c);
+                    // window.localStorage.setItem("data", objString);
                     this.showName = true;
                     let getLocalTime = [0x23, 0x02, 0x02, 0x02, 0x25];
                     this.sendDataToWXDevice(
@@ -652,6 +652,7 @@ export default {
           return false;
         }
       } else {
+        this.getStepNumber();
         done();
       }
     },
@@ -1132,6 +1133,7 @@ export default {
                   this.getAlarmClockCount();
                   this.getSleepTime();
                   this.getMannerWear();
+                  this.getStarTotal();
                   sessionStorage.setItem("entryData", 1);
                   this.tip = "数据导入完成";
                   this.currentRate = 100;
@@ -1150,11 +1152,28 @@ export default {
                   let dataStorage = c.filter(
                     item => item.deviceId != this.deviceId
                   );
-                  data[0].time = 3600000;
-                  data[0].date = timestamp3;
-                  data[0].deviceId = this.deviceId;
-                  dataStorage.push(data[0]);
+                  if (data.length === 0) {
+                    let obj = new Object();
+                    obj.time = 3600000;
+                    obj.date = timestamp3;
+                    obj.deviceId = this.deviceId;
+                    dataStorage.push(obj);
+                  } else {
+                    data[0].time = 3600000;
+                    data[0].date = timestamp3;
+                    data[0].deviceId = this.deviceId;
+                    dataStorage.push(data[0]);
+                  }
+
+                  // console.log(data);
+                  // return false;
+
+                  // data[0].time = 3600000;
+                  // data[0].date = timestamp3;
+                  // data[0].deviceId = this.deviceId;
+
                   let objString = JSON.stringify(dataStorage);
+                  // window.localStorage.setItem("data", objString);
                   window.localStorage.setItem("data", objString);
                 } else {
                   let xiao;

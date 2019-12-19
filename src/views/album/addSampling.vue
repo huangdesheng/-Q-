@@ -3,7 +3,9 @@
     <div class="page-bd">
       <div class="empty">
         <div>
-          <img :src="localData" alt @click="updatePic" />
+          <div class="flex j-c-c a-i-c">
+            <img :src="localData" alt @click="updatePic" />
+          </div>
           <p>点击照片可重新采样</p>
           <p style="margin-top:0">关注班级相册查看自动整理的孩子照片</p>
           <van-button type="info" size="large" class="no-radius addPic" @click="saveSampling">保存</van-button>
@@ -18,8 +20,9 @@ import { mapState } from "vuex";
 export default {
   data() {
     return {
-      localData: this.$route.query.localData,
+      localData: "",
       serverId: ""
+      // imagesList: []
     };
   },
   mounted() {
@@ -84,10 +87,10 @@ export default {
           if (window.__wxjs_is_wkwebview) {
             this.handleLocalImgData(localIds); //ios图片读取
           } else {
-            console.log(1);
-            localIds.forEach(element => {
-              this.imagesList.push(element);
-            });
+            this.localData = localIds[0];
+            // localIds.forEach(element => {
+            //   // this.imagesList.push(element);
+            // });
           }
           this.handleUploadImage(localIds); //上传图片
         },
@@ -150,9 +153,11 @@ export default {
   justify-content: center;
   align-items: center;
   img {
+    display: block;
     width: 300px;
     height: 300px;
     border-radius: 100%;
+    border: 1px solid #ccc;
   }
   p {
     color: #999999;

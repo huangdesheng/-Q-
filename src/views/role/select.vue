@@ -33,7 +33,7 @@ export default {
   data() {
     return {
       roleList: [],
-      roleType: parseInt(this.$store.state.user.info.roleType)
+      roleType: this.$store.state.user.info.roleType
     };
   },
   computed: {
@@ -43,6 +43,7 @@ export default {
   },
   methods: {
     changeRole(item) {
+      console.log(item.roleType, this.roleType);
       //如果要切换的角色是当前角色，则不切换
       if (item.roleType == this.roleType) {
         this.$router.go(-1);

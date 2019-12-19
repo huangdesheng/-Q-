@@ -1,4 +1,7 @@
 import service from "@/api";
+import {
+  bytesArrayToBase64
+} from "@/utils/arrayToBase64";
 export default {
   data() {
     return {
@@ -6,7 +9,7 @@ export default {
       tip: "数据导入中,请勿断开设备或关闭蓝牙",
       currentRate: 0,
       text: 0 + "%",
-      speed: 2,
+      speed: 1,
 
       // 获取活跃度目录条数
       deviceArr: [],
@@ -85,12 +88,14 @@ export default {
           this.state = res.state;
           if (state === "connecting") {
             console.log("设备连接中");
+            this.showName = false;
             // this.$dialog.close();
           } else if (state === "connected") {
             console.log("已连接");
             this.getWXDeviceInfos();
             this.$dialog.close();
           } else {
+            this.showName = false;
             console.log("连接断开");
           }
         });
