@@ -791,8 +791,8 @@ export default {
             this.text = this.currentRate + "%";
             if (res.errorCode === 0) {
               let obj = res.data[0];
-              console.log(obj);
               let len = parseInt(obj[5]);
+              var myDate = new Date();
               if (obj[1] === "08" && obj[2] === "04" && obj[3] === "02") {
                 let getTimeOut = `20${obj[4]}/${obj[5]}/${obj[6]} ${obj[7]}:${
                   obj[8]
@@ -803,7 +803,9 @@ export default {
                   console.log("同步时间，开始获取本地时间");
                   this.run();
                 } else {
-                  console.log("获取本地时间日期结束，开始电量信息");
+                  console.log(
+                    `获取本地时间日期结束，开始电量信息:${myDate.getMinutes()}--${myDate.getSeconds()}`
+                  );
                   let getDeviceSoc = [0x23, 0x02, 0x02, 0x03, 0x00];
                   this.sendDataToWXDevice(
                     deviceId,
@@ -822,7 +824,9 @@ export default {
                 obj[3] === "03"
               ) {
                 // 获取电量信息结束，开始获取当前步数
-                console.log("获取电量信息结束，开始获取当前步数");
+                console.log(
+                  `获取电量信息结束，开始获取当前步数:${myDate.getMinutes()}--${myDate.getSeconds()}`
+                );
                 let getCurrentNumberOfSteps = [0x23, 0x02, 0x02, 0x05, 0x00];
                 // let getCurrentNumberOfSteps = [0x23, 0x02, 0x02, 0x13, 0x00];
                 this.sendDataToWXDevice(
@@ -840,7 +844,9 @@ export default {
                 obj[3] === "05"
               ) {
                 // 获取电量信息结束，开始获取当前步数
-                console.log("获取电量信息结束，开始获取3天运动步数");
+                console.log(
+                  `获取电量信息结束，开始获取3天运动步数:${myDate.getMinutes()}--${myDate.getSeconds()}`
+                );
                 // let getCurrentNumberOfSteps = [0x23, 0x02, 0x02, 0x05, 0x00];
                 let getCurrentNumberOfSteps = [0x23, 0x02, 0x02, 0x13, 0x00];
                 this.sendDataToWXDevice(
@@ -858,7 +864,9 @@ export default {
                 obj[3] === "13"
               ) {
                 // 获取当前步数结束，开始获取获取最近睡眠
-                console.log("获取当前步数结束，开始获取获运动目标");
+                console.log(
+                  `获取当前步数结束，开始获取获运动目标:${myDate.getMinutes()}--${myDate.getSeconds()}`
+                );
                 let MoveStaget = [0x23, 0x02, 0x02, 0x06, 0x00];
 
                 this.sendDataToWXDevice(
@@ -875,7 +883,9 @@ export default {
                 obj[2] === "04" &&
                 obj[3] === "06"
               ) {
-                console.log("取获运动目标结束，开始获取获取最近睡眠");
+                console.log(
+                  `取获运动目标结束，开始获取获取最近睡眠:${myDate.getMinutes()}--${myDate.getSeconds()}`
+                );
                 let getMostRecentSleepEntry = [
                   0x23,
                   0x03,
@@ -907,7 +917,7 @@ export default {
                 if (len === 0) {
                   // 获取已存的睡眠历史记录条数为0,开始获取活跃度目录条数
                   console.log(
-                    "获取已存的睡眠历史记录条数为0,开始获取活跃度目录条数"
+                    `获取睡眠结束,开始获取活跃度目录条数:${myDate.getMinutes()}--${myDate.getSeconds()}`
                   );
                   let getAcquisitionActivity = [
                     0x23,
@@ -1127,7 +1137,9 @@ export default {
                 let len = parseInt(obj[7] + obj[8]);
                 console.log(len);
                 if (len === 0) {
-                  console.log("获取活跃度分包目录数调用结束");
+                  console.log(
+                    `获取活跃度分包目录数调用结束:${myDate.getMinutes()}--${myDate.getSeconds()}`
+                  );
                   this.getElectric();
                   this.getStepNumber();
                   this.getAlarmClockCount();
